@@ -1,61 +1,47 @@
-const ARC_CHAIN_ID = "0x4cece6"; 
+const ARC_CHAIN_ID = "0x4cece6";
 const ARC_RPC = "https://rpc.testnet.arc.network";
 
-// --- GAME STATE ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
-let bubbles = [];
-let bullet = { x: 225, y: 500, radius: 20, color: 'yellow', active: false, speedX: 0, speedY: 0 };
+
+// --- GAME STATE ---
 let score = 0;
+let bubbles = [];
+const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+let bullet = { x: 225, y: 500, radius: 22, color: 'yellow', active: false, dx: 0, dy: 0 };
 
-// --- WALLET LOGIC ---
-async function updateWalletUI() {
-    if (!window.ethereum) return;
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    const statusText = document.getElementById('status');
-    const btn = document.getElementById('connect-button');
-
-    if (accounts.length > 0 && chainId === ARC_CHAIN_ID) {
-        statusText.innerText = "STATUS: CONNECTED (" + accounts[0].substring(0, 6) + ")";
-        statusText.style.color = "#00ff88";
-        btn.innerText = "WALLET ACTIVE";
-        btn.style.opacity = "0.5";
-    }
-}
-
-async function connect() {
+// --- WALLET CONNECTION ---
+async function checkWallet() {
     if (window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        try {
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: ARC_CHAIN_ID }],
-            });
-        } catch (e) { /* Add network logic if needed */ }
-        updateWalletUI();
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        const statusText = document.getElementById('status');
+        
+        if (accounts.length > 0 && chainId === ARC_CHAIN_ID) {
+            statusText.innerText = "STATUS: CONNECTED (" + accounts[0].substring(0, 6) + ")";
+            statusText.style.color = "#00ff88";
+            document.getElementById('connect-button').style.display = "none";
+        }
     }
 }
-document.getElementById('connect-button').onclick = connect;
 
-// --- GAME LOGIC ---
-function createGrid() {
+// --- GAME FUNCTIONS ---
+function initGrid() {
     bubbles = [];
-    for (let row = 0; row < 5; row++) {
-        for (let col = 0; col < 8; col++) {
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 8; j++) {
             bubbles.push({
-                x: 45 + (col * 52),
-                y: 50 + (row * 45),
-                radius: 19,
-                color: colors[row % colors.length],
-                alive: true
+                x: 45 + (j * 52),
+                y: 60 + (i * 45),
+                radius: 20,
+                color: colors[i % colors.length],
+                active: true
             });
         }
     }
 }
 
-// Shooting - Click to fire
+// Shooting Mechanics
 canvas.addEventListener('mousedown', (e) => {
     if (bullet.active) return;
     const rect = canvas.getBoundingClientRect();
@@ -63,32 +49,34 @@ canvas.addEventListener('mousedown', (e) => {
     const mouseY = e.clientY - rect.top;
 
     const angle = Math.atan2(mouseY - bullet.y, mouseX - bullet.x);
-    bullet.speedX = Math.cos(angle) * 10;
-    bullet.speedY = Math.sin(angle) * 10;
+    bullet.dx = Math.cos(angle) * 12; // Speed
+    bullet.dy = Math.sin(angle) * 12;
     bullet.active = true;
 });
 
 function update() {
     if (bullet.active) {
-        bullet.x += bullet.speedX;
-        bullet.y += bullet.speedY;
+        bullet.x += bullet.dx;
+        bullet.y += bullet.dy;
 
-        // Bounce off walls
-        if (bullet.x < 20 || bullet.x > canvas.width - 20) bullet.speedX *= -1;
-        
-        // Check collisions with grid
+        // Wall Bounce
+        if (bullet.x < bullet.radius || bullet.x > canvas.width - bullet.radius) {
+            bullet.dx *= -1;
+        }
+
+        // Collision detection with grid
         bubbles.forEach(b => {
-            if (b.alive) {
-                let dist = Math.hypot(bullet.x - b.x, bullet.y - b.y);
+            if (b.active) {
+                const dist = Math.hypot(bullet.x - b.x, bullet.y - b.y);
                 if (dist < bullet.radius + b.radius) {
-                    b.alive = false;
+                    b.active = false;
                     score += 10;
                     resetBullet();
                 }
             }
         });
 
-        // Reset if bullet leaves screen
+        // Reset if bullet goes out of bounds
         if (bullet.y < 0 || bullet.y > canvas.height) resetBullet();
     }
 }
@@ -102,40 +90,39 @@ function resetBullet() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Score
+    // Draw Score
     ctx.fillStyle = "white";
-    ctx.font = "bold 18px Arial";
+    ctx.font = "bold 20px Arial";
     ctx.fillText("SCORE: " + score, 20, 30);
 
-    // Grid
+    // Draw Bubbles
     bubbles.forEach(b => {
-        if (b.alive) {
+        if (b.active) {
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             ctx.fillStyle = b.color;
             ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
             ctx.stroke();
+            ctx.closePath();
         }
     });
 
-    // Bullet
+    // Draw Shooter
     ctx.beginPath();
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
     ctx.fillStyle = bullet.color;
     ctx.shadowBlur = bullet.active ? 20 : 0;
     ctx.shadowColor = "yellow";
     ctx.fill();
+    ctx.closePath();
     ctx.shadowBlur = 0;
+
+    requestAnimationFrame(draw);
 }
 
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-// Initialize everything
-createGrid();
-updateWalletUI();
-loop();
+// Start everything
+initGrid();
+checkWallet();
+setInterval(update, 1000 / 60); // 60 FPS update
+draw(); // Start animation loop
