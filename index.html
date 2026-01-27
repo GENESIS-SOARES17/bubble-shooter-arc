@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Bubble Shooter Web3 ARC PRO</title>
+<title>Bubble Shooter Web3 PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -13,56 +14,57 @@ body{
   background-size:cover;
   color:#fff;
 }
-#gameContainer{
-  width:70vw;
-  height:70vh;
-  margin:5vh auto;
-  position:relative;
-  border:1px solid rgba(0,255,170,0.5);
-  border-radius:16px;
-  overflow:hidden;
-  background:rgba(0,0,0,0.1);
-}
-#overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.9);
-  z-index:2;
-}
-canvas{
+
+/* layout geral */
+#layout{
+  display:flex;
   width:100%;
-  height:100%;
-  display:block;
-  background:transparent;
-  position:relative;
-  z-index:1;
+  height:100vh;
+  padding:20px;
+  gap:15px;
 }
+
+/* painel lateral */
 #panel{
-  position:absolute;
-  top:10px;
-  left:10px;
-  width:300px;
-  background:rgba(0,0,0,0.9);
+  width:320px;
+  background:rgba(0,0,0,0.85);
   border:1px solid rgba(0,255,170,0.5);
-  border-radius:12px;
-  padding:10px;
+  border-radius:14px;
+  padding:12px;
   font-size:13px;
-  z-index:5;
+  backdrop-filter:blur(6px);
 }
-h2{margin:2px 0 6px;text-align:center;color:#00ffaa}
-.row{display:flex;justify-content:space-between;margin:2px 0}
+
+h2{
+  text-align:center;
+  color:#00ffaa;
+  margin:4px 0 10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:3px 0;
+}
+
+/* botões */
 button{
   width:100%;
-  margin:4px 0;
-  padding:7px;
+  margin:5px 0;
+  padding:8px;
   border:none;
-  border-radius:7px;
+  border-radius:8px;
   background:linear-gradient(90deg,#00ffaa,#00aaff);
   color:#000;
   font-weight:bold;
   cursor:pointer;
 }
-button:disabled{opacity:0.4;cursor:not-allowed}
+button:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+/* barra de força */
 .bar{
   width:100%;
   height:10px;
@@ -75,42 +77,99 @@ button:disabled{opacity:0.4;cursor:not-allowed}
   width:0%;
   background:linear-gradient(90deg,#00ff88,#ffff00,#ff0000);
 }
+
+/* calculadora comum */
 #calc{
-  margin-top:6px;
-  padding:6px;
+  margin-top:8px;
+  padding:8px;
   background:rgba(255,255,255,0.05);
-  border-radius:8px;
+  border-radius:10px;
 }
-#calc input,#calc select{
+#calc input{
   width:100%;
-  margin:2px 0;
-  padding:5px;
+  margin:3px 0;
+  padding:6px;
   border-radius:6px;
   border:none;
 }
+.calcBtns{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:4px;
+}
+.calcBtns button{
+  padding:6px;
+  font-size:14px;
+}
+
+/* container do jogo */
+#gameContainer{
+  flex:1;
+  height:70vh;
+  position:relative;
+  border:1px solid rgba(0,255,170,0.5);
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(0,0,0,0.1);
+}
+
+/* overlay bloqueio (90%) */
+#overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+/* canvas */
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+  background:transparent;
+  z-index:1;
+}
+
+/* ticker cripto */
 #ticker{
   position:absolute;
   bottom:0;
   left:0;
   width:100%;
-  background:rgba(0,0,0,0.85);
-  border-top:1px solid rgba(0,255,170,0.4);
-  padding:4px;
-  font-size:11px;
-  white-space:nowrap;
+  background:black;
+  border-top:2px solid #00ffaa;
+  font-size:13px;
+  font-weight:bold;
+  color:#00ffaa;
   overflow:hidden;
-  z-index:4;
+  z-index:20;
 }
-#ticker span{margin-right:12px;color:#00ffaa}
+#tickerTrack{
+  display:inline-block;
+  white-space:nowrap;
+  padding-left:100%;
+  animation:scroll 25s linear infinite;
+}
+@keyframes scroll{
+  from{transform:translateX(0);}
+  to{transform:translateX(-100%);}
+}
 </style>
 </head>
 <body>
 
-<div id="gameContainer">
-  <div id="overlay"></div>
+<div id="layout">
 
+  <!-- PAINEL -->
   <div id="panel">
     <h2>🎮 Bubble Shooter Web3</h2>
+
     <div class="row">👛 Wallet: <span id="wallet">---</span></div>
     <div class="row">💰 USDC: <span id="balance">0.000</span></div>
     <div class="row">⭐ Score: <span id="score">0</span></div>
@@ -127,24 +186,36 @@ button:disabled{opacity:0.4;cursor:not-allowed}
     <button onclick="deposit()">Depositar (simulado)</button>
     <button onclick="withdraw()">Sacar (simulado)</button>
 
+    <!-- CALCULADORA NORMAL -->
     <div id="calc">
-      <b>💱 Calculadora Cripto</b>
-      <input type="number" id="amount" placeholder="Valor">
-      <select id="asset"></select>
-      <div id="result">Resultado: -</div>
+      <b>🧮 Calculadora</b>
+      <input type="number" id="n1" placeholder="Número 1">
+      <input type="number" id="n2" placeholder="Número 2">
+      <div class="calcBtns">
+        <button onclick="calcOp('+')">+</button>
+        <button onclick="calcOp('-')">-</button>
+        <button onclick="calcOp('*')">*</button>
+        <button onclick="calcOp('/')">/</button>
+      </div>
+      <div id="calcResult">Resultado: -</div>
     </div>
   </div>
 
-  <canvas id="game"></canvas>
-  <div id="ticker"></div>
+  <!-- JOGO -->
+  <div id="gameContainer">
+    <div id="overlay">🔒 Conecte e assine a carteira para jogar</div>
+    <canvas id="game"></canvas>
+    <div id="ticker"><div id="tickerTrack">Carregando preços...</div></div>
+  </div>
+
 </div>
 
 <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
-/* ===================== CONFIG ARC TESTNET ===================== */
+/* ================= CONFIG ARC TESTNET ================= */
 const ARC_CHAIN = {
-  chainId: "0x4CF7D2", // 5042002 em hex
+  chainId: "0x4CF7D2",
   chainName: "ARC Testnet",
   rpcUrls: ["https://rpc.testnet.arc.network"],
   nativeCurrency: { name:"ARC", symbol:"ARC", decimals:18 },
@@ -154,18 +225,16 @@ const ARC_CHAIN = {
 let provider, signer, account;
 let signed=false;
 
-/* ===================== UI ===================== */
-const walletEl=document.getElementById("wallet");
-const balanceEl=document.getElementById("balance");
-const scoreEl=document.getElementById("score");
-const comboEl=document.getElementById("combo");
-const levelEl=document.getElementById("level");
-
+/* ================= UI ================= */
+const walletEl=wallet;
+const balanceEl=balance;
+const scoreEl=score;
+const comboEl=combo;
+const levelEl=level;
 const btnConnect=document.getElementById("btnConnect");
 const btnSign=document.getElementById("btnSign");
 const btnStart=document.getElementById("btnStart");
 
-/* ===================== STATE ===================== */
 const State={score:0,combo:0,level:1,balance:0};
 
 function updateUI(){
@@ -176,7 +245,7 @@ function updateUI(){
   levelEl.textContent = State.level;
 }
 
-/* ===================== METAMASK FIXADO ===================== */
+/* ================= METAMASK ESTÁVEL ================= */
 btnConnect.onclick = async ()=>{
   if(!window.ethereum){
     alert("MetaMask não encontrada!");
@@ -184,75 +253,57 @@ btnConnect.onclick = async ()=>{
   }
 
   try{
-    // 1️⃣ Solicitar contas
-    await ethereum.request({method:"eth_requestAccounts"});
+    const accounts = await ethereum.request({method:"eth_requestAccounts"});
 
-    provider = new ethers.BrowserProvider(window.ethereum);
-
-    // 2️⃣ Trocar rede
     try{
       await ethereum.request({
         method:"wallet_switchEthereumChain",
         params:[{chainId: ARC_CHAIN.chainId}]
       });
-    }catch(err){
+    }catch(e){
       await ethereum.request({
         method:"wallet_addEthereumChain",
         params:[ARC_CHAIN]
       });
     }
 
-    // 3️⃣ Criar signer depois da rede
+    provider = new ethers.BrowserProvider(window.ethereum);
     signer = await provider.getSigner();
-    account = await signer.getAddress();
+    account = accounts[0];
 
     updateUI();
     btnSign.disabled=false;
 
-    ethereum.on("accountsChanged",(acc)=>{
-      account = acc[0] || null;
-      signed=false;
-      btnStart.disabled=true;
-      btnSign.disabled=!account;
-      updateUI();
-    });
-
   }catch(e){
-    console.error("Erro MetaMask:",e);
     alert("Erro ao conectar carteira!");
   }
 };
 
 btnSign.onclick = async ()=>{
   try{
-    const msg="Autorizo jogar Bubble Shooter Web3";
-    await signer.signMessage(msg);
+    await signer.signMessage("Autorizo jogar Bubble Shooter Web3");
     signed=true;
     btnStart.disabled=false;
     alert("Assinatura OK ✅");
   }catch(e){
-    console.error(e);
     alert("Assinatura cancelada!");
   }
 };
 
 btnStart.onclick = ()=>{
-  if(!signed){
-    alert("Conecte e assine a carteira!");
-    return;
-  }
-  document.getElementById("overlay").style.display="none";
+  if(!signed)return;
+  overlay.style.display="none";
   Game.start();
 };
 
-/* ===================== SOM ===================== */
+/* ================= SOM ================= */
 const explosionSound=document.getElementById("explosionSound");
 function playExplosion(){
   explosionSound.currentTime=0;
   explosionSound.play().catch(()=>{});
 }
 
-/* ===================== CANVAS ===================== */
+/* ================= CANVAS ================= */
 const container=document.getElementById("gameContainer");
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
@@ -264,13 +315,13 @@ function resize(){
 window.addEventListener("resize",resize);
 resize();
 
-/* ===================== GAME ENGINE ===================== */
+/* ================= GAME ENGINE ================= */
 const Game={
   bubbles:[],
-  bullet:{x:0,y:0,r:18,dx:0,dy:0,active:false},
+  bullet:{x:0,y:0,r:20,dx:0,dy:0,active:false},
   charging:false,
   power:0,
-  maxPower:18,
+  maxPower:20,
   mouse:{x:0,y:0},
   running:false,
 
@@ -282,11 +333,11 @@ const Game={
 
   init(){
     this.bubbles=[];
-    const colors=["#00ff88","#00aaff","#ffaa00","#ff4444"];
-    const gapX=45;
+    const colors=["#00ff88","#00aaff","#ffaa00","#ff4444","#aa00ff"];
+    const gapX=44;
     const gapY=42;
     const cols=Math.floor(canvas.width/gapX);
-    const rows=Math.floor(canvas.height*0.6/gapY);
+    const rows=Math.floor(canvas.height*0.65/gapY);
 
     for(let i=0;i<rows;i++){
       for(let j=0;j<cols;j++){
@@ -294,7 +345,7 @@ const Game={
           x:gapX/2+j*gapX,
           y:gapY/2+i*gapY,
           r:16,
-          color:colors[(i+j)%colors.length],
+          color:colors[Math.floor(Math.random()*colors.length)],
           active:true
         });
       }
@@ -342,11 +393,9 @@ const Game={
         if(d<this.bullet.r+b.r){
           b.active=false;
           playExplosion();
-
           State.combo++;
           State.score+=10*State.combo;
           State.balance+=0.001;
-
           this.resetBullet();
         }
       }
@@ -366,7 +415,7 @@ const Game={
       ctx.beginPath();
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
       ctx.fillStyle=b.color;
-      ctx.shadowBlur=10;
+      ctx.shadowBlur=12;
       ctx.shadowColor=b.color;
       ctx.fill();
       ctx.shadowBlur=0;
@@ -380,9 +429,9 @@ const Game={
 };
 
 canvas.addEventListener("mousemove",e=>{
-  const rect=canvas.getBoundingClientRect();
-  Game.mouse.x=e.clientX-rect.left;
-  Game.mouse.y=e.clientY-rect.top;
+  const r=canvas.getBoundingClientRect();
+  Game.mouse.x=e.clientX-r.left;
+  Game.mouse.y=e.clientY-r.top;
 });
 canvas.addEventListener("mousedown",()=>Game.charging=true);
 canvas.addEventListener("mouseup",()=>{
@@ -398,39 +447,46 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-/* ===================== DEPÓSITO SIMULADO ===================== */
-function deposit(){State.balance+=0.01}
+/* ================= DEPÓSITO SIMULADO ================= */
+function deposit(){State.balance+=0.01;}
 function withdraw(){
   if(State.balance<0.01)return alert("Saldo insuficiente");
   State.balance-=0.01;
 }
 
-/* ===================== CRIPTO API ===================== */
-const assets=["bitcoin","ethereum","tether","usd-coin","bnb","xrp","cardano","solana","tron","dogecoin"];
+/* ================= CALCULADORA ================= */
+function calcOp(op){
+  const a=parseFloat(n1.value||0);
+  const b=parseFloat(n2.value||0);
+  let r=0;
+  switch(op){
+    case "+": r=a+b; break;
+    case "-": r=a-b; break;
+    case "*": r=a*b; break;
+    case "/": r=b===0?"∞":a/b; break;
+  }
+  calcResult.textContent="Resultado: "+r;
+}
 
+/* ================= TICKER CRIPTO ================= */
 async function loadPrices(){
   try{
-    const res=await fetch("https://api.coingecko.com/api/v3/simple/price?ids="+assets.join(",")+"&vs_currencies=usd");
+    const ids="bitcoin,ethereum,solana,xrp,bnb,dogecoin";
+    const res=await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids="+ids+"&vs_currencies=usd"
+    );
     const data=await res.json();
-    ticker.innerHTML="";
-    asset.innerHTML="";
-    assets.forEach(id=>{
-      const price=data[id].usd;
-      ticker.innerHTML+=`<span>${id.toUpperCase()}: $${price}</span>`;
-      asset.innerHTML+=`<option value="${price}">${id.toUpperCase()}</option>`;
-    });
-  }catch(e){}
+    let text="";
+    for(const k in data){
+      text += `🚀 ${k.toUpperCase()}: $${data[k].usd} &nbsp;&nbsp;`;
+    }
+    tickerTrack.innerHTML=text;
+  }catch(e){
+    tickerTrack.innerHTML="Erro ao carregar preços...";
+  }
 }
 loadPrices();
-setInterval(loadPrices,10000);
-
-amount.oninput=calc;
-asset.onchange=calc;
-function calc(){
-  const v=parseFloat(amount.value||0);
-  const p=parseFloat(asset.value||0);
-  result.textContent="Resultado: $"+(v*p).toFixed(4);
-}
+setInterval(loadPrices,5000);
 </script>
 </body>
 </html>
