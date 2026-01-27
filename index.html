@@ -2,47 +2,56 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Bubble Shooter Web3 PRO - ARC</title>
+<title>Bubble Shooter Web3 ARC PRO</title>
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:radial-gradient(circle at top,#020617,#000);
+  font-family:Arial,sans-serif;
+  background:url("bg.jpg") no-repeat center center fixed;
+  background-size:cover;
   color:#fff;
-  font-family:Arial, sans-serif;
-  overflow:hidden;
 }
 
-/* ===== FUNDO ===== */
-#bg{
-  position:fixed;
-  inset:0;
-  background:
-    linear-gradient(120deg,rgba(0,255,170,0.06),transparent 60%),
-    linear-gradient(300deg,rgba(0,150,255,0.05),transparent 60%);
-  z-index:-1;
-}
-
-/* ===== PAINEL CENTRAL GAMER ===== */
-#panel{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:340px;
-  background:rgba(0,0,0,0.9); /* 90% transparência */
-  backdrop-filter:blur(8px);
+/* ÁREA DO JOGO (70% DA TELA) */
+#gameContainer{
+  width:70vw;
+  height:70vh;
+  margin:5vh auto;
+  position:relative;
   border:1px solid rgba(0,255,170,0.5);
   border-radius:16px;
-  padding:12px;
-  z-index:10;
+  overflow:hidden;
+  background:rgba(0,0,0,0.4);
+}
+
+/* CANVAS */
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+  background:transparent;
+}
+
+/* PAINEL GAMER */
+#panel{
+  position:absolute;
+  top:10px;
+  left:10px;
+  width:280px;
+  background:rgba(0,0,0,0.9); /* 90% transparência */
+  backdrop-filter:blur(6px);
+  border:1px solid rgba(0,255,170,0.5);
+  border-radius:12px;
+  padding:10px;
   font-size:13px;
+  z-index:10;
 }
 
 h2{
-  margin:4px 0 6px;
+  margin:2px 0 6px;
   text-align:center;
-  font-size:16px;
+  font-size:15px;
   color:#00ffaa;
 }
 
@@ -55,15 +64,14 @@ h2{
 button{
   width:100%;
   margin:4px 0;
-  padding:8px;
+  padding:7px;
   border:none;
-  border-radius:8px;
+  border-radius:7px;
   background:linear-gradient(90deg,#00ffaa,#00aaff);
   color:#000;
   font-weight:bold;
   cursor:pointer;
 }
-button:active{transform:scale(0.98)}
 
 .bar{
   width:100%;
@@ -78,90 +86,85 @@ button:active{transform:scale(0.98)}
   background:linear-gradient(90deg,#00ff88,#ffff00,#ff0000);
 }
 
-/* ===== TICKER CRIPTO ===== */
+/* CALCULADORA */
+#calc{
+  margin-top:6px;
+  padding:6px;
+  background:rgba(255,255,255,0.05);
+  border-radius:8px;
+}
+#calc input,#calc select{
+  width:100%;
+  margin:2px 0;
+  padding:5px;
+  border-radius:6px;
+  border:none;
+}
+
+/* TICKER CRIPTO */
 #ticker{
-  position:fixed;
+  position:absolute;
   bottom:0;
   left:0;
   width:100%;
   background:rgba(0,0,0,0.85);
   border-top:1px solid rgba(0,255,170,0.4);
-  padding:6px;
-  font-size:12px;
+  padding:4px;
+  font-size:11px;
   white-space:nowrap;
   overflow:hidden;
 }
 #ticker span{
-  margin-right:14px;
+  margin-right:12px;
   color:#00ffaa;
-}
-
-/* ===== CALCULADORA ===== */
-#calc{
-  margin-top:6px;
-  padding:6px;
-  background:rgba(255,255,255,0.05);
-  border-radius:10px;
-}
-#calc input, #calc select{
-  width:100%;
-  margin:2px 0;
-  padding:6px;
-  border-radius:6px;
-  border:none;
-  outline:none;
-}
-
-/* ===== CANVAS ===== */
-canvas{
-  display:block;
 }
 </style>
 </head>
 <body>
 
-<div id="bg"></div>
+<div id="gameContainer">
 
-<div id="panel">
-  <h2>🎮 Bubble Shooter Web3 PRO</h2>
+  <div id="panel">
+    <h2>🎮 Bubble Shooter Web3</h2>
+    <div class="row">👛 Wallet: <span id="wallet">---</span></div>
+    <div class="row">💰 USDC: <span id="balance">0.000</span></div>
+    <div class="row">⭐ Score: <span id="score">0</span></div>
+    <div class="row">🔥 Combo: <span id="combo">0</span></div>
+    <div class="row">🎯 Level: <span id="level">1</span></div>
 
-  <div class="row">👛 Wallet: <span id="wallet">---</span></div>
-  <div class="row">💰 USDC: <span id="balance">0.000</span></div>
-  <div class="row">⭐ Score: <span id="score">0</span></div>
-  <div class="row">🔥 Combo: <span id="combo">0</span></div>
-  <div class="row">🎯 Level: <span id="level">1</span></div>
+    <div>⚡ Força do tiro</div>
+    <div class="bar"><div id="powerBar"></div></div>
 
-  <div>⚡ Força do tiro</div>
-  <div class="bar"><div id="powerBar"></div></div>
+    <button onclick="connectWallet()">Conectar MetaMask</button>
+    <button onclick="deposit()">Depositar (simulado)</button>
+    <button onclick="withdraw()">Sacar (simulado)</button>
 
-  <button onclick="connectWallet()">Conectar MetaMask</button>
-  <button onclick="deposit()">Depositar (simulado)</button>
-  <button onclick="withdraw()">Sacar (simulado)</button>
-
-  <!-- CALCULADORA CRIPTO -->
-  <div id="calc">
-    <b>💱 Calculadora Cripto</b>
-    <input type="number" id="amount" placeholder="Valor">
-    <select id="asset"></select>
-    <div id="result">Resultado: -</div>
+    <div id="calc">
+      <b>💱 Calculadora Cripto</b>
+      <input type="number" id="amount" placeholder="Valor">
+      <select id="asset"></select>
+      <div id="result">Resultado: -</div>
+    </div>
   </div>
+
+  <canvas id="game"></canvas>
+  <div id="ticker"></div>
+
 </div>
-
-<canvas id="game"></canvas>
-
-<div id="ticker"></div>
 
 <script>
 /* ===========================
-   CANVAS
+   CANVAS AJUSTADO (70%)
 =========================== */
+const container=document.getElementById("gameContainer");
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d",{alpha:true});
+
 function resize(){
-  canvas.width=innerWidth;
-  canvas.height=innerHeight;
+  canvas.width=container.clientWidth;
+  canvas.height=container.clientHeight;
 }
-addEventListener("resize",resize);
+window.addEventListener("resize",resize);
 resize();
 
 /* ===========================
@@ -184,62 +187,71 @@ function updateUI(){
 }
 
 /* ===========================
-   SOUND FX
+   SONS LOCAIS (PASTA)
 =========================== */
 const SFX={
-  boom:new Audio("https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3"),
-  shoot:new Audio("https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3")
+  shoot:new Audio("shoot.mp3"),
+  boom:new Audio("boom.mp3")
 };
 function playSound(name){
-  try{SFX[name].currentTime=0;SFX[name].play();}catch(e){}
+  try{
+    SFX[name].currentTime=0;
+    SFX[name].play();
+  }catch(e){}
 }
 
 /* ===========================
-   METAMASK (ARC TESTNET)
+   METAMASK ESTÁVEL (ARC)
 =========================== */
-const ARC_CHAIN_ID="0x4CF7D2"; // 5042002 em hex
+const ARC_CHAIN_ID="0x4CF7D2"; // 5042002
 async function connectWallet(){
-  if(!window.ethereum){alert("MetaMask não encontrada");return;}
-  const acc=await ethereum.request({method:"eth_requestAccounts"});
-  State.wallet=acc[0];
-
-  // tentar adicionar rede ARC testnet
+  if(!window.ethereum){
+    alert("MetaMask não encontrada");
+    return;
+  }
   try{
+    const accounts=await ethereum.request({method:"eth_requestAccounts"});
+    State.wallet=accounts[0];
+
     await ethereum.request({
       method:"wallet_switchEthereumChain",
       params:[{chainId:ARC_CHAIN_ID}]
     });
-  }catch(e){}
 
-  updateUI();
+    ethereum.on("accountsChanged",(acc)=>{
+      State.wallet=acc[0]||null;
+      updateUI();
+    });
+
+    updateUI();
+  }catch(err){
+    console.log(err);
+  }
 }
 
 /* ===========================
-   DEPÓSITO / SAQUE (SIMULADO)
+   DEPÓSITO / SAQUE SIMULADO
 =========================== */
 function deposit(){
   State.balance+=0.01;
-  alert("Depósito simulado: +0.01 USDC");
 }
 function withdraw(){
-  if(State.balance<0.01){alert("Saldo insuficiente");return;}
+  if(State.balance<0.01)return alert("Saldo insuficiente");
   State.balance-=0.01;
-  alert("Saque simulado: -0.01 USDC");
 }
 
 /* ===========================
-   PARTICLES (EXPLOSÃO REAL)
+   PARTÍCULAS
 =========================== */
 const particles=[];
 function explode(x,y,color){
-  for(let i=0;i<25;i++){
+  for(let i=0;i<20;i++){
     particles.push({
       x,y,
-      vx:(Math.random()-0.5)*7,
-      vy:(Math.random()-0.5)*7,
-      life:40,
-      color,
-      size:2+Math.random()*3
+      vx:(Math.random()-0.5)*6,
+      vy:(Math.random()-0.5)*6,
+      life:30,
+      color
     });
   }
 }
@@ -249,12 +261,10 @@ function drawParticles(){
     p.x+=p.vx;
     p.y+=p.vy;
     p.life--;
-    ctx.globalAlpha=p.life/40;
+    ctx.globalAlpha=p.life/30;
     ctx.fillStyle=p.color;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-    ctx.fill();
-    if(p.life<=0) particles.splice(i,1);
+    ctx.fillRect(p.x,p.y,3,3);
+    if(p.life<=0)particles.splice(i,1);
   }
   ctx.globalAlpha=1;
 }
@@ -264,35 +274,28 @@ function drawParticles(){
 =========================== */
 const Game={
   bubbles:[],
-  bullet:{x:0,y:0,r:20,dx:0,dy:0,active:false}, // shooter 25% maior
+  bullet:{x:0,y:0,r:18,dx:0,dy:0,active:false},
   charging:false,
   power:0,
-  maxPower:20,
+  maxPower:18,
   mouse:{x:0,y:0},
 
   init(){
     this.bubbles=[];
-    const colors=["#00ff88","#00aaff","#ffaa00","#ff4444","#ff00ff"];
-    const gapX=50;
-    const gapY=45;
+    const colors=["#00ff88","#00aaff","#ffaa00","#ff4444"];
+    const gapX=45;
+    const gapY=42;
     const cols=Math.floor(canvas.width/gapX);
-    const rows=Math.floor(canvas.height*0.65/gapY);
+    const rows=Math.floor(canvas.height*0.6/gapY);
 
     for(let i=0;i<rows;i++){
       for(let j=0;j<cols;j++){
-        let type="normal";
-        const rnd=Math.random();
-        if(rnd<0.05) type="bomb";
-        else if(rnd<0.10) type="gold";
-        else if(rnd<0.15) type="multi";
-
         this.bubbles.push({
           x:gapX/2+j*gapX,
           y:gapY/2+i*gapY,
-          r:18,
+          r:16,
           color:colors[(i+j)%colors.length],
-          active:true,
-          type
+          active:true
         });
       }
     }
@@ -301,16 +304,14 @@ const Game={
 
   resetBullet(){
     this.bullet.x=canvas.width/2;
-    this.bullet.y=canvas.height-60;
+    this.bullet.y=canvas.height-40;
     this.bullet.active=false;
-    this.bullet.dx=0;
-    this.bullet.dy=0;
   },
 
   shoot(angle){
-    if(this.bullet.active) return;
+    if(this.bullet.active)return;
     playSound("shoot");
-    const speed=4+this.power*1.3;
+    const speed=4+this.power;
     this.bullet.dx=Math.cos(angle)*speed;
     this.bullet.dy=Math.sin(angle)*speed;
     this.bullet.active=true;
@@ -320,7 +321,7 @@ const Game={
 
   update(){
     if(this.charging){
-      this.power=Math.min(this.maxPower,this.power+0.3);
+      this.power=Math.min(this.maxPower,this.power+0.25);
       powerBar.style.width=(this.power/this.maxPower*100)+"%";
     }
 
@@ -335,7 +336,7 @@ const Game={
       }
 
       for(const b of this.bubbles){
-        if(!b.active) continue;
+        if(!b.active)continue;
         const d=Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y);
         if(d<this.bullet.r+b.r){
           b.active=false;
@@ -343,19 +344,8 @@ const Game={
           explode(b.x,b.y,b.color);
 
           State.combo++;
-          let pts=10*State.combo;
-          let reward=0.001;
-
-          if(b.type==="gold"){pts*=3;reward*=3;}
-          if(b.type==="multi"){pts*=2;reward*=2;}
-          if(b.type==="bomb"){
-            for(const bb of this.bubbles){
-              if(Math.hypot(bb.x-b.x,bb.y-b.y)<80) bb.active=false;
-            }
-          }
-
-          State.score+=pts;
-          State.balance+=reward;
+          State.score+=10*State.combo;
+          State.balance+=0.001;
 
           this.resetBullet();
         }
@@ -373,45 +363,30 @@ const Game={
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     for(const b of this.bubbles){
-      if(!b.active) continue;
+      if(!b.active)continue;
       ctx.beginPath();
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
       ctx.fillStyle=b.color;
-      ctx.shadowBlur=15;
+      ctx.shadowBlur=10;
       ctx.shadowColor=b.color;
       ctx.fill();
       ctx.shadowBlur=0;
-
-      if(b.type==="gold"){ctx.fillStyle="#fff";ctx.fillText("💎",b.x-6,b.y+4);}
-      if(b.type==="bomb"){ctx.fillStyle="#fff";ctx.fillText("💣",b.x-6,b.y+4);}
-      if(b.type==="multi"){ctx.fillStyle="#fff";ctx.fillText("⚡",b.x-6,b.y+4);}
     }
 
     ctx.beginPath();
     ctx.arc(this.bullet.x,this.bullet.y,this.bullet.r,0,Math.PI*2);
     ctx.fillStyle="#fff";
-    ctx.shadowBlur=10;
-    ctx.shadowColor="#fff";
     ctx.fill();
-    ctx.shadowBlur=0;
-
-    const angle=Math.atan2(Game.mouse.y-this.bullet.y,Game.mouse.x-this.bullet.x);
-    ctx.strokeStyle="rgba(0,255,255,0.35)";
-    ctx.beginPath();
-    ctx.moveTo(this.bullet.x,this.bullet.y);
-    ctx.lineTo(this.bullet.x+Math.cos(angle)*1000,this.bullet.y+Math.sin(angle)*1000);
-    ctx.stroke();
 
     drawParticles();
   }
 };
 
-/* ===========================
-   INPUT
-=========================== */
+/* INPUT */
 canvas.addEventListener("mousemove",e=>{
-  Game.mouse.x=e.clientX;
-  Game.mouse.y=e.clientY;
+  const rect=canvas.getBoundingClientRect();
+  Game.mouse.x=e.clientX-rect.left;
+  Game.mouse.y=e.clientY-rect.top;
 });
 canvas.addEventListener("mousedown",()=>Game.charging=true);
 canvas.addEventListener("mouseup",()=>{
@@ -420,9 +395,7 @@ canvas.addEventListener("mouseup",()=>{
   Game.shoot(angle);
 });
 
-/* ===========================
-   LOOP
-=========================== */
+/* LOOP */
 function loop(){
   Game.update();
   Game.draw();
@@ -433,7 +406,7 @@ Game.init();
 loop();
 
 /* ===========================
-   CRYPTO PRICES (TOP 10)
+   CRIPTO TOP 10 + CALCULADORA
 =========================== */
 const assets=[
   "bitcoin","ethereum","tether","usd-coin","bnb",
@@ -442,10 +415,8 @@ const assets=[
 
 async function loadPrices(){
   try{
-    const url="https://api.coingecko.com/api/v3/simple/price?ids="+assets.join(",")+"&vs_currencies=usd";
-    const res=await fetch(url);
+    const res=await fetch("https://api.coingecko.com/api/v3/simple/price?ids="+assets.join(",")+"&vs_currencies=usd");
     const data=await res.json();
-
     ticker.innerHTML="";
     asset.innerHTML="";
     assets.forEach(id=>{
@@ -458,17 +429,12 @@ async function loadPrices(){
 loadPrices();
 setInterval(loadPrices,10000);
 
-/* ===========================
-   CALCULADORA
-=========================== */
-amount.addEventListener("input",calc);
-asset.addEventListener("change",calc);
-
+amount.oninput=calc;
+asset.onchange=calc;
 function calc(){
-  const val=parseFloat(amount.value||0);
-  const price=parseFloat(asset.value||0);
-  const usd=val*price;
-  result.textContent="Resultado: $"+usd.toFixed(4);
+  const v=parseFloat(amount.value||0);
+  const p=parseFloat(asset.value||0);
+  result.textContent="Resultado: $"+(v*p).toFixed(4);
 }
 </script>
 </body>
