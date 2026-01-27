@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shooter ARC Arcade</title>
+    <title>Bubble Shooter ARC - Transparência 70%</title>
     <style>
         body {
             margin: 0;
@@ -11,50 +11,58 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            /* Força o carregamento da imagem que está na sua pasta */
+            /* Fundo principal com a imagem da Arc */
             background: #0a0a0a url('background.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             color: white;
             overflow: hidden;
         }
 
         #game-container {
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.6); /* Painel levemente transparente */
             padding: 20px;
             border-radius: 20px;
             text-align: center;
-            border: 2px solid #00BFFF;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
 
         canvas {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
+            /* 70% de transparência (0.3 de cor preta) */
+            background: rgba(0, 0, 0, 0.3); 
+            border: 2px solid #00BFFF;
+            border-radius: 12px;
             cursor: crosshair;
             display: block;
             margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
         }
 
         button {
-            background: #00ff88;
+            background: linear-gradient(135deg, #00ff88, #00b35f);
             color: black;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-weight: bold;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
         }
+
+        button:hover { transform: scale(1.05); }
+
+        #status { font-size: 14px; margin-bottom: 10px; color: #ffca28; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1 style="margin-top:0; font-size: 20px;">ARCADE ARC - BUBBLE SHOOTER</h1>
+    <h1 style="margin: 0 0 10px 0; font-size: 22px;">BUBBLE SHOOTER ARC</h1>
     <button id="connect-wallet">CONECTAR CARTEIRA</button>
-    <div id="status" style="margin-bottom:10px; font-size: 14px;">CLIQUE PARA ATIVAR O SOM</div>
+    <div id="status">CLIQUE NO JOGO PARA ATIVAR O SOM</div>
     <canvas id="gameCanvas" width="450" height="550"></canvas>
 </div>
 
@@ -62,15 +70,11 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- SISTEMA DE ÁUDIO (CORRIGIDO) ---
+    // --- ÁUDIO ---
     let audioCtx = null;
     function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playPop() {
@@ -86,7 +90,7 @@
         osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     }
 
-    // --- CARREGAMENTO DE IMAGENS ---
+    // --- IMAGENS ---
     const imgs = {};
     const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; // Vermelho removido
     const names = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
@@ -97,19 +101,19 @@
     });
     const shootImg = new Image(); shootImg.src = 'shooter.png';
 
-    // --- LÓGICA DO JOGO ---
+    // --- JOGO ---
     let score = 0, level = 1, bubbles = [], particles = [];
     let bullet = { x: 225, y: 500, r: 20, active: false, dx: 0, dy: 0 };
 
     function createExplosion(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            particles.push({ x, y, dx: (Math.random()-0.5)*8, dy: (Math.random()-0.5)*8, r: Math.random()*4, color, life: 25 });
+        for (let i = 0; i < 12; i++) {
+            particles.push({ x, y, dx: (Math.random()-0.5)*8, dy: (Math.random()-0.5)*8, r: Math.random()*3, color, life: 25 });
         }
     }
 
     function init() {
         bubbles = [];
-        const rows = 6; // Fixado em 6 linhas
+        const rows = 6; // 6 Linhas conforme pedido
         for (let i = 0; i < rows; i++) {
             let col = colors[i % colors.length];
             for (let j = 0; j < 8; j++) {
@@ -119,7 +123,7 @@
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        initAudio(); // Ativa áudio no primeiro clique
+        initAudio(); 
         if (bullet.active) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
@@ -154,31 +158,4 @@
     }
 
     function draw() {
-        ctx.clearRect(0, 0, 450, 550);
-        ctx.fillStyle = "white"; ctx.font = "bold 16px Arial";
-        ctx.fillText(`PONTOS: ${score}  NÍVEL: ${level}`, 20, 30);
-
-        bubbles.forEach(b => {
-            if (b.active) {
-                if (imgs[b.color].complete) ctx.drawImage(imgs[b.color], b.x-b.r, b.y-b.r, b.r*2, b.r*2);
-                else { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }
-            }
-        });
-
-        particles.forEach(p => {
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-            ctx.fillStyle = p.color; ctx.globalAlpha = p.life/25; ctx.fill(); ctx.globalAlpha = 1;
-        });
-
-        if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
-        else { ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2); ctx.fillStyle = "yellow"; ctx.fill(); }
-        
-        update();
-        requestAnimationFrame(draw);
-    }
-
-    init();
-    draw();
-</script>
-</body>
-</html>
+        ctx.clearRect(0, 0,
