@@ -2,76 +2,79 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC TERMINAL HUB - BIG SCREEN</title>
+    <title>USDC TERMINAL - REFORCED 2026</title>
     <style>
         :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
         body { 
             margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
-            background: #050505 url('background.png') no-repeat center center fixed; background-size: cover; 
-            font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
+            background: #050505; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
         }
         
+        /* Container com 80% de transparência e desfoque */
         #game-container { 
-            background: rgba(15, 15, 15, 0.8); /* 80% Transparência */
-            padding: 20px; border-radius: 28px; width: 850px; /* Largura aumentada */
+            background: rgba(15, 15, 15, 0.8); 
+            padding: 20px; border-radius: 28px; width: 850px; 
             border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(15px);
             box-shadow: 0 0 50px rgba(0,0,0,0.9);
         }
 
-        #top10-ticker {
-            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 12px;
-            margin-bottom: 15px; overflow: hidden; white-space: nowrap; border: 1px solid rgba(255,255,255,0.05);
+        /* Ticker Top 10 Moedas */
+        #ticker-top {
+            background: rgba(0,0,0,0.7); padding: 12px; border-radius: 14px;
+            margin-bottom: 20px; border: 1px solid #333; overflow: hidden;
         }
-        .marquee { display: inline-block; animation: marquee 40s linear infinite; font-weight: bold; font-size: 13px; }
-        @keyframes marquee { 0% { transform: translateX(50%); } 100% { transform: translateX(-100%); } }
-        .coin-box { display: inline-block; margin-right: 35px; }
+        .marquee-container { display: flex; overflow: hidden; white-space: nowrap; }
+        .marquee-content { display: inline-block; animation: scroll 35s linear infinite; color: var(--primary); font-weight: bold; font-size: 14px; }
+        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .stat-card { background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        /* HUD e Calculadora */
+        .hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .info-card { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 18px; border: 1px solid #444; text-align: center; }
 
-        /* Tela do Jogo aumentada em 50% */
-        canvas { background: rgba(0,0,0,0.95); border: 2px solid var(--secondary); border-radius: 18px; cursor: crosshair; display: block; margin: 0 auto; }
+        /* Jogo 50% Maior */
+        canvas { background: #000; border: 2px solid var(--secondary); border-radius: 20px; cursor: crosshair; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(39, 117, 202, 0.3); }
 
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        button { border: none; padding: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 14px; }
-        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        button { border: none; padding: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.3s; }
+        
+        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; box-shadow: 0 0 15px rgba(0, 255, 136, 0.5); }
         #withdraw-btn { background: var(--gold); color: #000; }
         #reset-btn { background: var(--secondary); color: #fff; }
 
         .locked { opacity: 0.15; pointer-events: none; filter: blur(15px); }
-        #status-msg { font-size: 12px; color: var(--primary); text-align: center; margin-bottom: 10px; font-weight: bold; }
+        .coin-span { margin-right: 45px; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="top10-ticker">
-        <div class="marquee" id="marquee-content">SINCRONIZANDO COM A BLOCKCHAIN...</div>
+    <div id="ticker-top">
+        <div class="marquee-container">
+            <div class="marquee-content" id="price-marquee">SINCRONIZANDO RANKING GLOBAL...</div>
+        </div>
     </div>
 
-    <div id="status-msg">⚠️ CONECTE SUA CARTEIRA PARA LIBERAR O TERMINAL</div>
-
-    <div id="hud">
-        <div class="stat-card">
-            <span style="font-size: 11px; opacity: 0.7;">SALDO ACUMULADO</span>
-            <div style="font-size: 24px; font-weight: bold; color: var(--primary);">$ <span id="usdc-balance">0.000</span></div>
-            <div id="calc-brl" style="font-size: 12px; color: var(--gold);">R$ 0,00</div>
+    <div class="hud-row">
+        <div class="info-card">
+            <span style="font-size: 11px; opacity: 0.6;">GANHOS ACUMULADOS</span>
+            <div style="font-size: 26px; font-weight: bold; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
+            <div id="brl-val" style="color: var(--gold); font-size: 13px; font-weight: bold;">R$ 0,00 (CALCULANDO...)</div>
         </div>
-        <div class="stat-card">
-            <span style="font-size: 11px; opacity: 0.7;">ENERGIA DISPONÍVEL</span>
-            <div id="energy-display" style="font-size: 24px; font-weight: bold;">-- / 3</div>
-            <div id="energy-timer" style="font-size: 11px; color: var(--gold);">REGEN: 3H</div>
+        <div class="info-card">
+            <span style="font-size: 11px; opacity: 0.6;">ENERGIA DISPONÍVEL</span>
+            <div id="energy-val" style="font-size: 26px; font-weight: bold;">-- / 3</div>
+            <div id="timer-val" style="font-size: 11px; color: var(--gold);">REGEN: 3 HORAS</div>
         </div>
     </div>
 
     <div id="canvas-wrapper" class="locked">
-        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
     </div>
 
-    <div class="controls">
-        <button id="connect-btn">🔌 CONECTAR CARTEIRA METAMASK</button>
-        <button id="withdraw-btn">💰 SACAR USDC</button>
-        <button id="reset-btn">🎮 PRÓXIMA FASE (-1⚡)</button>
+    <div class="btn-row">
+        <button id="connect-btn">🔌 CONECTAR CARTEIRA AGORA</button>
+        <button id="withdraw-btn">💰 SACAR (TAXA 0.10)</button>
+        <button id="reset-btn">🚀 PRÓXIMA FASE (-1⚡)</button>
     </div>
 </div>
 
@@ -80,32 +83,62 @@
     const ctx = canvas.getContext('2d');
     
     let wallet = null;
-    let sessionBalance = 0; 
+    let balance = 0; 
     let energy = { count: 3, lastUsed: Date.now() };
-    const REGEN_TIME = 3 * 60 * 60 * 1000; 
-    let brlRate = 5.00;
+    let brlPrice = 5.50;
 
-    // --- CONEXÃO SEGURA E DIRETA ---
-    const connectBtn = document.getElementById('connect-btn');
-    connectBtn.onclick = async () => {
+    // --- 1. CHAMADA DA CARTEIRA (Prioridade Máxima) ---
+    document.getElementById('connect-btn').addEventListener('click', async () => {
         if (typeof window.ethereum !== 'undefined') {
             try {
-                const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                wallet = accs[0];
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                wallet = accounts[0];
                 
-                const saved = JSON.parse(localStorage.getItem('terminal_v2_' + wallet));
-                if (saved) { energy = saved.energy; sessionBalance = saved.balance || 0; }
-                
-                document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
-                document.getElementById('status-msg').innerText = "✅ CONECTADO: " + wallet.substring(0,12) + "...";
-                connectBtn.style.display = 'none';
-                document.getElementById('canvas-wrapper').classList.remove('locked');
-                
-                fetchPrices();
-                setInterval(fetchPrices, 60000);
-                startRegen();
-            } catch (err) { alert("Conexão recusada."); }
-        } else { alert("MetaMask não encontrada!"); }
-    };
+                // Tenta recuperar progresso do localStorage
+                const saved = JSON.parse(localStorage.getItem('usdc_terminal_' + wallet));
+                if (saved) {
+                    balance = saved.balance || 0;
+                    energy = saved.energy;
+                }
 
-    async function fetchPrices()
+                // Libera a interface
+                document.getElementById('connect-btn').style.display = 'none';
+                document.getElementById('canvas-wrapper').classList.remove('locked');
+                updateUI();
+                startLoop();
+            } catch (err) {
+                alert("Conexão cancelada pelo usuário.");
+            }
+        } else {
+            alert("MetaMask não encontrada. Por favor, instale a extensão.");
+        }
+    });
+
+    // --- 2. COTAÇÕES TOP 10 E CONVERSOR ---
+    async function getMarketData() {
+        try {
+            // Pega Top 10 moedas
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&price_change_percentage=24h');
+            const data = await res.json();
+            
+            const marquee = document.getElementById('price-marquee');
+            marquee.innerHTML = data.map(coin => `
+                <span class="coin-span">
+                    ${coin.symbol.toUpperCase()}: $${coin.current_price.toLocaleString()} 
+                    <span style="color: ${coin.price_change_percentage_24h >= 0 ? '#00ff88' : '#ff4444'}">
+                        ${coin.price_change_percentage_24h >= 0 ? '▲' : '▼'} ${coin.price_change_percentage_24h.toFixed(2)}%
+                    </span>
+                </span>
+            `).join('');
+
+            // Cotação Real
+            const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
+            const brlData = await brlRes.json();
+            brlPrice = brlData['usd-coin'].brl;
+            updateUI();
+        } catch (e) { console.error("Falha ao buscar preços."); }
+    }
+
+    function updateUI() {
+        document.getElementById('usdc-val').innerText = balance.toFixed(3);
+        document.getElementById('brl-val').innerText = `R$ ${(balance * brlPrice).
