@@ -1,80 +1,114 @@
-const ARC_CHAIN_ID = "0x4cece6"; 
-const ARC_RPC = "https://rpc.testnet.arc.network";
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const statusText = document.getElementById('status');
 
-async function checkStatus() {
-    if (!window.ethereum) return;
-    
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    const statusText = document.getElementById('status');
-    const btn = document.getElementById('connect-button');
+// --- GAME SETTINGS ---
+const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+let bubbles = [];
+let bullet = { x: 225, y: 500, radius: 20, color: 'yellow', active: false, speedX: 0, speedY: 0 };
+let score = 0;
 
-    if (accounts.length > 0 && chainId === ARC_CHAIN_ID) {
-        statusText.innerText = "STATUS: CONNECTED (" + accounts[0].substring(0,6) + ")";
-        statusText.style.color = "#00ff88";
-        btn.innerText = "WALLET ACTIVE";
-        btn.style.display = "none"; // Hide button if connected
-    } else if (accounts.length > 0 && chainId !== ARC_CHAIN_ID) {
-        statusText.innerText = "STATUS: WRONG NETWORK (CLICK TO FIX)";
-        statusText.style.color = "#ffcc00";
-    }
-}
-
-async function startConnection() {
-    if (window.ethereum) {
-        try {
-            // Force account request
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
-            
-            // Force network switch
-            try {
-                await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: ARC_CHAIN_ID }],
-                });
-            } catch (err) {
-                if (err.code === 4902) {
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                            chainId: ARC_CHAIN_ID,
-                            chainName: 'Arc Testnet',
-                            nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-                            rpcUrls: [ARC_RPC],
-                            blockExplorerUrls: ['https://explorer.testnet.arc.network']
-                        }],
-                    });
-                }
-            }
-            // THE TRICK: Force the browser to refresh everything
-            setTimeout(() => { window.location.reload(); }, 500);
-        } catch (e) {
-            console.error(e);
+// Create the initial grid
+function createGrid() {
+    bubbles = [];
+    for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 8; col++) {
+            bubbles.push({
+                x: 45 + (col * 52),
+                y: 50 + (row * 45),
+                radius: 19,
+                color: colors[row % colors.length],
+                alive: true
+            });
         }
     }
 }
 
-document.getElementById('connect-button').onclick = startConnection;
-window.onload = checkStatus;
+// Shooting logic
+canvas.addEventListener('click', (e) => {
+    if (bullet.active) return; // Wait for the previous shot to finish
 
-// Render Arcade Game (image_301cda.png)
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const angle = Math.atan2(mouseY - bullet.y, mouseX - bullet.x);
+    bullet.speedX = Math.cos(angle) * 8;
+    bullet.speedY = Math.sin(angle) * 8;
+    bullet.active = true;
+});
+
+function update() {
+    if (bullet.active) {
+        bullet.x += bullet.speedX;
+        bullet.y += bullet.speedY;
+
+        // Wall bounce
+        if (bullet.x < 0 || bullet.x > canvas.width) bullet.speedX *= -1;
+        if (bullet.y < 0) resetBullet();
+
+        // Collision detection
+        bubbles.forEach(b => {
+            if (b.alive) {
+                let dist = Math.hypot(bullet.x - b.x, bullet.y - b.y);
+                if (dist < bullet.radius + b.radius) {
+                    b.alive = false; // Destroy bubble
+                    score += 10;
+                    resetBullet();
+                }
+            }
+        });
+
+        // Reset if bullet goes off bottom
+        if (bullet.y > canvas.height) resetBullet();
+    }
+}
+
+function resetBullet() {
+    bullet.active = false;
+    bullet.x = canvas.width / 2;
+    bullet.y = 500;
+}
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for(let i=0; i<5; i++) {
-        for(let j=0; j<8; j++) {
+
+    // Draw Score
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.fillText("SCORE: " + score, 20, 30);
+
+    // Draw Grid
+    bubbles.forEach(b => {
+        if (b.alive) {
             ctx.beginPath();
-            ctx.arc(40 + j*52, 50 + i*45, 19, 0, Math.PI*2);
-            ctx.fillStyle = colors[i % colors.length];
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fillStyle = b.color;
             ctx.fill();
+            ctx.closePath();
         }
-    }
+    });
+
+    // Draw Bullet (Shooter)
     ctx.beginPath();
-    ctx.arc(canvas.width/2, canvas.height-50, 24, 0, Math.PI*2);
-    ctx.fillStyle = "yellow";
+    ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+    ctx.fillStyle = bullet.color;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "yellow";
     ctx.fill();
+    ctx.closePath();
+    ctx.shadowBlur = 0;
 }
-setInterval(draw, 50);
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Start Game
+createGrid();
+gameLoop();
+
+// --- WALLET LOGIC (English) ---
+// Keep your existing wallet connection code here to maintain the green status
