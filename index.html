@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDC Bubble Arcade ARC</title>
+    <title>USDC Bubble Arcade - Full Edition</title>
     <style>
         body {
             margin: 0;
@@ -23,7 +23,7 @@
             padding: 20px;
             border-radius: 20px;
             text-align: center;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             width: 480px;
         }
@@ -31,22 +31,21 @@
         #hud {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 13px;
-            font-weight: bold;
+            gap: 15px;
+            background: rgba(0,0,0,0.85);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #2775ca;
         }
 
         canvas {
             background: rgba(0, 0, 0, 0.1);
             border: 2px solid #00BFFF;
             border-radius: 12px;
-            cursor: crosshair;
             display: block;
             margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
         }
 
         .controls {
@@ -64,118 +63,117 @@
             cursor: pointer;
             transition: 0.2s;
             text-transform: uppercase;
+            font-size: 12px;
         }
 
-        button:hover { transform: scale(1.02); brightness: 1.1; }
+        button:hover { transform: translateY(-2px); filter: brightness(1.2); }
 
-        /* Cores dos Botões */
+        /* Estilo dos Botões */
         #connect-btn { background: #00ff88; color: black; }
-        .btn-deposit { background: #2775ca; color: white; }
-        .btn-reset { background: #ff4444; color: white; }
-        .btn-skip { background: #ffca28; color: black; }
+        #deposit-btn { background: #2775ca; color: white; }
+        #withdraw-btn { background: #ffca28; color: black; } /* Botão de Saque */
+        #reset-btn { background: #ff4444; color: white; }
+        #skip-btn { background: #6c757d; color: white; }
 
-        #wallet-info { font-size: 10px; color: #00ff88; margin: 5px 0; height: 15px; }
+        #wallet-info { font-size: 10px; color: #00ff88; margin: 8px 0; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h2 style="margin: 0 0 10px 0;">USDC BUBBLE ARCADE</h2>
+    <h2 style="margin: 0 0 10px 0; letter-spacing: 2px;">USDC BUBBLE ARCADE</h2>
     
     <div id="hud">
-        <div>💰 SALDO: <span id="usdc-balance">0.000</span> USDC</div>
-        <div>🏦 POOL: <span id="pool-total">0.00</span> USDC</div>
+        <div>💰 SALDO: <span id="usdc-balance" style="color: #00ff88;">0.000</span> USDC</div>
+        <div>🏦 POOL: <span id="pool-total" style="color: #2775ca;">145.50</span> USDC</div>
     </div>
 
-    <div id="wallet-info">DESCONECTADO</div>
+    <div id="wallet-info">STATUS: DESCONECTADO</div>
 
     <canvas id="gameCanvas" width="450" height="450"></canvas>
 
     <div class="controls">
         <button id="connect-btn">CONECTAR CARTEIRA</button>
-        <button id="deposit-btn" class="btn-deposit">DEPOSITAR NA POOL</button>
-        <button id="reset-btn" class="btn-reset">REINICIAR</button>
-        <button id="skip-btn" class="btn-skip">PULAR FASE</button>
+        <button id="withdraw-btn">SACAR GANHOS</button>
+        <button id="deposit-btn">DEPOSITAR NA POOL</button>
+        <button id="reset-btn">REINICIAR</button>
     </div>
+    <button id="skip-btn" style="width: 100%; margin-top: 10px;">PROXIMO NÍVEL (PULAR)</button>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- CONFIGURAÇÃO RECOMPENSAS ---
+    // --- CONFIGURAÇÃO ---
     const rewardMap = {'#00BFFF': 0.001, '#FF1493': 0.002, '#32CD32': 0.003, '#FFD700': 0.004};
     const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
     const names = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
     
     let totalEarned = 0, level = 1, bubbles = [], floatingTexts = [];
-    let bullet = { x: 225, y: 410, r: 40, active: false, dx: 0, dy: 0 };
+    let bullet = { x: 225, y: 400, r: 35, active: false, dx: 0, dy: 0 }; // Shooter Ajustado
 
-    // --- CARREGAR IMAGENS ---
     const imgs = {};
     colors.forEach(c => { imgs[c] = new Image(); imgs[c].src = names[c] + '.png'; });
     const shootImg = new Image(); shootImg.src = 'shooter.png';
 
-    // --- ÁUDIO ---
-    let audioCtx = null;
-    function playPop() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-    }
-
-    // --- FUNÇÕES DOS BOTÕES (CORRIGIDAS) ---
+    // --- LOGICA WEB3 ---
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
-            try {
-                const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                document.getElementById('wallet-info').innerText = "CONECTADO: " + accs[0];
-                document.getElementById('connect-btn').innerText = "CARTEIRA ATIVA";
-            } catch (err) { console.error(err); }
-        } else { alert("Instale a MetaMask!"); }
+            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            document.getElementById('wallet-info').innerText = "CARTEIRA: " + accs[0];
+            document.getElementById('connect-btn').style.background = "#008855";
+            document.getElementById('connect-btn').innerText = "CONECTADO";
+        }
+    };
+
+    document.getElementById('withdraw-btn').onclick = () => {
+        if (totalEarned <= 0) {
+            alert("Você não tem saldo para sacar!");
+            return;
+        }
+        alert(`Solicitando saque de ${totalEarned.toFixed(3)} USDC para sua carteira...`);
+        totalEarned = 0;
+        document.getElementById('usdc-balance').innerText = "0.000";
     };
 
     document.getElementById('deposit-btn').onclick = () => {
-        const val = prompt("Valor para depositar na pool (USDC):");
-        if(val) alert(`Depósito de ${val} USDC enviado para o contrato 0x3600...`);
+        const val = prompt("Valor USDC para a Pool:");
+        if(val) alert("Transação enviada ao contrato!");
     };
 
-    document.getElementById('reset-btn').onclick = () => {
-        totalEarned = 0; level = 1; 
-        document.getElementById('usdc-balance').innerText = "0.000";
-        init(1);
-    };
+    document.getElementById('reset-btn').onclick = () => { totalEarned = 0; level = 1; init(1); };
+    document.getElementById('skip-btn').onclick = () => { if(level < 3) { level++; init(level); } };
 
-    document.getElementById('skip-btn').onclick = () => {
-        if (level < 3) { level++; init(level); }
-    };
-
-    // --- LÓGICA DO JOGO ---
+    // --- JOGO ---
     function init(lvl) {
         bubbles = [];
-        bullet.active = false; bullet.x = 225; bullet.y = 410;
-        const rows = 4 + lvl; 
+        bullet.active = false; bullet.x = 225; bullet.y = 400;
+        const rows = 5 + lvl;
+        const cols = 12; // Ajustado para as bolhas ficarem maiores e bem distribuídas
+        const radius = 14; 
+        const spacing = 35;
+
         for (let i = 0; i < rows; i++) {
             let col = colors[i % colors.length];
-            for (let j = 0; j < 16; j++) { 
-                bubbles.push({ x: 35 + (j * 25), y: 60 + (i * 25), r: 10, color: col, active: true });
+            for (let j = 0; j < cols; j++) {
+                bubbles.push({ 
+                    x: 35 + (j * spacing), 
+                    y: 60 + (i * spacing), 
+                    r: radius, 
+                    color: col, 
+                    active: true 
+                });
             }
         }
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        if (!audioCtx) playPop();
         if (bullet.active) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        bullet.dx = Math.cos(angle) * (12 + level);
-        bullet.dy = Math.sin(angle) * (12 + level);
+        bullet.dx = Math.cos(angle) * (10 + level * 2);
+        bullet.dy = Math.sin(angle) * (10 + level * 2);
         bullet.active = true;
     });
 
@@ -187,24 +185,18 @@
             bubbles.forEach(b => {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
                     b.active = false;
-                    const reward = rewardMap[b.color];
-                    totalEarned += reward;
+                    totalEarned += rewardMap[b.color];
                     document.getElementById('usdc-balance').innerText = totalEarned.toFixed(3);
-                    floatingTexts.push({ x: b.x, y: b.y, text: `+$${reward}`, opacity: 1 });
-                    playPop();
+                    floatingTexts.push({ x: b.x, y: b.y, text: `+$${rewardMap[b.color]}`, opacity: 1 });
                 }
             });
-            if (bullet.y < 0 || bullet.y > 450) { bullet.active = false; bullet.x = 225; bullet.y = 410; }
+            if (bullet.y < 0 || bullet.y > 450) { bullet.active = false; bullet.x = 225; bullet.y = 400; }
         }
 
         floatingTexts.forEach((t, i) => {
             t.y -= 1; t.opacity -= 0.02;
             if (t.opacity <= 0) floatingTexts.splice(i, 1);
         });
-
-        if (bubbles.length > 0 && bubbles.every(b => !b.active) && level < 3) {
-            level++; init(level);
-        }
     }
 
     function draw() {
@@ -219,8 +211,8 @@
 
         floatingTexts.forEach(t => {
             ctx.fillStyle = `rgba(0, 255, 136, ${t.opacity})`;
-            ctx.font = "bold 11px Arial";
-            ctx.fillText(t.text, t.x - 10, t.y);
+            ctx.font = "bold 12px Arial";
+            ctx.fillText(t.text, t.x - 12, t.y);
         });
 
         if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
