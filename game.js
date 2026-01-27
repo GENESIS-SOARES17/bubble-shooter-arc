@@ -1,28 +1,27 @@
-// Configurações da rede ARC TST enviadas por você
+// Dados da sua rede ARC TST
+const ARC_CHAIN_ID = "0x4cece6"; // ID 5042002 em Hexadecimal
 const ARC_RPC_URL = "https://rpc.testnet.arc.network";
-const ARC_CHAIN_ID = "0x4cece6"; // Hexadecimal para 5042002
-const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const statusText = document.getElementById('status');
 const connectBtn = document.getElementById('connect-button');
 
-// --- SISTEMA DE CONEXÃO WEB3 ---
+// --- FUNÇÃO DE CONEXÃO REVISADA ---
 async function connectWallet() {
     if (window.ethereum) {
         try {
-            // Tenta conectar a conta
+            // 1. Pede permissão para ver a carteira
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            // Tenta mudar para a rede Arc ou adicioná-la se não existir
+            // 2. Tenta trocar para a rede Arc automaticamente
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: ARC_CHAIN_ID }],
                 });
             } catch (switchError) {
-                // Erro 4902: a rede não está cadastrada na MetaMask
+                // Se a rede não estiver na MetaMask, ele tenta adicionar
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
@@ -34,31 +33,32 @@ async function connectWallet() {
                             blockExplorerUrls: ['https://explorer.testnet.arc.network']
                         }],
                     });
-                } else {
-                    throw switchError;
                 }
             }
             
-            statusText.innerText = "Conectado na Arc: " + accounts[0].substring(0,6) + "...";
-            connectBtn.style.display = "none"; // Esconde o botão após conectar
+            // 3. Atualiza a tela se der tudo certo
+            statusText.innerText = "Status: Conectado (" + accounts[0].substring(0,6) + "...)";
+            statusText.style.color = "#00ff88";
+            connectBtn.innerHTML = "CARTEIRA ATIVA";
+            connectBtn.style.background = "#333";
 
         } catch (error) {
-            console.error(error);
-            alert("Erro ao conectar na Arc Testnet. Verifique sua MetaMask!");
+            console.log("Erro silencioso de conexão:", error);
+            // Removemos o alerta chato para não travar o seu jogo
         }
     } else {
-        alert("Instale a MetaMask para jogar!");
+        alert("Instale a MetaMask para usar a rede ARC!");
     }
 }
 
 connectBtn.onclick = connectWallet;
 
-// --- LÓGICA VISUAL DO BUBBLE SHOOTER ---
-const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+// --- VISUAL DO ARCADE (Inspirado na sua imagem) ---
+const colors = ['#00d4ff', '#ff0055', '#00ff88', '#ffcc00', '#9d00ff'];
 let bubbles = [];
 
-// Cria a grade inicial (inspirada na imagem enviada)
-function initGame() {
+function initGrid() {
+    bubbles = [];
     for (let row = 0; row < 5; row++) {
         for (let col = 0; col < 8; col++) {
             bubbles.push({
@@ -73,29 +73,26 @@ function initGame() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Desenha as bolhas do topo
+    // Bolhas do topo
     bubbles.forEach(b => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, 18, 0, Math.PI * 2);
         ctx.fillStyle = b.color;
         ctx.fill();
-        // Detalhe de luz na bolha
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
         ctx.stroke();
         ctx.closePath();
     });
 
-    // Desenha a bolha de disparo (Arco-íris na imagem)
+    // Bolha Atiradora (Central)
     ctx.beginPath();
     ctx.arc(canvas.width / 2, canvas.height - 50, 22, 0, Math.PI * 2);
-    let gradient = ctx.createRadialGradient(250, 450, 5, 250, 450, 25);
-    gradient.addColorStop(0, "yellow");
-    gradient.addColorStop(1, "orange");
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = "yellow"; 
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "yellow";
     ctx.fill();
     ctx.closePath();
 }
 
-initGame();
-setInterval(draw, 100); // Atualiza o desenho a cada 100ms
+initGrid();
+setInterval(draw, 50);
