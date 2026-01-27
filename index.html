@@ -2,20 +2,16 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>USDC TERMINAL PRO 2026</title>
+<title>USDC TERMINAL ULTRA 2026</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
+:root{
   --primary:#00ff88;
   --secondary:#2775ca;
   --gold:#ffca28;
   --danger:#ff4444;
-  --bg:#050505;
 }
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
   display:flex;
@@ -23,29 +19,25 @@ body{
   align-items:center;
   min-height:100vh;
   background:radial-gradient(circle at top,#0b1a14,#000);
-  font-family:Segoe UI, sans-serif;
+  font-family:Segoe UI,sans-serif;
   color:#fff;
 }
-
-/* Container */
 #app{
-  width:min(920px,95vw);
+  width:min(960px,96vw);
   background:rgba(15,15,15,.85);
-  border-radius:26px;
-  padding:18px;
+  border-radius:24px;
+  padding:16px;
   border:1px solid rgba(0,255,136,.25);
   backdrop-filter:blur(14px);
   box-shadow:0 0 50px rgba(0,0,0,.9);
 }
-
-/* Ticker */
 #ticker{
   background:rgba(0,0,0,.7);
   border:1px solid #333;
-  border-radius:14px;
-  padding:10px;
+  border-radius:12px;
+  padding:8px;
   overflow:hidden;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 #ticker span{
   display:inline-block;
@@ -53,35 +45,31 @@ body{
   font-size:13px;
   font-weight:bold;
   color:var(--primary);
-  animation:scroll 30s linear infinite;
+  animation:scroll 28s linear infinite;
   white-space:nowrap;
 }
 @keyframes scroll{
   0%{transform:translateX(100%)}
   100%{transform:translateX(-100%)}
 }
-
-/* HUD */
 .hud{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-bottom:10px;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:8px;
 }
 .card{
   background:rgba(0,0,0,.6);
   border:1px solid #444;
-  border-radius:16px;
-  padding:12px;
+  border-radius:14px;
+  padding:10px;
   text-align:center;
 }
 .card small{opacity:.6;font-size:11px}
-.card strong{font-size:26px;color:var(--primary)}
-
-/* Game */
+.card strong{font-size:22px;color:var(--primary)}
 #gameBox{
-  margin-top:10px;
-  border-radius:20px;
+  margin-top:8px;
+  border-radius:18px;
   border:2px solid var(--secondary);
   overflow:hidden;
   position:relative;
@@ -91,8 +79,6 @@ canvas{
   width:100%;
   background:#000;
 }
-
-/* Effects */
 .float-text{
   position:absolute;
   font-size:14px;
@@ -104,115 +90,80 @@ canvas{
   from{opacity:1;transform:translateY(0)}
   to{opacity:0;transform:translateY(-40px)}
 }
-
-/* Buttons */
 .buttons{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 1fr 1fr;
   gap:10px;
-  margin-top:12px;
+  margin-top:10px;
 }
 button{
   border:none;
-  border-radius:12px;
-  padding:14px;
+  border-radius:10px;
+  padding:12px;
   font-weight:bold;
   cursor:pointer;
   transition:.2s;
 }
 button:hover{transform:scale(1.03)}
-#connectBtn{
-  grid-column:span 2;
-  background:var(--primary);
-  color:#000;
-  font-size:17px;
-}
+#connectBtn{background:var(--primary);color:#000}
 #nextBtn{background:var(--secondary);color:#fff}
-#withdrawBtn{background:var(--gold);color:#000}
-
-.locked{
-  opacity:.2;
-  pointer-events:none;
-  filter:blur(8px);
-}
+#turboBtn{background:var(--danger);color:#fff}
 </style>
 </head>
 <body>
 
 <div id="app">
 
-  <div id="ticker">Carregando mercado...</div>
+<div id="ticker">Carregando mercado...</div>
 
-  <div class="hud">
-    <div class="card">
-      <small>GANHOS</small>
-      <strong>$<span id="usdVal">0.000</span></strong>
-      <div id="brlVal" style="color:var(--gold);font-size:13px">R$ 0,00</div>
-    </div>
-    <div class="card">
-      <small>ENERGIA</small>
-      <strong><span id="energyVal">3</span>/3</strong>
-      <div id="timerVal" style="font-size:12px;color:var(--gold)">REGEN ATIVO</div>
-    </div>
+<div class="hud">
+  <div class="card">
+    <small>SALDO</small>
+    <strong>$<span id="usdVal">0.000</span></strong>
+    <div id="brlVal" style="color:var(--gold);font-size:12px">R$ 0,00</div>
   </div>
+  <div class="card">
+    <small>ENERGIA</small>
+    <strong><span id="energyVal">3</span>/3</strong>
+  </div>
+  <div class="card">
+    <small>COMBO</small>
+    <strong>x<span id="comboVal">1</span></strong>
+  </div>
+</div>
 
-  <div id="gameBox" class="locked">
-    <canvas id="game"></canvas>
-  </div>
+<div id="gameBox">
+  <canvas id="game"></canvas>
+</div>
 
-  <div class="buttons">
-    <button id="connectBtn">🔌 CONECTAR CARTEIRA</button>
-    <button id="withdrawBtn">💰 SACAR</button>
-    <button id="nextBtn">🚀 PRÓXIMA FASE (-1⚡)</button>
-  </div>
+<div class="buttons">
+  <button id="connectBtn">🔌 CARTEIRA</button>
+  <button id="nextBtn">🚀 PRÓXIMA FASE</button>
+  <button id="turboBtn">⚡ TURBO</button>
+</div>
 
 </div>
 
 <script>
-/* ===========================
-   CONFIG / STATE
-=========================== */
-const State = {
+/* ================= STATE ================= */
+const State={
   wallet:null,
   balance:0,
   level:1,
+  combo:1,
+  turbo:false,
   energy:{count:3,last:Date.now()},
-  brl:5.5,
-  offlineBalance:0 // jogar sem wallet
+  brl:5.5
 };
 
-/* ===========================
-   UTILS
-=========================== */
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
-function save(){
-  if(State.wallet){
-    localStorage.setItem("usdc_"+State.wallet, JSON.stringify({
-      balance:State.balance,
-      energy:State.energy,
-      level:State.level
-    }));
-  }
-}
-
-function load(){
-  if(!State.wallet) return;
-  const data = JSON.parse(localStorage.getItem("usdc_"+State.wallet));
-  if(data){
-    State.balance=data.balance||0;
-    State.energy=data.energy||State.energy;
-    State.level=data.level||1;
-  }
-}
-
-/* ===========================
-   UI
-=========================== */
+/* ================= UI ================= */
 function updateUI(){
   $("usdVal").innerText=State.balance.toFixed(3);
   $("brlVal").innerText="R$ "+(State.balance*State.brl).toFixed(2);
   $("energyVal").innerText=State.energy.count;
+  $("comboVal").innerText=State.combo.toFixed(1);
 }
 
 function floatText(text,x,y){
@@ -225,29 +176,23 @@ function floatText(text,x,y){
   setTimeout(()=>div.remove(),1200);
 }
 
-/* ===========================
-   ENERGY SYSTEM (FIXED)
-=========================== */
+/* ================= ENERGY ================= */
 function energyLoop(){
   const now=Date.now();
   const REGEN=3*60*60*1000;
-  const elapsed=now-State.energy.last;
-  const regen=Math.floor(elapsed/REGEN);
+  const regen=Math.floor((now-State.energy.last)/REGEN);
   if(regen>0){
     State.energy.count=Math.min(3,State.energy.count+regen);
     State.energy.last+=regen*REGEN;
-    save();
   }
   updateUI();
 }
 setInterval(energyLoop,1000);
 
-/* ===========================
-   MARKET DATA
-=========================== */
+/* ================= MARKET ================= */
 async function market(){
   try{
-    const res=await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=8");
+    const res=await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=6");
     const data=await res.json();
     $("ticker").innerHTML=data.map(c=>`
       <span>${c.symbol.toUpperCase()} $${c.current_price.toLocaleString()}
@@ -263,92 +208,152 @@ async function market(){
 market();
 setInterval(market,60000);
 
-/* ===========================
-   WEB3 CONNECT
-=========================== */
-$("connectBtn").onclick=async()=>{
-  if(window.ethereum){
-    const acc=await ethereum.request({method:"eth_requestAccounts"});
-    State.wallet=acc[0];
-    load();
-    $("connectBtn").style.display="none";
-    $("gameBox").classList.remove("locked");
-    updateUI();
-  }else{
-    alert("MetaMask não encontrada.");
-  }
-};
-
-/* ===========================
-   GAME ENGINE
-=========================== */
+/* ================= CANVAS ================= */
 const canvas=$("game");
 const ctx=canvas.getContext("2d");
 
 function resize(){
-  canvas.width=Math.min(820,window.innerWidth-60);
+  canvas.width=Math.min(900,window.innerWidth-40);
   canvas.height=canvas.width*0.55;
 }
 resize();
 window.onresize=resize;
 
+/* ================= GAME ENGINE ================= */
 const Game={
   bubbles:[],
-  bullet:{x:0,y:0,r:12,dx:0,dy:0,active:false},
+  particles:[],
+  trail:[],
+  boss:null,
+  bullet:{x:0,y:0,r:10,dx:0,dy:0,active:false},
+  power:0,
+  charging:false,
+
   init(){
     this.bubbles=[];
+    this.boss=null;
     const colors=["#00ff88","#2775ca","#ffca28","#ff4444"];
-    for(let i=0;i<5;i++){
-      for(let j=0;j<14;j++){
+    const rows=5+State.level;
+    const cols=12;
+    for(let i=0;i<rows;i++){
+      for(let j=0;j<cols;j++){
         this.bubbles.push({
-          x:40+j*50,
+          x:50+j*55,
           y:40+i*45,
           r:18,
           color:colors[i%4],
+          hp:1,
           active:true
         });
       }
     }
-    this.bullet.x=canvas.width/2;
-    this.bullet.y=canvas.height-30;
-    this.bullet.active=false;
-  },
-  shoot(x,y){
-    if(this.bullet.active) return;
-    const angle=Math.atan2(y-this.bullet.y,x-this.bullet.x);
-    this.bullet.dx=Math.cos(angle)*10;
-    this.bullet.dy=Math.sin(angle)*10;
-    this.bullet.active=true;
-  },
-  update(){
-    if(this.bullet.active){
-      this.bullet.dy+=0.15; // gravidade
-      this.bullet.x+=this.bullet.dx;
-      this.bullet.y+=this.bullet.dy;
-
-      if(this.bullet.x<0||this.bullet.x>canvas.width) this.bullet.dx*=-1;
-
-      this.bubbles.forEach(b=>{
-        if(b.active && Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y)<b.r+this.bullet.r){
-          b.active=false;
-          const reward=(0.006/(1+State.level*0.15));
-          State.balance+=reward;
-          floatText("+"+reward.toFixed(3)+" USDC",this.bullet.x,this.bullet.y);
-          save();
-          this.resetBullet();
-        }
-      });
-
-      if(this.bullet.y<0||this.bullet.y>canvas.height) this.resetBullet();
+    if(State.level%5===0){
+      this.boss={x:canvas.width/2,y:80,r:40,hp:20+State.level*5};
     }
+    this.resetBullet();
   },
+
   resetBullet(){
     this.bullet.active=false;
     this.bullet.x=canvas.width/2;
     this.bullet.y=canvas.height-30;
+    this.bullet.dx=0;
+    this.bullet.dy=0;
   },
+
+  shoot(angle){
+    const basePower=16+State.level;
+    const power=basePower+this.power+(State.turbo?10:0);
+    this.bullet.dx=Math.cos(angle)*power;
+    this.bullet.dy=Math.sin(angle)*power;
+    this.bullet.active=true;
+  },
+
+  explode(x,y){
+    for(let i=0;i<18;i++){
+      this.particles.push({
+        x,y,
+        dx:(Math.random()-0.5)*6,
+        dy:(Math.random()-0.5)*6,
+        life:30
+      });
+    }
+  },
+
+  update(){
+    if(this.charging && this.power<25) this.power+=0.4;
+
+    if(this.bullet.active){
+      this.trail.push({x:this.bullet.x,y:this.bullet.y});
+      if(this.trail.length>12) this.trail.shift();
+
+      this.bullet.dy+=0.05;
+      this.bullet.x+=this.bullet.dx;
+      this.bullet.y+=this.bullet.dy;
+
+      if(this.bullet.x<0||this.bullet.x>canvas.width) this.bullet.dx*=-1.1;
+
+      let hit=false;
+
+      this.bubbles.forEach(b=>{
+        if(b.active && Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y)<b.r+this.bullet.r){
+          b.hp--;
+          if(b.hp<=0){
+            b.active=false;
+            this.explode(b.x,b.y);
+          }
+          hit=true;
+        }
+      });
+
+      if(this.boss && Math.hypot(this.bullet.x-this.boss.x,this.bullet.y-this.boss.y)<this.boss.r){
+        this.boss.hp--;
+        this.explode(this.boss.x,this.boss.y);
+        if(this.boss.hp<=0) this.boss=null;
+        hit=true;
+      }
+
+      if(hit){
+        const crit=Math.random()<0.2;
+        const reward=(0.004*(crit?2:1))*State.combo;
+        State.balance+=reward;
+        State.combo=Math.min(5,State.combo+0.1);
+        floatText((crit?"CRIT ":"+")+reward.toFixed(3)+" USDC",this.bullet.x,this.bullet.y);
+        this.resetBullet();
+      }
+
+      if(this.bullet.y<0||this.bullet.y>canvas.height) this.resetBullet();
+    }else{
+      State.combo=Math.max(1,State.combo-0.01);
+    }
+
+    this.particles=this.particles.filter(p=>{
+      p.x+=p.dx;
+      p.y+=p.dy;
+      p.life--;
+      return p.life>0;
+    });
+  },
+
   draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // mira laser
+    ctx.strokeStyle="rgba(0,255,136,0.2)";
+    ctx.beginPath();
+    ctx.moveTo(this.bullet.x,this.bullet.y);
+    ctx.lineTo(this.bullet.x,this.bullet.y-200);
+    ctx.stroke();
+
+    // trail neon
+    ctx.strokeStyle="rgba(0,255,136,0.6)";
+    ctx.beginPath();
+    this.trail.forEach((p,i)=>{
+      if(i===0) ctx.moveTo(p.x,p.y);
+      else ctx.lineTo(p.x,p.y);
+    });
+    ctx.stroke();
+
     this.bubbles.forEach(b=>{
       if(b.active){
         ctx.beginPath();
@@ -357,6 +362,19 @@ const Game={
         ctx.fill();
       }
     });
+
+    if(this.boss){
+      ctx.beginPath();
+      ctx.arc(this.boss.x,this.boss.y,this.boss.r,0,Math.PI*2);
+      ctx.fillStyle="#ff0000";
+      ctx.fill();
+    }
+
+    this.particles.forEach(p=>{
+      ctx.fillStyle="rgba(255,202,40,"+(p.life/30)+")";
+      ctx.fillRect(p.x,p.y,3,3);
+    });
+
     ctx.beginPath();
     ctx.arc(this.bullet.x,this.bullet.y,this.bullet.r,0,Math.PI*2);
     ctx.fillStyle="#fff";
@@ -364,11 +382,22 @@ const Game={
   }
 };
 
-canvas.addEventListener("mousedown",e=>{
-  const rect=canvas.getBoundingClientRect();
-  Game.shoot(e.clientX-rect.left,e.clientY-rect.top);
+/* ================= CONTROLS ================= */
+canvas.addEventListener("mousedown",()=>{
+  if(Game.bullet.active) return;
+  Game.charging=true;
+  Game.power=0;
 });
 
+canvas.addEventListener("mouseup",(e)=>{
+  if(Game.bullet.active) return;
+  const rect=canvas.getBoundingClientRect();
+  const angle=Math.atan2(e.clientY-rect.top-Game.bullet.y,e.clientX-rect.left-Game.bullet.x);
+  Game.shoot(angle);
+  Game.charging=false;
+});
+
+/* ================= LOOP ================= */
 function loop(){
   Game.update();
   Game.draw();
@@ -377,22 +406,28 @@ function loop(){
 Game.init();
 loop();
 
-/* ===========================
-   BUTTONS
-=========================== */
+/* ================= BUTTONS ================= */
 $("nextBtn").onclick=()=>{
   if(State.energy.count>0){
     State.energy.count--;
     State.energy.last=Date.now();
     State.level++;
     Game.init();
-    save();
     updateUI();
   }else alert("Energia insuficiente!");
 };
 
-$("withdrawBtn").onclick=()=>{
-  alert("Sistema de saque real deve ser conectado a smart contract.");
+$("turboBtn").onclick=()=>{
+  State.turbo=!State.turbo;
+  $("turboBtn").innerText=State.turbo?"🔥 TURBO ON":"⚡ TURBO";
+};
+
+$("connectBtn").onclick=async()=>{
+  if(window.ethereum){
+    const acc=await ethereum.request({method:"eth_requestAccounts"});
+    State.wallet=acc[0];
+    alert("Carteira conectada: "+State.wallet.slice(0,6)+"...");
+  }
 };
 </script>
 </body>
