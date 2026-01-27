@@ -1,228 +1,324 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>USDC TERMINAL - ORGANIC FLOW</title>
-    <style>
-        :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
-        
-        body { 
-            margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
-            background: #050505 url('background.png') no-repeat center center fixed; 
-            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
-        }
-        
-        #main-layout { display: flex; gap: 20px; align-items: flex-start; }
-
-        /* Calculadora Comum Lateral (90% Transparente) */
-        #side-calc {
-            background: rgba(10, 10, 10, 0.1); width: 220px; padding: 15px; border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .calc-display { 
-            background: rgba(0,0,0,0.6); padding: 12px; text-align: right; 
-            font-size: 22px; border-radius: 12px; margin-bottom: 12px; min-height: 35px; border: 1px solid #444;
-        }
-        .calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-        .calc-btns button { 
-            padding: 12px; font-size: 14px; border-radius: 10px; background: rgba(255,255,255,0.1); 
-            color: white; border: none; cursor: pointer; transition: 0.2s;
-        }
-        .calc-btns button:hover { background: var(--secondary); }
-
-        /* Container Principal */
-        #game-container { 
-            background: rgba(10, 10, 10, 0.1); padding: 25px; border-radius: 32px; width: 850px; 
-            border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-        }
-
-        #ticker-top {
-            background: rgba(0, 0, 0, 0.4); padding: 12px; border-radius: 16px;
-            margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
-        }
-        .marquee { display: inline-block; animation: scroll 40s linear infinite; color: var(--primary); font-weight: bold; font-size: 14px; white-space: nowrap; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
-        .hud { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .card { background: rgba(0, 0, 0, 0.5); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-
-        canvas { background: rgba(0, 0, 0, 0.6); border: 2px solid var(--secondary); border-radius: 22px; cursor: crosshair; display: block; margin: 0 auto; }
-
-        .footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        button.main-btn { border: none; padding: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-transform: uppercase; font-size: 14px; }
-        
-        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; }
-        #withdraw-btn { background: var(--gold); }
-        #reset-btn { background: var(--secondary); color: #fff; }
-
-        .locked { opacity: 0.05; pointer-events: none; filter: blur(20px); }
-        .coin-box { margin-right: 55px; }
-    </style>
+<meta charset="UTF-8">
+<title>Bubble Shooter Web3 ARC</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+<style>
+body{margin:0;background:#050b1a;color:#fff;font-family:Arial;overflow:hidden;}
+canvas{display:block;}
+.panel{
+  position:fixed;top:10px;left:10px;background:#0b1530;
+  padding:12px;border-radius:12px;border:1px solid #00ffaa;
+  font-size:13px;z-index:10;width:280px;
+}
+button{
+  width:100%;margin:4px 0;padding:6px;border:none;border-radius:6px;
+  background:#00ffaa;color:#000;font-weight:bold;cursor:pointer;
+}
+.bar{width:200px;height:10px;border:1px solid #0ff;margin-top:6px;}
+#power{height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#ff0,#f00);}
+#menu{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:flex;align-items:center;justify-content:center;z-index:20;
+}
+.menu-box{
+  background:#0b1530;padding:20px;border-radius:16px;border:2px solid #00ffaa;
+  width:340px;text-align:center;
+}
+</style>
 </head>
 <body>
 
-<div id="main-layout">
-    <div id="side-calc">
-        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 8px; text-align: center; letter-spacing: 1px;">CALCULATOR</div>
-        <div class="calc-display" id="c-disp">0</div>
-        <div class="calc-btns">
-            <button onclick="cClear()">C</button><button onclick="cAdd('/')">/</button><button onclick="cAdd('*')">*</button><button onclick="cAdd('-')">-</button>
-            <button onclick="cAdd('7')">7</button><button onclick="cAdd('8')">8</button><button onclick="cAdd('9')">9</button><button onclick="cAdd('+')" style="grid-row: span 2">+</button>
-            <button onclick="cAdd('4')">4</button><button onclick="cAdd('5')">5</button><button onclick="cAdd('6')">6</button>
-            <button onclick="cAdd('1')">1</button><button onclick="cAdd('2')">2</button><button onclick="cAdd('3')">3</button><button onclick="cResult()">=</button>
-            <button onclick="cAdd('0')" style="grid-column: span 2">0</button><button onclick="cAdd('.')">.</button>
-        </div>
-    </div>
-
-    <div id="game-container">
-        <div id="ticker-top">
-            <div class="marquee" id="prices">BUSCANDO PREÇOS DO TOP 10 RANKING...</div>
-        </div>
-
-        <div class="hud">
-            <div class="card">
-                <span style="font-size: 11px; opacity: 0.8;">SALDO USDC</span>
-                <div style="font-size: 28px; font-weight: 900; color: var(--primary);">$ <span id="u-bal">0.000</span></div>
-                <div id="b-bal" style="color: var(--gold); font-size: 14px; font-weight: bold;">R$ 0,00</div>
-            </div>
-            <div class="card">
-                <span style="font-size: 11px; opacity: 0.8;">ENERGIA</span>
-                <div id="e-val" style="font-size: 28px; font-weight: 900;">-- / 3</div>
-                <div style="font-size: 11px; color: var(--gold);">REGENERAÇÃO ATIVA</div>
-            </div>
-        </div>
-
-        <div id="wrap" class="locked">
-            <canvas id="gameCanvas" width="800" height="450"></canvas>
-        </div>
-
-        <div class="footer-btns">
-            <button id="connect-btn" class="main-btn">🔌 CONECTAR METAMASK</button>
-            <button id="withdraw-btn" class="main-btn">💰 SAQUE</button>
-            <button id="reset-btn" class="main-btn">🎮 JOGAR</button>
-        </div>
-    </div>
+<div id="menu">
+  <div class="menu-box">
+    <h2>🎮 Bubble Shooter Web3 ARC</h2>
+    <button onclick="connectWallet()">🦊 Conectar MetaMask (ARC)</button>
+    <button onclick="startGame()">▶️ Jogar</button>
+    <div id="walletStatus">Carteira: desconectada</div>
+  </div>
 </div>
 
+<div class="panel">
+  <div>🌐 Rede: ARC Testnet</div>
+  <div>👛 Wallet: <span id="wallet">---</span></div>
+  <div>💰 USDC: <span id="balance">0</span></div>
+  <div>⭐ Score: <span id="score">0</span></div>
+  <div>🔥 Combo: <span id="combo">0</span></div>
+  <div>🎯 Level: <span id="level">1</span></div>
+  <div>⚡ Power</div>
+  <div class="bar"><div id="power"></div></div>
+  <button onclick="depositUSDC()">💰 Depositar 0.01 USDC</button>
+  <button onclick="withdrawUSDC()">💸 Sacar 0.10 USDC</button>
+</div>
+
+<canvas id="game"></canvas>
+
 <script>
-    // --- LÓGICA DA CALCULADORA ---
-    let cIn = "";
-    function cAdd(v){ cIn += v; document.getElementById('c-disp').innerText = cIn; }
-    function cClear(){ cIn = ""; document.getElementById('c-disp').innerText = "0"; }
-    function cResult(){ try { cIn = eval(cIn).toString(); document.getElementById('c-disp').innerText = cIn; } catch(e){ cClear(); } }
+/* ===========================
+   CONFIG ARC NETWORK + USDC
+=========================== */
+const ARC_NETWORK = {
+  chainId: "0x4CE8E2", // 5042002 em hex
+  chainName: "ARC Testnet",
+  rpcUrls: ["https://rpc.testnet.arc.network"],
+  nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 },
+  blockExplorerUrls: []
+};
 
-    // --- SETUP AMBIENTE ---
-    const boom = new Audio('explosion.mp3');
-    boom.volume = 0.4;
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    let wallet = null, balance = 0, brlPrice = 5.60;
-    let energy = { count: 3, lastUsed: Date.now() };
-    let time = 0; // Controla o tempo para a flutuação
+const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+const USDC_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function transfer(address,uint256) returns (bool)",
+  "function approve(address,uint256) returns (bool)",
+  "function decimals() view returns (uint8)"
+];
 
-    document.getElementById('connect-btn').onclick = async () => {
-        if (window.ethereum) {
-            try {
-                const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                wallet = accs[0];
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wrap').classList.remove('locked');
-                updateData();
-                setInterval(updateData, 60000);
-            } catch(e) {}
-        }
-    };
+/* ===========================
+   CANVAS
+=========================== */
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+addEventListener("resize",resize);resize();
 
-    async function updateData() {
-        try {
-            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10');
-            const data = await res.json();
-            document.getElementById('prices').innerHTML = data.map(c => `<span class="coin-box">${c.symbol.toUpperCase()}: $${c.current_price.toLocaleString()}</span>`).join('');
-            
-            const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
-            const brlData = await brlRes.json();
-            brlPrice = brlData['usd-coin'].brl;
-            updateUI();
-        } catch(e) {}
-    }
+/* ===========================
+   STATE
+=========================== */
+const State={
+  balance:0,
+  score:0,
+  combo:0,
+  level:1,
+  wallet:null,
+  lastPlay:0,
+  provider:null,
+  signer:null,
+  usdc:null,
+  decimals:6
+};
 
-    function updateUI() {
-        document.getElementById('u-bal').innerText = balance.toFixed(3);
-        document.getElementById('b-bal').innerText = `R$ ${(balance * brlPrice).toFixed(2)}`;
-        document.getElementById('e-val').innerText = `${energy.count} / 3`;
-    }
+function updateUI(){
+  balance.textContent=State.balance.toFixed(4);
+  score.textContent=State.score;
+  combo.textContent=State.combo;
+  level.textContent=State.level;
+  wallet.textContent=State.wallet?State.wallet.slice(0,6)+"..."+State.wallet.slice(-4):"---";
+}
 
-    // --- MOTOR DO JOGO: FLUTUAÇÃO ---
-    let bubbles = [], bullet = { x: 400, y: 420, r: 16, active: false, dx: 0, dy: 0 };
+/* ===========================
+   METAMASK + ARC NETWORK
+=========================== */
+async function connectWallet(){
+  if(!window.ethereum){alert("MetaMask não encontrada");return;}
 
-    function init() {
-        bubbles = [];
-        const colors = ['#00ff88', '#2775ca', '#ffca28', '#ff4444'];
-        for (let i = 0; i < 5; i++) {
-            for (let j = 0; j < 18; j++) {
-                bubbles.push({ 
-                    origX: 40+(j*43), origY: 55+(i*43), 
-                    x: 0, y: 0, r: 18, color: colors[i % 4], active: true,
-                    speed: 0.02 + Math.random() * 0.03, // Velocidade de flutuação individual
-                    amp: 4 + Math.random() * 6          // Amplitude do movimento
-                });
-            }
-        }
-    }
-
-    document.getElementById('reset-btn').onclick = () => {
-        if (energy.count > 0) { energy.count--; init(); updateUI(); }
-    };
-
-    canvas.addEventListener('mousedown', (e) => {
-        if (bullet.active || !wallet) return;
-        const rect = canvas.getBoundingClientRect();
-        const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        bullet.dx = Math.cos(angle) * 12; bullet.dy = Math.sin(angle) * 12;
-        bullet.active = true;
+  try{
+    await ethereum.request({
+      method:"wallet_addEthereumChain",
+      params:[ARC_NETWORK]
     });
+  }catch(e){}
 
-    function draw() {
-        ctx.clearRect(0, 0, 800, 450);
-        time += 0.05;
+  await ethereum.request({method:"eth_requestAccounts"});
+  State.provider = new ethers.providers.Web3Provider(window.ethereum);
+  State.signer = State.provider.getSigner();
+  State.wallet = await State.signer.getAddress();
 
-        bubbles.forEach(b => {
-            if (b.active) {
-                // Cálculo da flutuação suave (Seno para Y, Cosseno para X)
-                b.x = b.origX + Math.cos(time * b.speed * 1.5) * (b.amp / 2);
-                b.y = b.origY + Math.sin(time * b.speed) * b.amp;
+  State.usdc = new ethers.Contract(USDC_ADDRESS, USDC_ABI, State.signer);
+  State.decimals = await State.usdc.decimals();
 
-                // Sombra interna para efeito 3D
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                ctx.fillStyle = b.color; ctx.fill();
-                ctx.beginPath(); ctx.arc(b.x - 5, b.y - 5, 5, 0, Math.PI*2);
-                ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.fill();
-            }
+  walletStatus.textContent="Carteira: "+State.wallet;
+  await loadUSDCBalance();
+}
+
+async function loadUSDCBalance(){
+  if(!State.usdc) return;
+  const bal = await State.usdc.balanceOf(State.wallet);
+  State.balance = parseFloat(ethers.utils.formatUnits(bal, State.decimals));
+}
+
+/* ===========================
+   GAME ACCESS (3H LIMIT)
+=========================== */
+function startGame(){
+  if(!State.wallet){alert("Conecte a MetaMask primeiro");return;}
+  const now=Date.now();
+  if(now-State.lastPlay<3*60*60*1000){
+    alert("⏳ Aguarde 3 horas para jogar novamente.");
+    return;
+  }
+  State.lastPlay=now;
+  menu.style.display="none";
+}
+
+/* ===========================
+   DEPOSIT / WITHDRAW (REAL USDC)
+=========================== */
+async function depositUSDC(){
+  if(!State.usdc) return alert("Conecte a carteira.");
+  const amount = ethers.utils.parseUnits("0.01", State.decimals);
+
+  try{
+    const tx = await State.usdc.transfer(
+      "0x000000000000000000000000000000000000dEaD", // endereço do jogo (exemplo)
+      amount
+    );
+    await tx.wait();
+    alert("✅ Depósito enviado!");
+    await loadUSDCBalance();
+  }catch(e){
+    alert("Erro no depósito.");
+  }
+}
+
+function withdrawUSDC(){
+  alert("⚠️ Saque real precisa de SMART CONTRACT do jogo.");
+}
+
+/* ===========================
+   PARTICLES
+=========================== */
+const particles=[];
+function explode(x,y,color){
+  for(let i=0;i<30;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-0.5)*7,
+      vy:(Math.random()-0.5)*7,
+      life:40,
+      color
+    });
+  }
+}
+function drawParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.life--;
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x,p.y,3,3);
+    if(p.life<=0)particles.splice(i,1);
+  }
+}
+
+/* ===========================
+   GAME ENGINE (UPGRADED)
+=========================== */
+const Game={
+  bubbles:[],
+  bullet:{x:0,y:0,r:18,dx:0,dy:0,active:false},
+  charging:false,power:0,maxPower:25,
+
+  resetBullet(){
+    this.bullet.x=canvas.width/2;
+    this.bullet.y=canvas.height-60;
+    this.bullet.active=false;
+  },
+
+  init(){
+    this.bubbles=[];
+    const colors=["#00ff88","#2775ca","#ffca28","#ff4444"];
+    const gapX=50,gapY=45;
+    const cols=Math.floor(canvas.width/gapX);
+    const rows=Math.floor(canvas.height*0.7/gapY);
+
+    for(let i=0;i<rows;i++){
+      for(let j=0;j<cols;j++){
+        this.bubbles.push({
+          x:gapX/2+j*gapX,
+          y:gapY/2+i*gapY,
+          r:18,
+          color:colors[(i+j)%4],
+          active:true
         });
+      }
+    }
+    this.resetBullet();
+  },
 
-        if (bullet.active) {
-            bullet.x += bullet.dx; bullet.y += bullet.dy;
-            if (bullet.x < 0 || bullet.x > 800) bullet.dx *= -1;
-            bubbles.forEach(b => {
-                if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
-                    b.active = false; balance += 0.005;
-                    bullet.active = false; bullet.x = 400; bullet.y = 420;
-                    boom.currentTime = 0; boom.play().catch(()=>{});
-                    updateUI();
-                }
-            });
-            if (bullet.y < 0 || bullet.y > 450) { bullet.active = false; bullet.x = 400; bullet.y = 420; }
-        }
+  shoot(angle){
+    if(this.bullet.active)return;
+    const speed=5+this.power;
+    this.bullet.dx=Math.cos(angle)*speed;
+    this.bullet.dy=Math.sin(angle)*speed;
+    this.bullet.active=true;
+    this.power=0;
+  },
 
-        ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
-        ctx.fillStyle = "#fff"; ctx.fill();
-        requestAnimationFrame(draw);
+  update(){
+    if(this.charging){
+      this.power=Math.min(this.maxPower,this.power+0.35);
+      power.style.width=(this.power/this.maxPower*100)+"%";
     }
 
-    init(); draw();
+    if(this.bullet.active){
+      this.bullet.x+=this.bullet.dx;
+      this.bullet.y+=this.bullet.dy;
+
+      if(this.bullet.x<0||this.bullet.x>canvas.width)this.bullet.dx*=-1;
+      if(this.bullet.y<0){this.resetBullet();State.combo=0;}
+
+      for(const b of this.bubbles){
+        if(!b.active)continue;
+        const d=Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y);
+        if(d<this.bullet.r+b.r){
+          b.active=false;
+          explode(b.x,b.y,b.color);
+
+          State.combo++;
+          State.score+=10+State.combo*3;
+          State.balance+=0.0005*(1+State.combo*0.15);
+
+          this.resetBullet();
+        }
+      }
+    }
+
+    if(this.bubbles.filter(b=>b.active).length<8){
+      State.level++;
+      this.init();
+    }
+  },
+
+  draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const b of this.bubbles){
+      if(!b.active)continue;
+      ctx.beginPath();
+      ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+      ctx.fillStyle=b.color;
+      ctx.shadowBlur=12;
+      ctx.shadowColor=b.color;
+      ctx.fill();
+      ctx.shadowBlur=0;
+    }
+    ctx.beginPath();
+    ctx.arc(this.bullet.x,this.bullet.y,this.bullet.r,0,Math.PI*2);
+    ctx.fillStyle="#fff";ctx.fill();
+    drawParticles();
+  }
+};
+
+/* ===========================
+   INPUT
+=========================== */
+canvas.addEventListener("mousedown",()=>Game.charging=true);
+canvas.addEventListener("mouseup",(e)=>{
+  Game.charging=false;
+  const angle=Math.atan2(e.clientY-Game.bullet.y,e.clientX-Game.bullet.x);
+  Game.shoot(angle);
+});
+
+/* ===========================
+   LOOP
+=========================== */
+async function loop(){
+  Game.update();
+  Game.draw();
+  updateUI();
+  requestAnimationFrame(loop);
+}
+Game.init();
+loop();
 </script>
 </body>
 </html>
