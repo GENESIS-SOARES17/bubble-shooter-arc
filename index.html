@@ -2,28 +2,37 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC TERMINAL - 90% TRANSPARENCY</title>
+    <title>USDC HUB - ORGANIC EDITION</title>
     <style>
         :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
         
         body { 
             margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
             background: #050505 url('background.png') no-repeat center center fixed; 
-            background-size: cover; 
-            font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
+            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
         }
         
+        #main-wrapper { display: flex; gap: 20px; align-items: flex-start; }
+
         #game-container { 
-            /* Ajustado para 90% de Transparência (rgba 0.1) */
-            background: rgba(10, 10, 10, 0.1); 
-            padding: 25px; border-radius: 32px; width: 850px; 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(20px); /* Aumentei o blur para manter a elegância */
+            background: rgba(10, 10, 10, 0.1); padding: 25px; border-radius: 32px; width: 850px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-            position: relative;
         }
 
-        /* Ticker Top 10 com fundo sutil */
+        /* Calculadora Comum Lateral */
+        #standard-calc {
+            background: rgba(10, 10, 10, 0.1); width: 220px; padding: 15px; border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);
+        }
+        .calc-screen { 
+            background: rgba(0,0,0,0.5); padding: 10px; text-align: right; 
+            font-size: 20px; border-radius: 10px; margin-bottom: 10px; min-height: 30px; border: 1px solid #444;
+        }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .calc-grid button { padding: 10px; font-size: 12px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: none; cursor: pointer; }
+        .calc-grid button:hover { background: var(--secondary); }
+
         #ticker-top {
             background: rgba(0, 0, 0, 0.3); padding: 12px; border-radius: 16px;
             margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
@@ -34,96 +43,105 @@
         .hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .info-card { background: rgba(0, 0, 0, 0.4); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
 
-        /* Canvas do Jogo */
         canvas { background: rgba(0, 0, 0, 0.5); border: 2px solid var(--secondary); border-radius: 22px; cursor: crosshair; display: block; margin: 0 auto; }
 
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        button { border: none; padding: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 14px; }
+        button.action-btn { border: none; padding: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 14px; }
         
-        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; box-shadow: 0 0 25px rgba(0, 255, 136, 0.3); }
+        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; }
         #withdraw-btn { background: var(--gold); color: #000; }
         #reset-btn { background: var(--secondary); color: #fff; }
 
         .locked { opacity: 0.05; pointer-events: none; filter: blur(25px); }
-        .coin-span { margin-right: 50px; text-shadow: 1px 1px 2px black; }
+        .coin-span { margin-right: 50px; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="ticker-top">
-        <div class="marquee-content" id="price-marquee">CONECTANDO AO MERCADO EM TEMPO REAL...</div>
-    </div>
-
-    <div class="hud-row">
-        <div class="info-card">
-            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Saldo USDC</span>
-            <div style="font-size: 28px; font-weight: 900; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
-            <div id="brl-val" style="color: var(--gold); font-size: 14px; font-weight: bold; margin-top: 5px;">R$ 0,00</div>
-        </div>
-        <div class="info-card">
-            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Energia</span>
-            <div id="energy-val" style="font-size: 28px; font-weight: 900;">-- / 3</div>
-            <div style="font-size: 11px; color: var(--gold); margin-top: 5px;">Recarga: 3 Horas</div>
+<div id="main-wrapper">
+    <div id="standard-calc">
+        <div style="font-size: 10px; opacity: 0.7; margin-bottom: 5px; text-align: center;">CALC TOOL</div>
+        <div class="calc-screen" id="calc-display">0</div>
+        <div class="calc-grid">
+            <button onclick="clearCalc()">C</button><button onclick="press('/')">/</button><button onclick="press('*')">*</button><button onclick="press('-')">-</button>
+            <button onclick="press('7')">7</button><button onclick="press('8')">8</button><button onclick="press('9')">9</button><button onclick="press('+')" style="grid-row: span 2">+</button>
+            <button onclick="press('4')">4</button><button onclick="press('5')">5</button><button onclick="press('6')">6</button>
+            <button onclick="press('1')">1</button><button onclick="press('2')">2</button><button onclick="press('3')">3</button><button onclick="calculate()">=</button>
+            <button onclick="press('0')" style="grid-column: span 2">0</button><button onclick="press('.')">.</button>
         </div>
     </div>
 
-    <div id="canvas-wrapper" class="locked">
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
-    </div>
+    <div id="game-container">
+        <div id="ticker-top">
+            <div class="marquee-content" id="price-marquee">SYNCING TOP 10 CRYPTO ASSETS...</div>
+        </div>
 
-    <div class="btn-row">
-        <button id="connect-btn">🔌 ATIVAR TERMINAL WEB3</button>
-        <button id="withdraw-btn">💰 REALIZAR SAQUE</button>
-        <button id="reset-btn">🎮 NOVA PARTIDA</button>
+        <div class="hud-row">
+            <div class="info-card">
+                <span style="font-size: 11px; opacity: 0.8;">SALDO USDC</span>
+                <div style="font-size: 28px; font-weight: 900; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
+                <div id="brl-val" style="color: var(--gold); font-size: 14px; font-weight: bold;">R$ 0,00</div>
+            </div>
+            <div class="info-card">
+                <span style="font-size: 11px; opacity: 0.8;">ENERGIA</span>
+                <div id="energy-val" style="font-size: 28px; font-weight: 900;">-- / 3</div>
+                <div style="font-size: 11px; color: var(--gold);">AUTO-REGEN 3H</div>
+            </div>
+        </div>
+
+        <div id="canvas-wrapper" class="locked">
+            <canvas id="gameCanvas" width="800" height="450"></canvas>
+        </div>
+
+        <div class="btn-row">
+            <button id="connect-btn" class="action-btn">🔌 CONECTAR CARTEIRA</button>
+            <button id="withdraw-btn" class="action-btn">💰 SAQUE</button>
+            <button id="reset-btn" class="action-btn">🎮 START</button>
+        </div>
     </div>
 </div>
 
 <script>
-    const soundExplosion = new Audio('explosion.mp3'); 
-    soundExplosion.volume = 0.4;
+    // --- CALCULADORA COMUM ---
+    let calcInput = "";
+    function press(v) { calcInput += v; document.getElementById('calc-display').innerText = calcInput; }
+    function clearCalc() { calcInput = ""; document.getElementById('calc-display').innerText = "0"; }
+    function calculate() { try { calcInput = eval(calcInput).toString(); document.getElementById('calc-display').innerText = calcInput; } catch(e) { clearCalc(); } }
 
-    function playExplosion() {
-        soundExplosion.currentTime = 0; 
-        soundExplosion.play().catch(() => {}); 
-    }
+    // --- SOM E AMBIENTE ---
+    const soundExplosion = new Audio('explosion.mp3');
+    soundExplosion.volume = 0.4;
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    let wallet = null;
-    let balance = 0; 
+    let wallet = null, balance = 0, brlPrice = 5.60;
     let energy = { count: 3, lastUsed: Date.now() };
-    let brlPrice = 5.60;
 
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                wallet = accounts[0];
-                soundExplosion.play().then(() => { soundExplosion.pause(); });
+                const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                wallet = accs[0];
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('canvas-wrapper').classList.remove('locked');
                 fetchMarketData();
                 setInterval(fetchMarketData, 60000);
-                startEnergySystem();
-            } catch (e) { alert("Conexão cancelada."); }
-        } else { alert("MetaMask não detectada!"); }
+            } catch(e) {}
+        }
     };
 
     async function fetchMarketData() {
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10');
             const data = await res.json();
-            document.getElementById('price-marquee').innerHTML = data.map(c => `
-                <span class="coin-span">${c.symbol.toUpperCase()}: $${c.current_price.toLocaleString()}</span>
-            `).join('');
-
+            document.getElementById('price-marquee').innerHTML = data.map(c => `<span class="coin-span">${c.symbol.toUpperCase()}: $${c.current_price.toLocaleString()}</span>`).join('');
+            
             const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
             const brlData = await brlRes.json();
             brlPrice = brlData['usd-coin'].brl;
             updateUI();
-        } catch (e) { console.log("Erro API"); }
+        } catch(e) {}
     }
 
     function updateUI() {
@@ -132,26 +150,26 @@
         document.getElementById('energy-val').innerText = `${energy.count} / 3`;
     }
 
-    function startEnergySystem() {
-        setInterval(updateUI, 1000);
-    }
-
+    // --- JOGO COM BOLHAS FLUTUANTES ---
     let bubbles = [], bullet = { x: 400, y: 420, r: 16, active: false, dx: 0, dy: 0 };
+    let frame = 0;
 
     function initGame() {
         bubbles = [];
         const colors = ['#00ff88', '#2775ca', '#ffca28', '#ff4444'];
         for (let i = 0; i < 5; i++) {
             for (let j = 0; j < 18; j++) {
-                bubbles.push({ x: 40+(j*43), y: 55+(i*43), r: 18, color: colors[i % 4], active: true });
+                bubbles.push({ 
+                    baseX: 40+(j*43), baseY: 55+(i*43), 
+                    x: 0, y: 0, r: 18, color: colors[i % 4], active: true,
+                    offset: Math.random() * Math.PI * 2 // Para flutuação dessincronizada
+                });
             }
         }
     }
 
     document.getElementById('reset-btn').onclick = () => {
-        if (energy.count > 0) {
-            energy.count--; initGame();
-        } else alert("Aguarde a regeneração de energia.");
+        if (energy.count > 0) { energy.count--; initGame(); updateUI(); }
     };
 
     canvas.addEventListener('mousedown', (e) => {
@@ -162,33 +180,40 @@
         bullet.active = true;
     });
 
-    function update() {
+    function draw() {
+        ctx.clearRect(0, 0, 800, 450);
+        frame += 0.05;
+
+        bubbles.forEach(b => {
+            if (b.active) {
+                // Efeito flutuante (oscilação suave em Y e X)
+                b.x = b.baseX + Math.cos(frame + b.offset) * 3;
+                b.y = b.baseY + Math.sin(frame + b.offset) * 5;
+
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+                ctx.fillStyle = b.color; ctx.fill();
+                // Reflexo na bolha para brilho
+                ctx.beginPath(); ctx.arc(b.x - 5, b.y - 5, 4, 0, Math.PI*2);
+                ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
+            }
+        });
+
         if (bullet.active) {
             bullet.x += bullet.dx; bullet.y += bullet.dy;
             if (bullet.x < 0 || bullet.x > 800) bullet.dx *= -1;
             bubbles.forEach(b => {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
-                    b.active = false;
-                    balance += 0.005;
+                    b.active = false; balance += 0.005;
                     bullet.active = false; bullet.x = 400; bullet.y = 420;
-                    playExplosion(); 
+                    soundExplosion.currentTime = 0; soundExplosion.play().catch(()=>{});
+                    updateUI();
                 }
             });
             if (bullet.y < 0 || bullet.y > 450) { bullet.active = false; bullet.x = 400; bullet.y = 420; }
         }
-    }
 
-    function draw() {
-        ctx.clearRect(0, 0, 800, 450);
-        bubbles.forEach(b => {
-            if (b.active) {
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                ctx.fillStyle = b.color; ctx.fill();
-            }
-        });
         ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
         ctx.fillStyle = "#fff"; ctx.fill();
-        update();
         requestAnimationFrame(draw);
     }
 
