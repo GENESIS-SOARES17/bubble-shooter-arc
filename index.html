@@ -2,153 +2,142 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC Arcade - Responsive Edition</title>
+    <title>ARC USDC Arcade - Secure Access</title>
     <style>
-        body {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: #0a0a0a url('background.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: white;
-            overflow: hidden;
-        }
-
-        #game-container {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px;
-            border-radius: 20px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 90vw; /* Largura ajustável à tela */
-            max-width: 500px;
-        }
-
-        .header-logos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .logo-img { width: 50px; height: 50px; object-fit: contain; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-
-        #hud {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-
-        canvas {
-            background: rgba(0, 0, 0, 0.1);
-            border: 2px solid #00BFFF;
-            border-radius: 12px;
-            width: 100%; /* Canvas segue a largura do container */
-            height: auto;
-            cursor: crosshair;
-        }
-
-        .controls {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        button {
-            border: none;
-            padding: 10px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-
-        #connect-btn { background: #00ff88; color: black; }
-        #withdraw-btn { background: #ffca28; color: black; }
-        #deposit-btn { background: #2775ca; color: white; }
+        /* Estilos mantidos conforme padrões anteriores */
+        body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0a0a0a url('background.png'); background-size: cover; font-family: sans-serif; color: white; overflow: hidden; }
+        #game-container { background: rgba(0, 0, 0, 0.6); padding: 20px; border-radius: 20px; text-align: center; backdrop-filter: blur(10px); width: 450px; border: 1px solid #2775ca; }
+        #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 12px; margin-bottom: 10px; font-size: 12px; }
+        canvas { background: rgba(0, 0, 0, 0.2); border: 2px solid #00BFFF; border-radius: 12px; cursor: crosshair; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        button { border: none; padding: 10px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
+        #connect-btn { background: #00ff88; color: black; grid-column: span 2; }
+        #withdraw-btn { background: #ffca28; }
         #reset-btn { background: #ff4444; color: white; }
+        .locked { filter: grayscale(1) blur(2px); pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="header-logos">
-        <img src="logo_a.png" class="logo-img" alt="A">
-        <h3 style="margin: 0;">USDC ARCADE</h3>
-        <img src="logo_circle.png" class="logo-img" alt="Circle">
-    </div>
-    
-    <div id="hud">
-        <div>SALDO: <span id="usdc-balance" style="color: #00ff88;">0.000</span></div>
-        <div>POOL: <span style="color: #2775ca;">245.80</span></div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <img src="logo_a.png" width="40" height="40" alt="A">
+        <h3 style="margin: 5px;">USDC ARCADE</h3>
+        <img src="logo_circle.png" width="40" height="40" alt="Circle">
     </div>
 
-    <canvas id="gameCanvas" width="400" height="450"></canvas>
+    <div id="hud">
+        <div>GANHOS: <span id="usdc-balance" style="color: #00ff88;">0.000</span> USDC</div>
+        <div>TENTATIVAS: <span id="tries-left" style="color: #ffca28;">2/2</span></div>
+    </div>
+
+    <div id="wallet-display" style="font-size: 10px; color: #00ff88; margin-bottom: 5px;">CARTEIRA NÃO CONECTADA</div>
+
+    <div id="canvas-wrapper" class="locked">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
 
     <div class="controls">
-        <button id="connect-btn">CONECTAR</button>
-        <button id="withdraw-btn">SACAR</button>
-        <button id="deposit-btn">DEPOSITAR</button>
-        <button id="reset-btn">REINICIAR</button>
+        <button id="connect-btn">CONECTAR CARTEIRA PARA JOGAR</button>
+        <button id="withdraw-btn">SACAR (TAXA 0.10)</button>
+        <button id="reset-btn">NOVA PARTIDA</button>
     </div>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
-    const rewardMap = {'#00BFFF': 0.001, '#FF1493': 0.002, '#32CD32': 0.003, '#FFD700': 0.004};
-    const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
-    const names = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
     
-    let totalEarned = 0, bubbles = [], floatingTexts = [];
-    // Shooter reduzido em 50% (raio 20)
-    let bullet = { x: 200, y: 410, r: 20, active: false, dx: 0, dy: 0 }; 
+    let wallet = null;
+    let triesUsed = 0;
+    let totalEarned = 0;
+    const FEE = 0.10;
 
-    const imgs = {};
-    colors.forEach(c => { imgs[c] = new Image(); imgs[c].src = names[c] + '.png'; });
-    const shootImg = new Image(); shootImg.src = 'shooter.png';
+    // --- SISTEMA DE LIMITES WEB3 ---
+    function checkDailyLimit(address) {
+        const today = new Date().toISOString().slice(0, 10);
+        const data = JSON.parse(localStorage.getItem('arcade_stats_' + address)) || { date: today, count: 0 };
+        
+        if (data.date !== today) {
+            data.date = today;
+            data.count = 0;
+        }
+        return data;
+    }
+
+    document.getElementById('connect-btn').onclick = async () => {
+        if (window.ethereum) {
+            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            wallet = accs[0];
+            document.getElementById('wallet-display').innerText = "CONECTADO: " + wallet.substring(0,12) + "...";
+            document.getElementById('connect-btn').innerText = "CARTEIRA VINCULADA";
+            document.getElementById('connect-btn').disabled = true;
+            
+            // Verifica limites
+            const stats = checkDailyLimit(wallet);
+            triesUsed = stats.count;
+            document.getElementById('tries-left').innerText = (2 - triesUsed) + "/2";
+
+            if (triesUsed < 2) {
+                document.getElementById('canvas-wrapper').classList.remove('locked');
+            } else {
+                alert("Limite diário de 2 partidas atingido para esta carteira!");
+            }
+        }
+    };
+
+    document.getElementById('withdraw-btn').onclick = () => {
+        if (!wallet) return alert("Conecte a carteira primeiro!");
+        if (totalEarned <= FEE) return alert(`Saldo insuficiente. O mínimo para saque é maior que a taxa de ${FEE} USDC.`);
+        
+        const finalAmount = (totalEarned - FEE).toFixed(3);
+        alert(`Processando Saque:\nBruto: ${totalEarned.toFixed(3)}\nTaxa: ${FEE}\nLíquido: ${finalAmount} USDC enviado para ${wallet}`);
+        
+        totalEarned = 0;
+        document.getElementById('usdc-balance').innerText = "0.000";
+    };
+
+    document.getElementById('reset-btn').onclick = () => {
+        if (!wallet) return alert("Conecte a carteira!");
+        const stats = checkDailyLimit(wallet);
+        
+        if (stats.count >= 2) {
+            alert("Você já usou suas 2 tentativas de hoje!");
+            return;
+        }
+
+        // Registra a nova tentativa
+        stats.count++;
+        localStorage.setItem('arcade_stats_' + wallet, JSON.stringify(stats));
+        triesUsed = stats.count;
+        document.getElementById('tries-left').innerText = (2 - triesUsed) + "/2";
+        
+        totalEarned = 0;
+        document.getElementById('usdc-balance').innerText = "0.000";
+        init();
+    };
+
+    // --- LÓGICA DO JOGO (TAMANHOS AJUSTADOS) ---
+    const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
+    const rewardMap = {'#00BFFF': 0.001, '#FF1493': 0.002, '#32CD32': 0.003, '#FFD700': 0.004};
+    let bubbles = [], bullet = { x: 200, y: 370, r: 18, active: false, dx: 0, dy: 0 };
 
     function init() {
         bubbles = [];
-        bullet.active = false; bullet.x = 200; bullet.y = 410;
-        // Ajuste automático das bolhas coloridas para o tamanho da tela
-        const rows = 6;
-        const cols = 10;
-        const radius = 16;
-        const spacing = 38;
-
-        for (let i = 0; i < rows; i++) {
-            let col = colors[i % colors.length];
-            for (let j = 0; j < cols; j++) {
-                bubbles.push({ x: 29 + (j * spacing), y: 50 + (i * spacing), r: radius, color: col, active: true });
+        bullet.active = false; bullet.x = 200; bullet.y = 370;
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 10; j++) {
+                bubbles.push({ x: 30 + (j * 38), y: 50 + (i * 38), r: 15, color: colors[i % 4], active: true });
             }
         }
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        if (bullet.active) return;
+        if (bullet.active || document.getElementById('canvas-wrapper').classList.contains('locked')) return;
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY;
-        
-        const angle = Math.atan2(mouseY - bullet.y, mouseX - bullet.x);
-        bullet.dx = Math.cos(angle) * 10;
-        bullet.dy = Math.sin(angle) * 10;
+        const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
+        bullet.dx = Math.cos(angle) * 9;
+        bullet.dy = Math.sin(angle) * 9;
         bullet.active = true;
     });
 
@@ -156,48 +145,32 @@
         if (bullet.active) {
             bullet.x += bullet.dx; bullet.y += bullet.dy;
             if (bullet.x < bullet.r || bullet.x > canvas.width - bullet.r) bullet.dx *= -1;
-            
             for (let b of bubbles) {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
                     b.active = false;
                     totalEarned += rewardMap[b.color];
                     document.getElementById('usdc-balance').innerText = totalEarned.toFixed(3);
-                    floatingTexts.push({ x: b.x, y: b.y, text: `+$${rewardMap[b.color]}`, opacity: 1 });
-                    
-                    // MECÂNICA CORRIGIDA: A bolha para no primeiro impacto e reseta
-                    bullet.active = false; 
-                    bullet.x = 200; 
-                    bullet.y = 410;
-                    break; 
+                    bullet.active = false; bullet.x = 200; bullet.y = 370;
+                    break;
                 }
             }
-            if (bullet.y < 0 || bullet.y > 450) { bullet.active = false; bullet.x = 200; bullet.y = 410; }
+            if (bullet.y < 0 || bullet.y > 400) { bullet.active = false; bullet.x = 200; bullet.y = 370; }
         }
-        floatingTexts.forEach((t, i) => { t.y -= 1; t.opacity -= 0.02; if (t.opacity <= 0) floatingTexts.splice(i, 1); });
     }
 
     function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, 400, 400);
         bubbles.forEach(b => {
             if (b.active) {
-                if (imgs[b.color].complete) ctx.drawImage(imgs[b.color], b.x-b.r, b.y-b.r, b.r*2, b.r*2);
-                else { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+                ctx.fillStyle = b.color; ctx.fill();
             }
         });
-        floatingTexts.forEach(t => {
-            ctx.fillStyle = `rgba(0, 255, 136, ${t.opacity})`;
-            ctx.font = "bold 10px Arial";
-            ctx.fillText(t.text, t.x - 10, t.y);
-        });
-        if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
+        ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
+        ctx.fillStyle = "white"; ctx.fill();
         update();
         requestAnimationFrame(draw);
     }
-
-    // Handlers corrigidos
-    document.getElementById('connect-btn').onclick = () => alert("Conectando...");
-    document.getElementById('withdraw-btn').onclick = () => alert("Sacando USDC...");
-    document.getElementById('reset-btn').onclick = () => init();
 
     init();
     draw();
