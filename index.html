@@ -12,10 +12,10 @@
             --bg: #0a0a0a; 
             --error: #ff4444;
             --success: #00ffaa;
-            --transparent-70: rgba(0, 0, 0, 0.3); /* 70% transparência - ajustado para ser visível */
-            --transparent-60: rgba(0, 0, 0, 0.4); /* 60% transparência */
-            --transparent-50: rgba(0, 0, 0, 0.5); /* 50% transparência */
-            --glass-bg: rgba(255, 255, 255, 0.1); /* Para elementos claros */
+            --calculator-bg: #1a1a1a;
+            --calculator-display: #000;
+            --calculator-button: #333;
+            --calculator-button-hover: #444;
         }
         
         * { 
@@ -32,20 +32,6 @@
             overflow: hidden; 
         }
         
-        /* Fundo com efeito gradiente */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 255, 170, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(0, 170, 255, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-        
         #layout { 
             display: flex; 
             width: 100vw; 
@@ -58,58 +44,72 @@
         #panel { 
             width: 320px; 
             min-width: 320px;
-            background: var(--transparent-70);
-            border: 1px solid rgba(0, 255, 170, 0.4);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+            border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
             gap: 15px;
-            backdrop-filter: blur(15px) saturate(180%);
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                inset 0 0 20px rgba(0, 255, 170, 0.2);
+                0 10px 40px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 170, 0.3);
             z-index: 100;
-            transition: all 0.3s ease;
+            position: relative;
         }
         
-        #panel:hover {
-            box-shadow: 
-                0 12px 48px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                inset 0 0 30px rgba(0, 255, 170, 0.3);
+        /* Logo ARC */
+        .arc-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 255, 170, 0.3);
+        }
+        
+        .arc-logo .logo-icon {
+            font-size: 32px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 170, 0.5));
         }
         
         h2 { 
             text-align: center; 
             color: var(--primary); 
-            margin: 0 0 10px; 
+            margin: 0; 
             font-size: 24px; 
-            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+            text-shadow: 0 0 15px rgba(0, 255, 170, 0.7);
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
         
         .stats { 
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             padding: 15px; 
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            box-shadow: 
+                inset 0 2px 10px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 255, 170, 0.2);
         }
         
         .row { 
             display: flex; 
             justify-content: space-between; 
-            margin: 8px 0; 
-            font-size: 14px; 
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 10px 0; 
+            font-size: 15px; 
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.2);
         }
         
         .row:last-child { border-bottom: none; }
@@ -118,22 +118,25 @@
             font-weight: bold; 
             color: var(--secondary); 
             font-family: 'Courier New', monospace;
-            text-shadow: 0 0 5px rgba(0, 170, 255, 0.3);
+            text-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+            font-size: 16px;
         }
         
         .combo-display {
-            background: linear-gradient(45deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 170, 0.4));
-            padding: 8px 12px;
-            border-radius: 20px;
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.7), rgba(0, 255, 170, 0.7));
+            padding: 10px 15px;
+            border-radius: 25px;
             font-weight: bold;
             text-align: center;
-            margin: 10px 0;
+            margin: 15px 0;
             opacity: 0;
             transform: scale(0.9);
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 0 25px rgba(255, 0, 128, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            font-size: 18px;
         }
         
         .combo-display.active {
@@ -143,17 +146,17 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.3); }
-            50% { box-shadow: 0 0 30px rgba(255, 0, 128, 0.5); }
-            100% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.3); }
+            0% { box-shadow: 0 0 25px rgba(255, 0, 128, 0.5); }
+            50% { box-shadow: 0 0 35px rgba(255, 0, 128, 0.7); }
+            100% { box-shadow: 0 0 25px rgba(255, 0, 128, 0.5); }
         }
 
         button { 
             width: 100%; 
             padding: 14px; 
             border: none; 
-            border-radius: 10px; 
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 12px; 
+            background: linear-gradient(145deg, var(--primary), var(--secondary));
             color: #000; 
             font-weight: bold; 
             cursor: pointer; 
@@ -162,8 +165,10 @@
             position: relative;
             overflow: hidden;
             z-index: 1;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 5px 20px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         
         button::before {
@@ -173,17 +178,17 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
             transition: left 0.7s ease;
             z-index: -1;
         }
         
         button:hover:not(:disabled) {
             transform: translateY(-3px);
-            filter: brightness(1.2);
+            filter: brightness(1.3);
             box-shadow: 
-                0 8px 25px rgba(0, 255, 170, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+                0 8px 30px rgba(0, 255, 170, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
         
         button:hover:not(:disabled)::before {
@@ -195,17 +200,17 @@
         }
         
         button:disabled { 
-            opacity: 0.5; 
+            opacity: 0.6; 
             cursor: not-allowed; 
-            background: linear-gradient(90deg, rgba(102, 102, 102, 0.7), rgba(136, 136, 136, 0.7));
-            color: #333;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(145deg, rgba(102, 102, 102, 0.8), rgba(136, 136, 136, 0.8));
+            color: #666;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .button-group {
             display: flex;
             gap: 10px;
-            margin-top: 5px;
+            margin-top: 10px;
         }
         
         .button-group button {
@@ -216,14 +221,14 @@
         #gameContainer { 
             flex: 1; 
             position: relative; 
-            border: 1px solid rgba(0, 255, 170, 0.4);
+            border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
-            background: var(--transparent-70);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
             overflow: hidden;
-            backdrop-filter: blur(10px);
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 10px 40px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 170, 0.3);
         }
         
         canvas { 
@@ -239,7 +244,7 @@
         #overlay {
             position: absolute; 
             inset: 0; 
-            background: var(--transparent-70);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
             z-index: 10; 
             display: flex; 
             flex-direction: column; 
@@ -247,82 +252,86 @@
             justify-content: center; 
             text-align: center; 
             padding: 30px;
-            backdrop-filter: blur(15px);
             border-radius: 16px;
         }
         
         #overlay h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
+            font-size: 3.5em;
+            margin-bottom: 25px;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
+            text-shadow: 0 0 25px rgba(0, 255, 170, 0.7);
         }
         
         #overlay p {
-            font-size: 1.2em;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3em;
+            color: rgba(255, 255, 255, 0.95);
             max-width: 500px;
-            line-height: 1.5;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px 25px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+            line-height: 1.6;
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            box-shadow: 0 0 25px rgba(0, 255, 170, 0.3);
         }
 
         /* Barra de Força */
         .bar-wrap { 
-            margin-top: 10px; 
-            font-size: 14px; 
-            color: rgba(255, 255, 255, 0.9); 
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 15px; 
+            font-size: 16px; 
+            color: rgba(255, 255, 255, 0.95); 
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            box-shadow: 
+                inset 0 2px 10px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 255, 170, 0.2);
         }
         
         .bar { 
             width: 100%; 
-            height: 12px; 
-            background: rgba(255, 255, 255, 0.15); 
-            border-radius: 6px; 
+            height: 15px; 
+            background: rgba(0, 0, 0, 0.5); 
+            border-radius: 8px; 
             overflow: hidden; 
-            margin-top: 8px; 
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 10px; 
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
         }
         
         #powerBar { 
             height: 100%; 
             width: 0%; 
-            background: linear-gradient(90deg, rgba(0, 255, 136, 0.9), rgba(255, 170, 0, 0.9), rgba(255, 0, 0, 0.9)); 
+            background: linear-gradient(90deg, #00ff88, #ffaa00, #ff0000); 
             transition: width 0.08s ease;
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
         }
         
         .bar-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            margin-top: 4px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        /* Ticker */
+        /* Ticker de Ativos - MODIFICADO */
         #ticker {
             position: absolute; 
             bottom: 0; 
             width: 100%; 
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 1px solid rgba(0, 255, 170, 0.4); 
-            padding: 8px 0; 
-            font-size: 13px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            border-top: 2px solid rgba(0, 255, 170, 0.6); 
+            padding: 12px 0; 
+            font-size: 14px;
             z-index: 5;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+            height: 50px;
         }
         
         #tickerTrack { 
@@ -330,8 +339,10 @@
             white-space: nowrap; 
             padding-right: 50px;
             font-family: 'Courier New', monospace;
-            color: rgba(255, 255, 255, 0.9);
-            text-shadow: 0 0 5px rgba(0, 255, 170, 0.4);
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+            font-weight: bold;
+            animation: scroll 40s linear infinite;
         }
         
         @keyframes scroll { 
@@ -339,62 +350,57 @@
             100% { transform: translateX(-100%); } 
         }
 
-        /* Modal de Notificação */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
+        .crypto-ticker-item {
+            display: inline-block;
+            margin: 0 25px;
+            padding: 5px 12px;
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.2);
+        }
+        
+        .crypto-ticker-item .symbol {
+            color: var(--primary);
             font-weight: bold;
-            z-index: 1000;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            max-width: 300px;
-            box-shadow: 
-                0 5px 20px rgba(0, 0, 0, 0.5),
-                0 0 20px rgba(0, 255, 170, 0.3);
-            backdrop-filter: blur(15px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.6);
+            margin-right: 5px;
         }
         
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            color: var(--success);
-            border-left: 4px solid var(--success);
-            background: rgba(0, 255, 170, 0.2);
-        }
-        
-        .notification.error {
-            color: var(--error);
-            border-left: 4px solid var(--error);
-            background: rgba(255, 68, 68, 0.2);
-        }
-        
-        .notification.info {
+        .crypto-ticker-item .price {
             color: var(--secondary);
-            border-left: 4px solid var(--secondary);
-            background: rgba(0, 170, 255, 0.2);
+        }
+        
+        .crypto-ticker-item .change {
+            margin-left: 8px;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .crypto-ticker-item .change.positive {
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .crypto-ticker-item .change.negative {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
         }
 
         /* Indicador de FPS */
         #fpsCounter {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 13px;
             font-family: 'Courier New', monospace;
             z-index: 5;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+            color: rgba(255, 255, 255, 0.95);
         }
 
         /* Indicador de Pausa */
@@ -404,7 +410,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
             z-index: 9;
             display: none;
             flex-direction: column;
@@ -412,60 +418,118 @@
             justify-content: center;
             font-size: 3em;
             color: var(--primary);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             border-radius: 16px;
+            text-shadow: 0 0 25px rgba(0, 255, 170, 0.7);
         }
-        
+
         /* Efeito de Partículas */
         .particle {
             position: absolute;
             pointer-events: none;
             border-radius: 50%;
             z-index: 2;
-            box-shadow: 0 0 15px currentColor;
+            box-shadow: 0 0 20px currentColor;
         }
         
-        /* Melhorias de Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Calculadora */
+        .calculator-container {
+            background: linear-gradient(145deg, var(--calculator-bg), #0f0f0f);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 2px solid rgba(0, 255, 170, 0.6);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
         
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 255, 170, 0.4);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 255, 170, 0.6);
-        }
-        
-        /* Efeito de brilho nos elementos de foco */
-        *:focus {
-            outline: 2px solid rgba(0, 255, 170, 0.6);
-            outline-offset: 2px;
-        }
-        
-        /* Logo ARC */
-        .arc-logo {
+        .calculator-display {
+            background: var(--calculator-display);
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 28px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: right;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+            min-height: 70px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 10px;
+            justify-content: flex-end;
+            overflow: hidden;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
         }
         
-        .arc-logo .logo-icon {
-            font-size: 28px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .calculator-button {
+            background: linear-gradient(145deg, var(--calculator-button), #2a2a2a);
+            border: none;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .calculator-button:hover {
+            background: linear-gradient(145deg, var(--calculator-button-hover), #3a3a3a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .calculator-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .calculator-button.operator {
+            background: linear-gradient(145deg, #ff9900, #cc7a00);
+            color: #000;
+        }
+        
+        .calculator-button.operator:hover {
+            background: linear-gradient(145deg, #ffaa00, #dd8b00);
+        }
+        
+        .calculator-button.equals {
+            background: linear-gradient(145deg, var(--primary), #00cc88);
+            color: #000;
+            grid-column: span 2;
+        }
+        
+        .calculator-button.equals:hover {
+            background: linear-gradient(145deg, #00ffbb, #00dd99);
+        }
+        
+        .calculator-button.clear {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: #fff;
+        }
+        
+        .calculator-button.clear:hover {
+            background: linear-gradient(145deg, #ff5555, #dd0000);
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 255, 170, 0.3);
         }
     </style>
 </head>
@@ -475,7 +539,7 @@
     <div id="panel">
         <div class="arc-logo">
             <div class="logo-icon">✦</div>
-            <h2>ARC Bubble Shooter</h2>
+            <h2>ARC BUBBLE SHOOTER</h2>
         </div>
         
         <div class="stats">
@@ -526,8 +590,37 @@
             <button id="btnRestart" style="display: none;">🔄 Reiniciar</button>
         </div>
 
-        <div style="margin-top: auto; font-size: 11px; color: rgba(255, 255, 255, 0.6); text-align: center; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.15);">
-            ARC Testnet v2.0 • Transparência Ajustada
+        <!-- Calculadora -->
+        <div class="calculator-container">
+            <div class="calculator-display" id="calcDisplay">0</div>
+            <div class="calculator-buttons">
+                <button class="calculator-button clear" onclick="clearCalc()">C</button>
+                <button class="calculator-button" onclick="backspaceCalc()">⌫</button>
+                <button class="calculator-button operator" onclick="appendToCalc('/')">/</button>
+                <button class="calculator-button operator" onclick="appendToCalc('*')">×</button>
+                
+                <button class="calculator-button" onclick="appendToCalc('7')">7</button>
+                <button class="calculator-button" onclick="appendToCalc('8')">8</button>
+                <button class="calculator-button" onclick="appendToCalc('9')">9</button>
+                <button class="calculator-button operator" onclick="appendToCalc('-')">-</button>
+                
+                <button class="calculator-button" onclick="appendToCalc('4')">4</button>
+                <button class="calculator-button" onclick="appendToCalc('5')">5</button>
+                <button class="calculator-button" onclick="appendToCalc('6')">6</button>
+                <button class="calculator-button operator" onclick="appendToCalc('+')">+</button>
+                
+                <button class="calculator-button" onclick="appendToCalc('1')">1</button>
+                <button class="calculator-button" onclick="appendToCalc('2')">2</button>
+                <button class="calculator-button" onclick="appendToCalc('3')">3</button>
+                <button class="calculator-button" onclick="appendToCalc('0')">0</button>
+                
+                <button class="calculator-button" onclick="appendToCalc('.')">.</button>
+                <button class="calculator-button equals" onclick="calculateResult()">=</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            ARC Testnet v2.0 • Calculadora Integrada
             <br>
             <span id="fps" style="font-family: 'Courier New'; color: rgba(255, 255, 255, 0.8);"></span>
         </div>
@@ -535,23 +628,26 @@
 
     <div id="gameContainer">
         <div id="overlay">
-            <h1 id="statusMsg">🔒 Bloqueado</h1>
+            <h1 id="statusMsg">🔒 BLOQUEADO</h1>
             <p>Conecte sua carteira para liberar o acesso ao jogo.</p>
-            <p style="font-size: 0.9em; margin-top: 20px; color: rgba(255, 255, 255, 0.8);">
+            <p style="font-size: 0.9em; margin-top: 20px; color: rgba(255, 255, 255, 0.9);">
                 Use o mouse para mirar e segurar para carregar o poder do disparo.
             </p>
         </div>
         
         <div id="pauseOverlay">
-            <div style="font-size: 2em; text-shadow: 0 0 20px rgba(0, 255, 170, 0.6);">⏸️</div>
-            <div style="margin-top: 20px; font-size: 0.5em; color: rgba(255, 255, 255, 0.9);">JOGO PAUSADO</div>
-            <div style="margin-top: 10px; font-size: 0.4em; color: rgba(255, 255, 255, 0.7);">Clique em "Continuar" no painel</div>
+            <div style="font-size: 2.5em; text-shadow: 0 0 30px rgba(0, 255, 170, 0.8);">⏸️</div>
+            <div style="margin-top: 25px; font-size: 0.6em; color: rgba(255, 255, 255, 0.95);">JOGO PAUSADO</div>
+            <div style="margin-top: 15px; font-size: 0.5em; color: rgba(255, 255, 255, 0.8);">Clique em "Continuar" no painel</div>
         </div>
         
         <canvas id="game"></canvas>
+        
+        <!-- Ticker de Criptomoedas -->
         <div id="ticker">
-            <div id="tickerTrack">Carregando dados de mercado...</div>
+            <div id="tickerTrack">Carregando cotações...</div>
         </div>
+        
         <div id="fpsCounter">FPS: 0</div>
     </div>
 </div>
@@ -599,10 +695,8 @@ function showNotification(message, type = 'info') {
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    // Mostrar notificação
     setTimeout(() => notification.classList.add('show'), 10);
     
-    // Remover após 3 segundos
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
@@ -627,8 +721,52 @@ const ui = {
     btnPause: document.getElementById("btnPause"),
     btnRestart: document.getElementById("btnRestart"),
     fps: document.getElementById("fps"),
-    fpsCounter: document.getElementById("fpsCounter")
+    fpsCounter: document.getElementById("fpsCounter"),
+    calcDisplay: document.getElementById("calcDisplay")
 };
+
+/* ===== CALCULADORA ===== */
+let calcExpression = '';
+
+function appendToCalc(value) {
+    if (calcExpression === '0' && !'+-*/.'.includes(value)) {
+        calcExpression = value;
+    } else {
+        calcExpression += value;
+    }
+    ui.calcDisplay.textContent = calcExpression;
+}
+
+function clearCalc() {
+    calcExpression = '0';
+    ui.calcDisplay.textContent = calcExpression;
+}
+
+function backspaceCalc() {
+    calcExpression = calcExpression.slice(0, -1);
+    if (calcExpression === '') calcExpression = '0';
+    ui.calcDisplay.textContent = calcExpression;
+}
+
+function calculateResult() {
+    try {
+        const result = eval(calcExpression.replace('×', '*'));
+        calcExpression = result.toString();
+        ui.calcDisplay.textContent = calcExpression;
+        
+        // Efeito visual no resultado
+        ui.calcDisplay.style.textShadow = '0 0 20px rgba(0, 255, 170, 0.8)';
+        setTimeout(() => {
+            ui.calcDisplay.style.textShadow = '0 0 10px rgba(0, 255, 170, 0.5)';
+        }, 300);
+    } catch (error) {
+        ui.calcDisplay.textContent = 'Erro';
+        calcExpression = '0';
+        setTimeout(() => {
+            ui.calcDisplay.textContent = calcExpression;
+        }, 1000);
+    }
+}
 
 /* ===== SISTEMA DE FPS ===== */
 let fps = 0;
@@ -661,13 +799,12 @@ function updateUI() {
     ui.combo.textContent = `x${state.combo}`;
     ui.comboValue.textContent = `x${state.combo}`;
     
-    // Animação de combo
     if (state.combo > 1 && ui.comboDisplay) {
         ui.comboDisplay.textContent = `COMBO x${state.combo}!`;
         ui.comboDisplay.classList.add('active');
         const redValue = Math.min(255, state.combo * 30);
         ui.comboDisplay.style.background = 
-            `linear-gradient(45deg, rgba(255, 0, 128, 0.5), rgba(255, ${redValue}, 0, 0.5))`;
+            `linear-gradient(45deg, rgba(255, 0, 128, 0.8), rgba(255, ${redValue}, 0, 0.8))`;
     } else if (ui.comboDisplay) {
         ui.comboDisplay.classList.remove('active');
     }
@@ -675,45 +812,25 @@ function updateUI() {
 
 /* ===== CONEXÃO DA CARTEIRA ===== */
 ui.btnConnect.onclick = async () => {
-    console.log("Botão de conexão clicado");
-    
-    // Verificar se MetaMask está instalada
     if (typeof window.ethereum === 'undefined') {
         showNotification("MetaMask não encontrada! Instale a extensão.", "error");
-        console.error("MetaMask não encontrada");
         return;
     }
     
     try {
-        console.log("Solicitando conexão da carteira...");
-        
-        // Solicitar conexão
         const accounts = await window.ethereum.request({ 
             method: 'eth_requestAccounts' 
         });
-        
-        console.log("Contas recebidas:", accounts);
         
         if (!accounts || accounts.length === 0) {
             showNotification("Nenhuma conta conectada.", "error");
             return;
         }
         
-        // Obter a conta selecionada
         account = accounts[0];
-        console.log("Conta conectada:", account);
-        
-        // Configurar o provider ethers.js
         provider = new ethers.providers.Web3Provider(window.ethereum);
-        
-        // Obter o signer
         signer = provider.getSigner();
         
-        // Verificar se realmente temos o signer
-        const signerAddress = await signer.getAddress();
-        console.log("Signer address:", signerAddress);
-        
-        // Atualizar UI
         ui.btnSign.disabled = false;
         ui.btnConnect.textContent = "✅ Conectado";
         ui.btnConnect.disabled = true;
@@ -722,23 +839,18 @@ ui.btnConnect.onclick = async () => {
         updateUI();
         
     } catch (error) {
-        console.error("Erro detalhado de conexão:", error);
-        
-        // Verificar tipo de erro específico
         if (error.code === 4001) {
             showNotification("Conexão rejeitada pelo usuário.", "error");
         } else if (error.code === -32002) {
-            showNotification("Já há uma solicitação de conexão pendente. Verifique sua MetaMask.", "error");
+            showNotification("Conexão pendente. Verifique sua MetaMask.", "error");
         } else {
-            showNotification(`Erro de conexão: ${error.message}`, "error");
+            showNotification(`Erro: ${error.message}`, "error");
         }
     }
 };
 
-// Listener para mudança de conta
 if (window.ethereum) {
     window.ethereum.on('accountsChanged', (accounts) => {
-        console.log("Conta alterada:", accounts);
         if (accounts.length === 0) {
             showNotification("Carteira desconectada.", "error");
             account = null;
@@ -757,7 +869,6 @@ if (window.ethereum) {
     });
 
     window.ethereum.on('chainChanged', () => {
-        console.log("Rede alterada");
         window.location.reload();
     });
 }
@@ -772,9 +883,7 @@ ui.btnSign.onclick = async () => {
     try {
         const message = `ARC Bubble Shooter Authentication\n\nData: ${new Date().toISOString()}\nConta: ${account}`;
         
-        console.log("Solicitando assinatura...");
         const signature = await signer.signMessage(message);
-        console.log("Assinatura recebida:", signature);
         
         if (signature) {
             signed = true;
@@ -782,11 +891,10 @@ ui.btnSign.onclick = async () => {
             ui.btnSign.textContent = "✅ Assinado";
             ui.btnSign.disabled = true;
             
-            document.getElementById("statusMsg").textContent = "🔓 Pronto para Jogar";
+            document.getElementById("statusMsg").textContent = "🔓 PRONTO PARA JOGAR";
             showNotification("Assinatura confirmada! Pronto para jogar.", "success");
         }
     } catch (error) {
-        console.error("Erro de assinatura:", error);
         if (error.code === 4001) {
             showNotification("Assinatura cancelada pelo usuário.", "error");
         } else {
@@ -926,7 +1034,6 @@ function createParticles(x, y, color, count = 8) {
         
         container.appendChild(particle);
         
-        // Animação da partícula
         let frame = 0;
         function animateParticle() {
             frame++;
@@ -1031,30 +1138,24 @@ const Game = {
         
         updateFPS();
         
-        // Carregamento do poder
         if (this.isCharging) {
             this.power = Math.min(this.maxPower, this.power + 0.25);
             ui.power.style.width = `${(this.power / this.maxPower) * 100}%`;
         }
         
-        // Atualizar projétil
         if (this.bullet.active) {
-            // Aplicar atrito
             this.bullet.dx *= this.friction;
             this.bullet.dy *= this.friction;
             
-            // Limitar velocidade
             const speed = Math.hypot(this.bullet.dx, this.bullet.dy);
             if (speed > this.maxSpeed) {
                 this.bullet.dx = (this.bullet.dx / speed) * this.maxSpeed;
                 this.bullet.dy = (this.bullet.dy / speed) * this.maxSpeed;
             }
             
-            // Mover projétil
             this.bullet.x += this.bullet.dx;
             this.bullet.y += this.bullet.dy;
             
-            // Colisão com paredes
             if (this.bullet.x - this.bullet.r < 0) {
                 this.bullet.x = this.bullet.r;
                 this.bullet.dx *= -0.95;
@@ -1063,25 +1164,21 @@ const Game = {
                 this.bullet.dx *= -0.95;
             }
             
-            // Colisão com teto
             if (this.bullet.y - this.bullet.r < 0) {
                 this.bullet.y = this.bullet.r;
                 this.bullet.dy *= -0.95;
             }
             
-            // Colisão com chão
             if (this.bullet.y > canvas.height) {
                 state.combo = 1;
                 this.resetBullet();
                 showNotification("Combo perdido!", "error");
             }
             
-            // Detecção de colisão com bolhas
             for (let i = this.bubbles.length - 1; i >= 0; i--) {
                 const b = this.bubbles[i];
                 if (!b.active) continue;
                 
-                // Verificação rápida de distância
                 const dx = this.bullet.x - b.x;
                 const dy = this.bullet.y - b.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1090,17 +1187,14 @@ const Game = {
                     b.active = false;
                     this.bullet.active = false;
                     
-                    // Efeitos
                     playSound('pop');
                     createParticles(b.x, b.y, b.color, 15);
                     
-                    // Lógica de pontuação
                     state.combo++;
                     state.maxCombo = Math.max(state.maxCombo, state.combo);
                     state.score += 10 * state.combo;
                     state.balance += 0.0001 * state.combo;
                     
-                    // Bônus por combo alto
                     if (state.combo >= 5) {
                         state.score += 50;
                         showNotification(`COMBO x${state.combo}! +50 bônus`, "success");
@@ -1113,7 +1207,6 @@ const Game = {
             }
         }
         
-        // Verificar se completou o nível
         const activeBubbles = this.bubbles.filter(b => b.active).length;
         if (activeBubbles === 0) {
             state.level++;
@@ -1130,18 +1223,17 @@ const Game = {
     draw() {
         if (!gameRunning || !ctx) return;
         
-        // Limpar canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Fundo gradiente com transparência
+        // Fundo gradiente
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, 'rgba(0, 10, 20, 0.3)');
-        gradient.addColorStop(1, 'rgba(0, 20, 40, 0.3)');
+        gradient.addColorStop(0, 'rgba(0, 10, 20, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 20, 40, 0.4)');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Desenhar grade de fundo
-        ctx.strokeStyle = 'rgba(0, 255, 170, 0.1)';
+        // Grade de fundo
+        ctx.strokeStyle = 'rgba(0, 255, 170, 0.15)';
         ctx.lineWidth = 1;
         for(let x = 0; x < canvas.width; x += 50) {
             ctx.beginPath();
@@ -1160,7 +1252,6 @@ const Game = {
         this.bubbles.forEach(b => {
             if (!b.active) return;
             
-            // Efeito de brilho
             const glow = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * 1.5);
             glow.addColorStop(0, b.color);
             glow.addColorStop(0.7, b.color.replace(')', ', 0.7)').replace('rgb', 'rgba'));
@@ -1171,21 +1262,18 @@ const Game = {
             ctx.fillStyle = glow;
             ctx.fill();
             
-            // Borda da bolha
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Reflexo
             ctx.beginPath();
             ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.fill();
         });
         
         // Desenhar projétil
         if (this.bullet.active || this.isCharging) {
-            // Brilho do projétil
             const bulletGlow = ctx.createRadialGradient(
                 this.bullet.x, this.bullet.y, 0,
                 this.bullet.x, this.bullet.y, this.bullet.r * 2
@@ -1199,18 +1287,16 @@ const Game = {
             ctx.fillStyle = bulletGlow;
             ctx.fill();
             
-            // Corpo do projétil
             ctx.beginPath();
             ctx.arc(this.bullet.x, this.bullet.y, this.bullet.r, 0, Math.PI * 2);
             ctx.fillStyle = this.bullet.color;
             ctx.fill();
             
-            // Linha de mira (se carregando)
             if (this.isCharging) {
                 ctx.beginPath();
                 ctx.moveTo(this.bullet.x, this.bullet.y);
                 ctx.lineTo(mouseX, mouseY);
-                ctx.strokeStyle = 'rgba(0, 255, 170, 0.3)';
+                ctx.strokeStyle = 'rgba(0, 255, 170, 0.4)';
                 ctx.setLineDash([5, 5]);
                 ctx.lineWidth = 2;
                 ctx.stroke();
@@ -1218,12 +1304,11 @@ const Game = {
             }
         }
         
-        // Indicador de poder carregado
         if (this.isCharging && this.power > 0) {
             const powerRadius = this.power * 2;
             ctx.beginPath();
             ctx.arc(this.bullet.x, this.bullet.y, powerRadius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(255, ${255 - (this.power * 10)}, 0, 0.4)`;
+            ctx.strokeStyle = `rgba(255, ${255 - (this.power * 10)}, 0, 0.5)`;
             ctx.lineWidth = 4;
             ctx.stroke();
         }
@@ -1266,40 +1351,76 @@ canvas.addEventListener("mouseup", () => {
     ui.power.style.width = "0%";
 });
 
-/* ===== TICKER DE PREÇOS ===== */
-async function fetchPrices() {
+/* ===== TICKER DE CRIPTOMOEDAS (20 PRINCIPAIS) ===== */
+async function fetchTopCryptos() {
     try {
-        const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
+        const res = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false");
         const data = await res.json();
-        document.getElementById("tickerTrack").innerHTML = 
-            `BTC: $${data.bitcoin.usd} | ETH: $${data.ethereum.usd} | ARC: $0.1242 (Testnet) • `;
+        
+        let tickerHTML = '';
+        data.forEach(crypto => {
+            const symbol = crypto.symbol.toUpperCase();
+            const price = crypto.current_price.toFixed(2);
+            const change = crypto.price_change_percentage_24h;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeSign = change >= 0 ? '+' : '';
+            const changeFormatted = `${changeSign}${change.toFixed(2)}%`;
+            
+            tickerHTML += `
+                <span class="crypto-ticker-item">
+                    <span class="symbol">${symbol}</span>
+                    <span class="price">$${price}</span>
+                    <span class="change ${changeClass}">${changeFormatted}</span>
+                </span> • `;
+        });
+        
+        document.getElementById("tickerTrack").innerHTML = tickerHTML;
     } catch(e) { 
-        document.getElementById("tickerTrack").innerHTML = 
-            "BTC: $45,000 | ETH: $2,400 | ARC: $0.1242 (Testnet) • ";
+        console.error("Erro ao carregar criptomoedas:", e);
+        // Fallback com dados estáticos
+        const fallbackCryptos = [
+            {symbol: 'BTC', price: '45,231.50', change: '+2.34'},
+            {symbol: 'ETH', price: '3,128.75', change: '+1.89'},
+            {symbol: 'BNB', price: '587.20', change: '-0.45'},
+            {symbol: 'SOL', price: '102.30', change: '+5.67'},
+            {symbol: 'XRP', price: '0.6234', change: '+0.89'},
+            {symbol: 'ADA', price: '0.4589', change: '-1.23'},
+            {symbol: 'AVAX', price: '35.67', change: '+3.45'},
+            {symbol: 'DOT', price: '7.89', change: '+0.67'},
+            {symbol: 'DOGE', price: '0.1589', change: '+2.34'},
+            {symbol: 'MATIC', price: '0.9567', change: '-0.89'},
+            {symbol: 'SHIB', price: '0.000025', change: '+1.23'},
+            {symbol: 'TRX', price: '0.1045', change: '+0.45'},
+            {symbol: 'LTC', price: '68.90', change: '-0.34'},
+            {symbol: 'UNI', price: '6.78', change: '+1.56'},
+            {symbol: 'ATOM', price: '9.45', change: '+0.89'},
+            {symbol: 'LINK', price: '14.23', change: '+2.12'},
+            {symbol: 'XLM', price: '0.1234', change: '+0.34'},
+            {symbol: 'ETC', price: '26.78', change: '-1.23'},
+            {symbol: 'ALGO', price: '0.1890', change: '+0.67'},
+            {symbol: 'VET', price: '0.0345', change: '+1.89'}
+        ];
+        
+        let fallbackHTML = '';
+        fallbackCryptos.forEach(crypto => {
+            fallbackHTML += `
+                <span class="crypto-ticker-item">
+                    <span class="symbol">${crypto.symbol}</span>
+                    <span class="price">$${crypto.price}</span>
+                    <span class="change ${crypto.change.startsWith('+') ? 'positive' : 'negative'}">${crypto.change}%</span>
+                </span> • `;
+        });
+        
+        document.getElementById("tickerTrack").innerHTML = fallbackHTML;
     }
 }
 
-// Inicializar
-fetchPrices();
-setInterval(fetchPrices, 60000);
+// Inicializar ticker
+fetchTopCryptos();
+setInterval(fetchTopCryptos, 60000); // Atualiza a cada minuto
 
-/* ===== DEBUG: Verificar se elementos existem ===== */
-console.log("ARC Bubble Shooter iniciado");
-console.log("Elementos carregados:");
-console.log("btnConnect:", ui.btnConnect);
-console.log("Ethers disponível:", typeof ethers !== 'undefined');
-console.log("MetaMask disponível:", typeof window.ethereum !== 'undefined');
-
-// Adicionar listener para MetaMask quando estiver disponível
-if (window.ethereum) {
-    window.ethereum.on('connect', (connectInfo) => {
-        console.log("MetaMask conectada:", connectInfo);
-    });
-    
-    window.ethereum.on('disconnect', (error) => {
-        console.log("MetaMask desconectada:", error);
-    });
-}
+/* ===== INICIALIZAÇÃO ===== */
+console.log("ARC Bubble Shooter inicializado");
 </script>
 </body>
 </html>
