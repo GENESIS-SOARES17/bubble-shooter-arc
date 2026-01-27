@@ -2,489 +2,282 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Bubble Shooter Web3 ARC PRO</title>
+<title>WEB3 SHOOTER PRO</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
 <style>
-*{box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:url("background.png") no-repeat center center fixed;
-  background-size:cover;
-  color:#fff;
-}
-
-/* LAYOUT PRINCIPAL */
-#layout{
+  background:#000;
+  color:#0ff;
   display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  gap:12px;
-  width:100%;
   height:100vh;
-  padding:4vh 3vw;
-}
-
-/* PAINEL LATERAL */
-#sidePanel{
-  width:300px;
-  background:rgba(0,0,0,0.85);
-  backdrop-filter:blur(6px);
-  border:1px solid rgba(0,255,170,0.5);
-  border-radius:14px;
-  padding:12px;
-  font-size:13px;
-}
-
-h2{
-  margin:2px 0 8px;
-  text-align:center;
-  font-size:15px;
-  color:#00ffaa;
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin:3px 0;
-}
-
-button{
-  width:100%;
-  margin:4px 0;
-  padding:7px;
-  border:none;
-  border-radius:7px;
-  background:linear-gradient(90deg,#00ffaa,#00aaff);
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* CALCULADORA */
-#calc{
-  margin-top:8px;
-  padding:8px;
-  background:rgba(255,255,255,0.05);
-  border-radius:8px;
-}
-#calc input,#calc select{
-  width:100%;
-  margin:3px 0;
-  padding:6px;
-  border-radius:6px;
-  border:none;
-}
-
-/* ÁREA DO JOGO */
-#gameContainer{
-  width:70vw;
-  height:70vh;
-  position:relative;
-  border:1px solid rgba(0,255,170,0.5);
-  border-radius:16px;
   overflow:hidden;
-  background:rgba(0,0,0,0.1);
 }
 
-/* TRANSPARÊNCIA 90% */
+/* 🎮 JOGO */
+#gameArea{
+  width:70%;
+  height:100%;
+  position:relative;
+  background:url("background.png") center/cover no-repeat;
+}
 #overlay{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.9);
-  pointer-events:none;
-  z-index:0;
-}
-
-/* BLOQUEIO SEM CARTEIRA */
-#lockScreen{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.85);
+  background:rgba(0,0,0,0.9); /* 90% transparência */
   display:flex;
-  align-items:center;
+  flex-direction:column;
   justify-content:center;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-  color:#00ffaa;
+  align-items:center;
+  gap:10px;
   z-index:10;
 }
-
-/* CANVAS */
+button{
+  padding:10px 18px;
+  background:#00ffff;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:disabled{
+  background:#333;
+  color:#777;
+}
 canvas{
   width:100%;
   height:100%;
   display:block;
-  background:transparent;
-  position:relative;
-  z-index:1;
 }
 
-/* BARRA DE FORÇA */
-.bar{
-  width:100%;
-  height:10px;
-  background:rgba(255,255,255,0.1);
-  border-radius:6px;
-  overflow:hidden;
-}
-#powerBar{
+/* 📊 PAINEL LATERAL */
+#sidePanel{
+  width:30%;
   height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#00ff88,#ffff00,#ff0000);
-}
-
-/* TICKER */
-#ticker{
-  position:absolute;
-  bottom:0;
-  left:0;
-  width:100%;
   background:rgba(0,0,0,0.85);
-  border-top:1px solid rgba(0,255,170,0.4);
-  padding:4px;
-  font-size:11px;
-  white-space:nowrap;
-  overflow:hidden;
-  z-index:4;
+  border-left:2px solid #00ffff;
+  padding:15px;
+  overflow:auto;
 }
-#ticker span{
-  margin-right:12px;
-  color:#00ffaa;
+.panelBox{
+  border:1px solid #00ffff;
+  border-radius:10px;
+  padding:10px;
+  margin-bottom:12px;
+}
+h3{margin-bottom:8px;color:#0ff;}
+input{
+  width:100%;
+  padding:6px;
+  margin:4px 0;
+  background:#000;
+  color:#0ff;
+  border:1px solid #0ff;
+  border-radius:4px;
 }
 </style>
 </head>
 <body>
 
-<div id="layout">
+<div id="gameArea">
+  <canvas id="game"></canvas>
 
-  <!-- PAINEL LATERAL -->
-  <div id="sidePanel">
-    <h2>🎮 Bubble Shooter Web3</h2>
-    <div class="row">👛 Wallet: <span id="wallet">---</span></div>
-    <div class="row">💰 USDC: <span id="balance">0.000</span></div>
-    <div class="row">⭐ Score: <span id="score">0</span></div>
-    <div class="row">🔥 Combo: <span id="combo">0</span></div>
-    <div class="row">🎯 Level: <span id="level">1</span></div>
-
-    <div>⚡ Força do tiro</div>
-    <div class="bar"><div id="powerBar"></div></div>
-
-    <button onclick="connectWallet()">Conectar MetaMask</button>
-    <button onclick="deposit()">Depositar (simulado)</button>
-    <button onclick="withdraw()">Sacar (simulado)</button>
-
-    <div id="calc">
-      <b>💱 Calculadora Cripto</b>
-      <input type="number" id="amount" placeholder="Valor">
-      <select id="asset"></select>
-      <div id="result">Resultado: -</div>
-    </div>
+  <div id="overlay">
+    <h2>🎮 WEB3 SHOOTER PRO</h2>
+    <button id="connectBtn">🔗 Conectar Carteira</button>
+    <button id="signBtn" disabled>✍️ Assinar Mensagem</button>
+    <button id="startBtn" disabled>▶️ Iniciar Jogo</button>
+    <p id="walletInfo"></p>
   </div>
-
-  <!-- JOGO -->
-  <div id="gameContainer">
-    <div id="overlay"></div>
-    <div id="lockScreen">🔒 Conecte sua carteira para jogar</div>
-    <canvas id="game"></canvas>
-    <div id="ticker"></div>
-  </div>
-
 </div>
 
+<div id="sidePanel">
+  <div class="panelBox">
+    <h3>👛 Carteira</h3>
+    <div id="walletStatus">Desconectada</div>
+  </div>
+
+  <div class="panelBox">
+    <h3>💎 Calculadora Cripto</h3>
+    <input id="usdInput" placeholder="USD">
+    <input id="usdcInput" placeholder="USDC">
+    <button onclick="convert()">Converter</button>
+  </div>
+
+  <div class="panelBox">
+    <h3>📊 Info do Jogo</h3>
+    <div>Pontos: <span id="score">0</span></div>
+    <div>Nível: <span id="level">1</span></div>
+  </div>
+</div>
+
+<audio id="explosionSound" src="explosion.mp3"></audio>
+
 <script>
-/* ===========================
-   CANVAS
-=========================== */
-const container=document.getElementById("gameContainer");
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d",{alpha:true});
+/* ================== WEB3 ================== */
 
-function resize(){
-  canvas.width=container.clientWidth;
-  canvas.height=container.clientHeight;
-}
-window.addEventListener("resize",resize);
-resize();
-
-/* ===========================
-   STATE
-=========================== */
-const State={
-  score:0,
-  combo:0,
-  level:1,
-  balance:0,
-  wallet:null,
-  unlocked:false
+const ARC_CHAIN = {
+  chainId: "0x4D01F2", // 5042002 hex
+  chainName: "ARC Testnet",
+  rpcUrls: ["https://rpc.testnet.arc.network"],
+  nativeCurrency: { name:"ARC", symbol:"ARC", decimals:18 },
+  blockExplorerUrls: []
 };
 
-function updateUI(){
-  score.textContent=State.score;
-  combo.textContent=State.combo;
-  level.textContent=State.level;
-  balance.textContent=State.balance.toFixed(3);
-  wallet.textContent=State.wallet?State.wallet.slice(0,6)+"..."+State.wallet.slice(-4):"---";
-}
+let provider, signer, walletAddress;
+let signed = false;
 
-/* ===========================
-   SOM
-=========================== */
-const explosionSound=new Audio("explosion.mp3");
-function playExplosion(){
-  try{
-    explosionSound.currentTime=0;
-    explosionSound.play();
-  }catch(e){}
-}
+const connectBtn = document.getElementById("connectBtn");
+const signBtn = document.getElementById("signBtn");
+const startBtn = document.getElementById("startBtn");
+const walletInfo = document.getElementById("walletInfo");
+const walletStatus = document.getElementById("walletStatus");
 
-/* ===========================
-   METAMASK ARC TESTNET
-=========================== */
-const ARC_CHAIN_ID="0x4CF7D2"; // 5042002
-async function connectWallet(){
+connectBtn.onclick = async () => {
   if(!window.ethereum){
-    alert("MetaMask não encontrada");
+    alert("MetaMask não encontrada!");
     return;
   }
+
+  provider = new ethers.BrowserProvider(window.ethereum);
+
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+
   try{
-    const accounts=await ethereum.request({method:"eth_requestAccounts"});
-    State.wallet=accounts[0];
-
-    await ethereum.request({
+    await window.ethereum.request({
       method:"wallet_switchEthereumChain",
-      params:[{chainId:ARC_CHAIN_ID}]
+      params:[{chainId: ARC_CHAIN.chainId}]
     });
-
-    State.unlocked=true;
-    document.getElementById("lockScreen").style.display="none";
-
-    ethereum.on("accountsChanged",(acc)=>{
-      if(acc.length===0){
-        State.wallet=null;
-        State.unlocked=false;
-        document.getElementById("lockScreen").style.display="flex";
-      }else{
-        State.wallet=acc[0];
-      }
-      updateUI();
-    });
-
-    updateUI();
   }catch(e){
-    console.log(e);
-  }
-}
-
-/* ===========================
-   DEPÓSITO / SAQUE SIMULADO
-=========================== */
-function deposit(){
-  if(!State.unlocked) return alert("Conecte a carteira primeiro!");
-  State.balance+=0.01;
-}
-function withdraw(){
-  if(!State.unlocked) return alert("Conecte a carteira primeiro!");
-  if(State.balance<0.01)return alert("Saldo insuficiente");
-  State.balance-=0.01;
-}
-
-/* ===========================
-   PARTÍCULAS
-=========================== */
-const particles=[];
-function explode(x,y,color){
-  for(let i=0;i<25;i++){
-    particles.push({
-      x,y,
-      vx:(Math.random()-0.5)*6,
-      vy:(Math.random()-0.5)*6,
-      life:35,
-      color
+    await window.ethereum.request({
+      method:"wallet_addEthereumChain",
+      params:[ARC_CHAIN]
     });
   }
-}
-function drawParticles(){
-  for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i];
-    p.x+=p.vx;
-    p.y+=p.vy;
-    p.life--;
-    ctx.globalAlpha=p.life/35;
-    ctx.fillStyle=p.color;
-    ctx.fillRect(p.x,p.y,3,3);
-    if(p.life<=0)particles.splice(i,1);
-  }
-  ctx.globalAlpha=1;
-}
 
-/* ===========================
-   GAME ENGINE (BLOQUEADO SEM WALLET)
-=========================== */
-const Game={
-  bubbles:[],
-  bullet:{x:0,y:0,r:18,dx:0,dy:0,active:false},
-  charging:false,
-  power:0,
-  maxPower:18,
-  mouse:{x:0,y:0},
+  signer = await provider.getSigner();
+  walletAddress = await signer.getAddress();
 
-  init(){
-    this.bubbles=[];
-    const colors=["#00ff88","#00aaff","#ffaa00","#ff4444"];
-    const gapX=45;
-    const gapY=42;
-    const cols=Math.floor(canvas.width/gapX);
-    const rows=Math.floor(canvas.height*0.6/gapY);
+  walletInfo.innerText = "Carteira: " + walletAddress.slice(0,6)+"..."+walletAddress.slice(-4);
+  walletStatus.innerText = "Conectada ✅";
 
-    for(let i=0;i<rows;i++){
-      for(let j=0;j<cols;j++){
-        this.bubbles.push({
-          x:gapX/2+j*gapX,
-          y:gapY/2+i*gapY,
-          r:16,
-          color:colors[(i+j)%colors.length],
-          active:true
-        });
-      }
-    }
-    this.resetBullet();
-  },
+  signBtn.disabled = false;
+};
 
-  resetBullet(){
-    this.bullet.x=canvas.width/2;
-    this.bullet.y=canvas.height-40;
-    this.bullet.active=false;
-  },
-
-  shoot(angle){
-    if(this.bullet.active || !State.unlocked)return;
-    const speed=4+this.power;
-    this.bullet.dx=Math.cos(angle)*speed;
-    this.bullet.dy=Math.sin(angle)*speed;
-    this.bullet.active=true;
-    this.power=0;
-    powerBar.style.width="0%";
-  },
-
-  update(){
-    if(!State.unlocked) return;
-
-    if(this.charging){
-      this.power=Math.min(this.maxPower,this.power+0.25);
-      powerBar.style.width=(this.power/this.maxPower*100)+"%";
-    }
-
-    if(this.bullet.active){
-      this.bullet.x+=this.bullet.dx;
-      this.bullet.y+=this.bullet.dy;
-
-      if(this.bullet.x<0||this.bullet.x>canvas.width) this.bullet.dx*=-1;
-      if(this.bullet.y<0){
-        this.resetBullet();
-        State.combo=0;
-      }
-
-      for(const b of this.bubbles){
-        if(!b.active)continue;
-        const d=Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y);
-        if(d<this.bullet.r+b.r){
-          b.active=false;
-          playExplosion();
-          explode(b.x,b.y,b.color);
-
-          State.combo++;
-          State.score+=10*State.combo;
-          State.balance+=0.001;
-
-          this.resetBullet();
-        }
-      }
-    }
-
-    if(this.bubbles.filter(b=>b.active).length<5){
-      State.level++;
-      this.init();
-    }
-  },
-
-  draw(){
-    ctx.fillStyle="rgba(0,0,0,0.15)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    for(const b of this.bubbles){
-      if(!b.active)continue;
-      ctx.beginPath();
-      ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fillStyle=b.color;
-      ctx.shadowBlur=10;
-      ctx.shadowColor=b.color;
-      ctx.fill();
-      ctx.shadowBlur=0;
-    }
-
-    ctx.beginPath();
-    ctx.arc(this.bullet.x,this.bullet.y,this.bullet.r,0,Math.PI*2);
-    ctx.fillStyle="#fff";
-    ctx.fill();
-
-    drawParticles();
+signBtn.onclick = async () => {
+  try{
+    const msg = "Autorizo jogar no WEB3 SHOOTER PRO";
+    await signer.signMessage(msg);
+    signed = true;
+    signBtn.disabled = true;
+    startBtn.disabled = false;
+    walletStatus.innerText = "Conectada + Assinada ✅";
+  }catch(e){
+    alert("Assinatura cancelada!");
   }
 };
 
-/* INPUT */
-canvas.addEventListener("mousemove",e=>{
-  const rect=canvas.getBoundingClientRect();
-  Game.mouse.x=e.clientX-rect.left;
-  Game.mouse.y=e.clientY-rect.top;
-});
-canvas.addEventListener("mousedown",()=>Game.charging=true);
-canvas.addEventListener("mouseup",()=>{
-  Game.charging=false;
-  const angle=Math.atan2(Game.mouse.y-Game.bullet.y,Game.mouse.x-Game.bullet.x);
-  Game.shoot(angle);
-});
+/* ================== JOGO ================== */
 
-/* LOOP */
-function loop(){
-  Game.update();
-  Game.draw();
-  updateUI();
-  requestAnimationFrame(loop);
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 }
-Game.init();
-loop();
+window.addEventListener("resize", resize);
+resize();
 
-/* ===========================
-   CRIPTO TOP 10 + CALCULADORA
-=========================== */
-const assets=[
-  "bitcoin","ethereum","tether","usd-coin","bnb",
-  "xrp","cardano","solana","tron","dogecoin"
-];
+let bubbles = [];
+let bullets = [];
+let score = 0;
+let level = 1;
+let playing = false;
 
-async function loadPrices(){
-  try{
-    const res=await fetch("https://api.coingecko.com/api/v3/simple/price?ids="+assets.join(",")+"&vs_currencies=usd");
-    const data=await res.json();
-    ticker.innerHTML="";
-    asset.innerHTML="";
-    assets.forEach(id=>{
-      const price=data[id].usd;
-      ticker.innerHTML+=`<span>${id.toUpperCase()}: $${price}</span>`;
-      asset.innerHTML+=`<option value="${price}">${id.toUpperCase()}</option>`;
+function spawnBubble(){
+  bubbles.push({
+    x: Math.random()*canvas.width,
+    y: canvas.height+20,
+    r: 15 + Math.random()*20,
+    speed: 1 + level*0.3
+  });
+}
+
+function shoot(x,y){
+  bullets.push({x,y,speed:8});
+}
+
+canvas.addEventListener("click",(e)=>{
+  if(!playing) return;
+  shoot(e.offsetX,e.offsetY);
+});
+
+function explosion(x,y){
+  const sound = document.getElementById("explosionSound");
+  sound.currentTime = 0;
+  sound.play();
+}
+
+function update(){
+  if(!playing) return;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(Math.random()<0.02) spawnBubble();
+
+  bubbles.forEach((b,i)=>{
+    b.y -= b.speed;
+    ctx.beginPath();
+    ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(0,255,255,0.7)";
+    ctx.fill();
+
+    bullets.forEach((bu,j)=>{
+      const dx=b.x-bu.x;
+      const dy=b.y-bu.y;
+      if(Math.sqrt(dx*dx+dy*dy)<b.r){
+        explosion(b.x,b.y);
+        bubbles.splice(i,1);
+        bullets.splice(j,1);
+        score++;
+        if(score%10==0) level++;
+        document.getElementById("score").innerText=score;
+        document.getElementById("level").innerText=level;
+      }
     });
-  }catch(e){}
-}
-loadPrices();
-setInterval(loadPrices,10000);
+  });
 
-amount.oninput=calc;
-asset.onchange=calc;
-function calc(){
-  const v=parseFloat(amount.value||0);
-  const p=parseFloat(asset.value||0);
-  result.textContent="Resultado: $"+(v*p).toFixed(4);
+  bullets.forEach((bu,j)=>{
+    bu.y -= bu.speed;
+    ctx.fillStyle="#fff";
+    ctx.fillRect(bu.x,bu.y,3,8);
+    if(bu.y<0) bullets.splice(j,1);
+  });
+
+  requestAnimationFrame(update);
+}
+
+startBtn.onclick = ()=>{
+  if(!signed){
+    alert("Conecte e assine a carteira!");
+    return;
+  }
+  document.getElementById("overlay").style.display="none";
+  playing = true;
+  update();
+};
+
+/* ================== CALCULADORA ================== */
+
+function convert(){
+  const usd = parseFloat(document.getElementById("usdInput").value||0);
+  const usdc = parseFloat(document.getElementById("usdcInput").value||0);
+  if(usd>0){
+    document.getElementById("usdcInput").value = usd.toFixed(2);
+  }else if(usdc>0){
+    document.getElementById("usdInput").value = usdc.toFixed(2);
+  }
 }
 </script>
 </body>
