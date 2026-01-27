@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARC Bubble Shooter - 3 Níveis</title>
+    <title>ARC Bubble Shooter - Escala Pro</title>
     <style>
         body {
             margin: 0;
@@ -52,7 +52,7 @@
             transition: 0.2s;
         }
 
-        button:hover { transform: scale(1.05); filter: brightness(1.1); }
+        button:hover { transform: scale(1.05); }
         .btn-skip { background: #ffca28; }
         .btn-reset { background: #ff4444; color: white; }
 
@@ -74,7 +74,7 @@
         <button class="btn-reset" onclick="resetGame()">REINICIAR</button>
         <button class="btn-skip" onclick="skipLevel()">PULAR FASE</button>
     </div>
-    <div id="status" style="font-size: 13px; margin: 10px 0;">FASE 1: EXPLODA TODAS AS BOLHAS!</div>
+    <div id="status" style="font-size: 13px; margin: 10px 0;">SHOOTER GIGANTE ATIVADO!</div>
     <canvas id="gameCanvas" width="450" height="550"></canvas>
 </div>
 
@@ -109,38 +109,28 @@
     const shootImg = new Image(); shootImg.src = 'shooter.png';
 
     let score = 0, level = 1, bubbles = [], floatingTexts = [];
-    let bullet = { x: 225, y: 510, r: 20, active: false, dx: 0, dy: 0 };
+    // Shooter 100% maior (Raio 40)
+    let bullet = { x: 225, y: 500, r: 40, active: false, dx: 0, dy: 0 };
 
     function init(lvl) {
         bubbles = [];
         floatingTexts = [];
         bullet.active = false;
-        bullet.x = 225; bullet.y = 510;
+        bullet.x = 225; bullet.y = 500;
         
-        // Dificuldade: Aumenta as linhas conforme a fase (Max 3 fases)
         const rows = 5 + lvl; 
         for (let i = 0; i < rows; i++) {
             let col = colors[i % colors.length];
-            for (let j = 0; j < 8; j++) {
-                bubbles.push({ x: 45 + (j * 52), y: 80 + (i * 45), r: 19, color: col, active: true });
+            // Bolhas 50% menores (Raio 10) e mais juntas (Espaço 25)
+            for (let j = 0; j < 16; j++) { 
+                bubbles.push({ x: 35 + (j * 25), y: 70 + (i * 25), r: 10, color: col, active: true });
             }
         }
-        document.getElementById('status').innerText = `FASE ${lvl}: VELOCIDADE AUMENTADA!`;
+        document.getElementById('status').innerText = `FASE ${lvl}: ALVOS PEQUENOS!`;
     }
 
-    // --- BOTÕES ---
-    function resetGame() {
-        score = 0; level = 1; init(1);
-    }
-
-    function skipLevel() {
-        if (level < 3) {
-            level++;
-            init(level);
-        } else {
-            alert("VOCÊ JÁ ESTÁ NA ÚLTIMA FASE!");
-        }
-    }
+    function resetGame() { score = 0; level = 1; init(1); }
+    function skipLevel() { if (level < 3) { level++; init(level); } }
 
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
@@ -155,8 +145,7 @@
         if (bullet.active) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        // Velocidade base aumenta com o nível
-        const speed = 10 + (level * 3);
+        const speed = 12 + (level * 2);
         bullet.dx = Math.cos(angle) * speed;
         bullet.dy = Math.sin(angle) * speed;
         bullet.active = true;
@@ -165,7 +154,7 @@
     function update() {
         if (bullet.active) {
             bullet.x += bullet.dx; bullet.y += bullet.dy;
-            if (bullet.x < 20 || bullet.x > 430) bullet.dx *= -1;
+            if (bullet.x < bullet.r || bullet.x > canvas.width - bullet.r) bullet.dx *= -1;
             
             bubbles.forEach(b => {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
@@ -174,10 +163,10 @@
                     score += gained;
                     floatingTexts.push({ x: b.x, y: b.y, text: "+" + gained, opacity: 1 });
                     playPop();
-                    bullet.active = false; bullet.x = 225; bullet.y = 510;
+                    // O Shooter não reseta ao tocar, ele atravessa destruindo tudo no caminho até o topo!
                 }
             });
-            if (bullet.y < 0 || bullet.y > 550) { bullet.active = false; bullet.x = 225; bullet.y = 510; }
+            if (bullet.y < 0 || bullet.y > 550) { bullet.active = false; bullet.x = 225; bullet.y = 500; }
         }
 
         floatingTexts.forEach((t, i) => {
@@ -185,15 +174,9 @@
             if (t.opacity <= 0) floatingTexts.splice(i, 1);
         });
 
-        // Passar de fase automaticamente
         if (bubbles.length > 0 && bubbles.every(b => !b.active)) {
-            if (level < 3) {
-                level++;
-                init(level);
-            } else {
-                document.getElementById('status').innerText = "🏆 VOCÊ VENCEU O ARCADE!";
-                bullet.active = false;
-            }
+            if (level < 3) { level++; init(level); }
+            else { document.getElementById('status').innerText = "🏆 MESTRE DO ARCADE!"; }
         }
     }
 
@@ -212,8 +195,8 @@
 
         floatingTexts.forEach(t => {
             ctx.fillStyle = `rgba(0, 255, 136, ${t.opacity})`;
-            ctx.font = "bold 18px Arial";
-            ctx.fillText(t.text, t.x - 10, t.y);
+            ctx.font = "bold 14px Arial";
+            ctx.fillText(t.text, t.x - 5, t.y);
         });
 
         if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
