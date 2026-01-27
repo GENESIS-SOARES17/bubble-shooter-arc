@@ -8,7 +8,7 @@
 body{
   margin:0;
   font-family:Arial,sans-serif;
-  background:url("bg.jpg") no-repeat center center fixed;
+  background:url("background.png") no-repeat center center fixed;
   background-size:cover;
   color:#fff;
 }
@@ -22,7 +22,16 @@ body{
   border:1px solid rgba(0,255,170,0.5);
   border-radius:16px;
   overflow:hidden;
-  background:rgba(0,0,0,0.4);
+  background:rgba(0,0,0,0.1);
+}
+
+/* FUNDO COM TRANSPARÊNCIA REAL */
+#overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.9); /* 90% transparência */
+  pointer-events:none;
+  z-index:0;
 }
 
 /* CANVAS */
@@ -31,6 +40,8 @@ canvas{
   height:100%;
   display:block;
   background:transparent;
+  position:relative;
+  z-index:1;
 }
 
 /* PAINEL GAMER */
@@ -38,14 +49,14 @@ canvas{
   position:absolute;
   top:10px;
   left:10px;
-  width:280px;
-  background:rgba(0,0,0,0.9); /* 90% transparência */
+  width:290px;
+  background:rgba(0,0,0,0.9);
   backdrop-filter:blur(6px);
   border:1px solid rgba(0,255,170,0.5);
   border-radius:12px;
   padding:10px;
   font-size:13px;
-  z-index:10;
+  z-index:5;
 }
 
 h2{
@@ -113,6 +124,7 @@ button{
   font-size:11px;
   white-space:nowrap;
   overflow:hidden;
+  z-index:4;
 }
 #ticker span{
   margin-right:12px;
@@ -123,6 +135,8 @@ button{
 <body>
 
 <div id="gameContainer">
+
+  <div id="overlay"></div>
 
   <div id="panel">
     <h2>🎮 Bubble Shooter Web3</h2>
@@ -154,7 +168,7 @@ button{
 
 <script>
 /* ===========================
-   CANVAS AJUSTADO (70%)
+   CANVAS 70%
 =========================== */
 const container=document.getElementById("gameContainer");
 const canvas=document.getElementById("game");
@@ -187,21 +201,18 @@ function updateUI(){
 }
 
 /* ===========================
-   SONS LOCAIS (PASTA)
+   SOM LOCAL (PASTA)
 =========================== */
-const SFX={
-  shoot:new Audio("shoot.mp3"),
-  boom:new Audio("boom.mp3")
-};
-function playSound(name){
+const explosionSound=new Audio("explosion.mp3");
+function playExplosion(){
   try{
-    SFX[name].currentTime=0;
-    SFX[name].play();
+    explosionSound.currentTime=0;
+    explosionSound.play();
   }catch(e){}
 }
 
 /* ===========================
-   METAMASK ESTÁVEL (ARC)
+   METAMASK ARC TESTNET
 =========================== */
 const ARC_CHAIN_ID="0x4CF7D2"; // 5042002
 async function connectWallet(){
@@ -224,8 +235,8 @@ async function connectWallet(){
     });
 
     updateUI();
-  }catch(err){
-    console.log(err);
+  }catch(e){
+    console.log(e);
   }
 }
 
@@ -245,12 +256,12 @@ function withdraw(){
 =========================== */
 const particles=[];
 function explode(x,y,color){
-  for(let i=0;i<20;i++){
+  for(let i=0;i<25;i++){
     particles.push({
       x,y,
       vx:(Math.random()-0.5)*6,
       vy:(Math.random()-0.5)*6,
-      life:30,
+      life:35,
       color
     });
   }
@@ -261,7 +272,7 @@ function drawParticles(){
     p.x+=p.vx;
     p.y+=p.vy;
     p.life--;
-    ctx.globalAlpha=p.life/30;
+    ctx.globalAlpha=p.life/35;
     ctx.fillStyle=p.color;
     ctx.fillRect(p.x,p.y,3,3);
     if(p.life<=0)particles.splice(i,1);
@@ -310,7 +321,6 @@ const Game={
 
   shoot(angle){
     if(this.bullet.active)return;
-    playSound("shoot");
     const speed=4+this.power;
     this.bullet.dx=Math.cos(angle)*speed;
     this.bullet.dy=Math.sin(angle)*speed;
@@ -340,7 +350,7 @@ const Game={
         const d=Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y);
         if(d<this.bullet.r+b.r){
           b.active=false;
-          playSound("boom");
+          playExplosion();
           explode(b.x,b.y,b.color);
 
           State.combo++;
@@ -359,7 +369,7 @@ const Game={
   },
 
   draw(){
-    ctx.fillStyle="rgba(0,0,0,0.12)";
+    ctx.fillStyle="rgba(0,0,0,0.15)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     for(const b of this.bubbles){
