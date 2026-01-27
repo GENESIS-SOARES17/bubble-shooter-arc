@@ -9,11 +9,11 @@
         :root { --primary: #00ffaa; --secondary: #00aaff; --bg: #0a0a0a; }
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
-        
+       
         #layout { display: flex; width: 100vw; height: 100vh; padding: 15px; gap: 15px; }
-        
+       
         /* Painel Lateral */
-        #panel { 
+        #panel {
             width: 320px; background: rgba(0,0,0,0.9); border: 1px solid rgba(0,255,170,0.3);
             border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
             backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -22,17 +22,15 @@
         .stats { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
         .row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
         .val { font-weight: bold; color: var(--secondary); }
-
-        button { 
-            width: 100%; padding: 12px; border: none; border-radius: 8px; 
+        button {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: #000; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
-
         /* Jogo */
-        #gameContainer { 
+        #gameContainer {
             flex: 1; position: relative; border: 1px solid rgba(0,255,170,0.3);
             border-radius: 16px; background: #000; overflow: hidden;
         }
@@ -42,12 +40,10 @@
             z-index: 10; display: flex; flex-direction: column; align-items: center;
             justify-content: center; text-align: center; padding: 20px;
         }
-
         /* Barra de Força */
         .bar-wrap { margin-top: 10px; font-size: 12px; color: #aaa; }
         .bar { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 5px; }
         #powerBar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ff88, #ff0000); transition: width 0.1s; }
-
         /* Ticker */
         #ticker {
             position: absolute; bottom: 0; width: 100%; background: #000;
@@ -58,32 +54,27 @@
     </style>
 </head>
 <body>
-
 <div id="layout">
     <div id="panel">
         <h2>Bubble Shooter</h2>
-        
+       
         <div class="stats">
             <div class="row"><span>Wallet:</span> <span id="wallet" class="val">---</span></div>
             <div class="row"><span>Saldo ARC:</span> <span id="balance" class="val">0.000</span></div>
             <div class="row"><span>Score:</span> <span id="score" class="val">0</span></div>
             <div class="row"><span>Level:</span> <span id="level" class="val">1</span></div>
         </div>
-
         <div class="bar-wrap">
             ⚡ Potência do Disparo
             <div class="bar"><div id="powerBar"></div></div>
         </div>
-
         <button id="btnConnect">1. Conectar MetaMask</button>
         <button id="btnSign" disabled>2. Assinar Termos</button>
         <button id="btnStart" disabled>3. Iniciar Partida</button>
-
         <div style="margin-top:auto; font-size: 10px; color: #666; text-align: center;">
             ARC Testnet v1.0 - Modo Simulação Protegido
         </div>
     </div>
-
     <div id="gameContainer">
         <div id="overlay">
             <h1 id="statusMsg">🔒 Bloqueado</h1>
@@ -93,20 +84,17 @@
         <div id="ticker"><div id="tickerTrack">Carregando mercado...</div></div>
     </div>
 </div>
-
 <script>
 /* --- CONFIGURAÇÕES --- */
 const ARC_CHAIN = {
-    chainId: "0x4CF7D2",
+    chainId: "0x4cef52",
     chainName: "ARC Testnet",
     rpcUrls: ["https://rpc.testnet.arc.network"],
-    nativeCurrency: { name:"ARC", symbol:"ARC", decimals:18 }
+    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 }
 };
-
 let provider, signer, account;
 let signed = false;
 const state = { score: 0, balance: 0, level: 1, combo: 0 };
-
 /* --- ELEMENTOS UI --- */
 const ui = {
     wallet: document.getElementById("wallet"),
@@ -119,49 +107,95 @@ const ui = {
     btnSign: document.getElementById("btnSign"),
     btnStart: document.getElementById("btnStart")
 };
-
 function updateUI() {
     ui.wallet.textContent = account ? `${account.slice(0,6)}...${account.slice(-4)}` : "---";
     ui.balance.textContent = state.balance.toFixed(4);
     ui.score.textContent = state.score;
     ui.level.textContent = state.level;
 }
-
 /* --- WEB3 LOGIC --- */
 ui.btnConnect.onclick = async () => {
-    if (!window.ethereum) return alert("MetaMask não encontrada!");
+    if (!window.ethereum) {
+        alert("MetaMask não detectada! Instale ou ative a extensão.");
+        return;
+    }
+
     try {
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        account = accounts[0];
+
         try {
-            await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ARC_CHAIN.chainId }] });
-        } catch (e) {
-            if (e.code === 4902) await ethereum.request({ method: "wallet_addEthereumChain", params: [ARC_CHAIN] });
+            await ethereum.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: ARC_CHAIN.chainId }]
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {  // rede não adicionada
+                try {
+                    await ethereum.request({
+                        method: "wallet_addEthereumChain",
+                        params: [ARC_CHAIN]
+                    });
+                    // Após adicionar, tenta trocar novamente
+                    await ethereum.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: ARC_CHAIN.chainId }]
+                    });
+                } catch (addError) {
+                    console.error("Falha ao adicionar rede:", addError);
+                    alert("Não foi possível adicionar a ARC Testnet. Verifique manualmente no ChainList ou docs oficiais.");
+                    return;
+                }
+            } else {
+                console.error("Erro ao trocar rede:", switchError);
+                alert("Falha ao trocar para ARC Testnet. Verifique se a rede está correta.");
+                return;
+            }
         }
+
         provider = new ethers.BrowserProvider(window.ethereum);
         signer = await provider.getSigner();
-        account = accounts[0];
+        
         ui.btnSign.disabled = false;
         ui.btnConnect.textContent = "✅ Conectado";
+        ui.btnConnect.disabled = true;
         updateUI();
-    } catch (e) { alert("Falha na conexão."); }
+        alert("Carteira conectada! Agora assine os termos para jogar.");
+    } catch (e) {
+        console.error("Erro completo na conexão:", e);
+        alert("Falha na conexão. Tente novamente ou verifique o console (F12).");
+    }
 };
-
 ui.btnSign.onclick = async () => {
+    if (!signer) return alert("Conecte a carteira primeiro.");
+    
     try {
-        await signer.signMessage("Autenticação Bubble Shooter Web3");
+        ui.btnSign.textContent = "Assinando...";
+        ui.btnSign.disabled = true;
+        
+        await signer.signMessage("Autenticação Bubble Shooter Web3 - " + new Date().toISOString());
         signed = true;
-        ui.btnStart.disabled = false;
         ui.btnSign.textContent = "✅ Assinado";
-        document.getElementById("statusMsg").textContent = "🔓 Pronto";
-    } catch (e) { alert("Assinatura necessária."); }
+        ui.btnStart.disabled = false;
+        
+        document.getElementById("statusMsg").textContent = "🔓 Pronto para jogar!";
+        alert("Assinatura concluída! Clique em 'Iniciar Partida'.");
+    } catch (e) {
+        console.error("Erro na assinatura:", e);
+        ui.btnSign.textContent = "2. Assinar Termos";
+        ui.btnSign.disabled = false;
+        if (e.code === 4001) {
+            alert("Assinatura cancelada pelo usuário.");
+        } else {
+            alert("Falha na assinatura. Verifique se está na rede ARC Testnet.");
+        }
+    }
 };
-
 ui.btnStart.onclick = () => {
     ui.overlay.style.display = "none";
     initAudio(); // Inicializa áudio no clique do usuário
     Game.init();
 };
-
 /* --- AUDIO ENGINE (WEB AUDIO API) --- */
 let audioCtx;
 function initAudio() { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -179,18 +213,15 @@ function playPop() {
     osc.start();
     osc.stop(audioCtx.currentTime + 0.1);
 }
-
 /* --- GAME ENGINE --- */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
 const Game = {
     bubbles: [],
     bullet: { x: 0, y: 0, r: 12, dx: 0, dy: 0, active: false, color: '#fff' },
     isCharging: false,
     power: 0,
     maxPower: 15,
-
     init() {
         this.resize();
         window.onresize = () => this.resize();
@@ -198,12 +229,10 @@ const Game = {
         this.resetBullet();
         this.loop();
     },
-
     resize() {
         canvas.width = canvas.parentElement.clientWidth;
         canvas.height = canvas.parentElement.clientHeight;
     },
-
     generateLevel() {
         const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444"];
         this.bubbles = [];
@@ -221,23 +250,19 @@ const Game = {
             }
         }
     },
-
     resetBullet() {
         this.bullet.active = false;
         this.bullet.x = canvas.width / 2;
         this.bullet.y = canvas.height - 50;
     },
-
     update() {
         if (this.isCharging) {
             this.power = Math.min(this.maxPower, this.power + 0.2);
             ui.power.style.width = (this.power / this.maxPower * 100) + "%";
         }
-
         if (this.bullet.active) {
             this.bullet.x += this.bullet.dx;
             this.bullet.y += this.bullet.dy;
-
             // Colisão com Paredes (Refatorada para não prender)
             if (this.bullet.x - this.bullet.r < 0) {
                 this.bullet.x = this.bullet.r;
@@ -246,12 +271,10 @@ const Game = {
                 this.bullet.x = canvas.width - this.bullet.r;
                 this.bullet.dx *= -1;
             }
-
             if (this.bullet.y < 0) {
                 this.resetBullet();
                 state.combo = 0;
             }
-
             // Colisão com Bolhas
             for (let b of this.bubbles) {
                 if (!b.active) continue;
@@ -266,23 +289,20 @@ const Game = {
                 }
             }
         }
-
         if (this.bubbles.filter(b => b.active).length === 0) {
             state.level++;
             this.generateLevel();
         }
     },
-
     scoreLogic() {
         state.combo++;
         state.score += 10 * state.combo;
         state.balance += 0.0001; // Simulação de ganho Web3
         updateUI();
     },
-
     draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+       
         // Desenha Bolhas
         this.bubbles.forEach(b => {
             if (!b.active) return;
@@ -293,13 +313,11 @@ const Game = {
             ctx.strokeStyle = "rgba(255,255,255,0.2)";
             ctx.stroke();
         });
-
         // Desenha Projétil
         ctx.beginPath();
         ctx.arc(this.bullet.x, this.bullet.y, this.bullet.r, 0, Math.PI*2);
         ctx.fillStyle = this.bullet.color;
         ctx.fill();
-
         // Linha de mira (se carregando)
         if (this.isCharging) {
             ctx.beginPath();
@@ -311,14 +329,12 @@ const Game = {
             ctx.setLineDash([]);
         }
     },
-
     loop() {
         Game.update();
         Game.draw();
         requestAnimationFrame(() => Game.loop());
     }
 };
-
 /* --- INPUTS --- */
 let mouseX, mouseY;
 canvas.addEventListener("mousemove", e => {
@@ -326,7 +342,6 @@ canvas.addEventListener("mousemove", e => {
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
 });
-
 canvas.addEventListener("mousedown", () => { if(signed) Game.isCharging = true; });
 canvas.addEventListener("mouseup", () => {
     if (!Game.isCharging) return;
@@ -339,19 +354,17 @@ canvas.addEventListener("mouseup", () => {
     Game.power = 0;
     ui.power.style.width = "0%";
 });
-
 /* --- TICKER REAL --- */
 async function fetchPrices() {
     try {
         const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,arc-block&vs_currencies=usd");
         const data = await res.json();
-        document.getElementById("tickerTrack").innerHTML = 
+        document.getElementById("tickerTrack").innerHTML =
             `BTC: $${data.bitcoin.usd} | ETH: $${data.ethereum.usd} | ARC: $0.1242 (Testnet) • `;
     } catch(e) { console.log("Ticker offline"); }
 }
 fetchPrices();
 setInterval(fetchPrices, 60000); // 1 minuto para evitar ban de IP
-
 </script>
 </body>
 </html>
