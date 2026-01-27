@@ -1,45 +1,42 @@
-const ARC_CHAIN_ID = "0x4cece6"; 
+const ARC_CHAIN_ID = "0x4cece6"; // 5042002
 const ARC_RPC = "https://rpc.testnet.arc.network";
 
-// Função para atualizar o status na tela
-function updateStatus(account) {
-    const statusElement = document.getElementById('status');
-    const connectBtn = document.getElementById('connect-button');
-    
-    if (account) {
-        statusElement.innerText = "Status: Conectado (" + account.substring(0, 6) + "...)";
-        statusElement.style.color = "#00ff88"; // Verde Neon
-        connectBtn.innerText = "CARTEIRA ATIVA";
-        connectBtn.style.background = "#333";
+// Função para forçar a atualização visual
+function forceUpdateUI(account, chainId) {
+    const statusText = document.getElementById('status');
+    const btn = document.getElementById('connect-button');
+
+    if (account && chainId === ARC_CHAIN_ID) {
+        statusText.innerText = "Status: CONECTADO (" + account.substring(0, 6) + ")";
+        statusText.style.color = "#00ff88"; // Verde vivo
+        btn.innerText = "CARTEIRA ATIVA";
+        btn.style.opacity = "0.5";
+    } else if (account && chainId !== ARC_CHAIN_ID) {
+        statusText.innerText = "Status: TROQUE PARA REDE ARC";
+        statusText.style.color = "orange";
     } else {
-        statusElement.innerText = "Status: Desconectado";
-        statusElement.style.color = "white";
-        connectBtn.innerText = "Conectar Carteira";
+        statusText.innerText = "Status: Desconectado";
+        statusText.style.color = "white";
     }
 }
 
-// Verifica conexão automaticamente a cada 1 segundo
-async function checkConnection() {
-    if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (chainId === ARC_CHAIN_ID) {
-                updateStatus(accounts[0]);
-            } else {
-                document.getElementById('status').innerText = "Status: Troque para a rede Arc";
-                document.getElementById('status').style.color = "yellow";
-            }
-        }
-    }
-}
-setInterval(checkConnection, 1000);
+// Monitor de eventos da MetaMask (O segredo para funcionar)
+if (window.ethereum) {
+    // Escuta troca de conta
+    window.ethereum.on('accountsChanged', (accounts) => {
+        window.location.reload(); // Recarrega para garantir limpeza de cache
+    });
 
-// Função do Botão (mesma de antes)
+    // Escuta troca de rede
+    window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+    });
+}
+
 async function connectWallet() {
     if (window.ethereum) {
         try {
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
@@ -59,15 +56,28 @@ async function connectWallet() {
                     });
                 }
             }
+            const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
+            forceUpdateUI(accounts[0], currentChain);
         } catch (error) {
-            console.log("Erro ao conectar.");
+            console.log("Erro ao autorizar");
         }
     }
 }
 
 document.getElementById('connect-button').onclick = connectWallet;
 
-// Lógica Visual do Jogo (Sua imagem 301cda)
+// Verifica estado ao carregar a página
+window.onload = async () => {
+    if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (accounts.length > 0) {
+            forceUpdateUI(accounts[0], chainId);
+        }
+    }
+};
+
+// --- DESENHO ARCADE (Fiel à sua imagem) ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 function draw() {
@@ -79,11 +89,11 @@ function draw() {
             ctx.arc(40 + j*45, 50 + i*40, 18, 0, Math.PI*2);
             ctx.fillStyle = colors[i % colors.length];
             ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
             ctx.stroke();
         }
     }
-    // Bolha Atiradora amarela centralizada
+    // Bolha Atiradora amarela central
     ctx.beginPath();
     ctx.arc(canvas.width / 2, canvas.height - 50, 22, 0, Math.PI * 2);
     ctx.fillStyle = "yellow";
