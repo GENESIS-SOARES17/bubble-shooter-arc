@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shooter ARC</title>
+    <title>Bubble Shooter ARC - Oficial</title>
     <style>
-        /* CSS EMBUTIDO AQUI */
+        /* ESTILO INTEGRADO */
         body {
             margin: 0;
             display: flex;
@@ -13,67 +13,101 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            /* Tente manter o nome background.png no GitHub */
-            background-image: url('background.png'); 
+            background-image: url('background.png'); /* Sua imagem de fundo Arc */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-color: #0a0a0a;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             color: white;
+            overflow: hidden;
         }
 
         #game-container {
             text-align: center;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 25px;
             border-radius: 20px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         canvas {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.75);
             border: 3px solid #00BFFF;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.4);
+            border-radius: 12px;
             cursor: crosshair;
+            display: block;
+            margin: 0 auto;
         }
 
-        button {
-            background-color: #00ff88;
+        .ui-panel { margin-bottom: 15px; }
+
+        #connect-button {
+            background: linear-gradient(135deg, #00ff88, #00b35f);
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 15px;
-            transition: 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover { background-color: #00cc6e; }
-        #status { font-weight: bold; margin-bottom: 10px; }
+        #connect-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        #status {
+            font-size: 14px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            color: #ffca28;
+        }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <h1>BUBBLE SHOOTER ARCADE</h1>
-        <button id="connect-button">CONECTAR CARTEIRA</button>
-        <div id="status">STATUS: DESCONECTADO</div>
+        <div class="ui-panel">
+            <h1 style="margin: 0 0 10px 0; font-size: 24px;">BUBBLE SHOOTER ARC</h1>
+            <button id="connect-button">CONECTAR CARTEIRA</button>
+            <div id="status">STATUS: DESCONECTADO</div>
+        </div>
         <canvas id="gameCanvas" width="450" height="550"></canvas>
     </div>
 
     <script>
-        // JAVASCRIPT EMBUTIDO AQUI
-        const ARC_CHAIN_ID = "0x4cece6"; 
+        // LÓGICA INTEGRADA
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // --- SISTEMA DE ÁUDIO ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playPopSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
         // --- IMAGENS ---
         const bubbleImages = {};
-        const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; 
+        const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; // Vermelho removido
         const colorNames = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
 
         colors.forEach(color => {
@@ -83,34 +117,21 @@
         });
         const shooterImg = new Image(); shooterImg.src = 'shooter.png';
 
-        // --- ESTADO ---
+        // --- ESTADO DO JOGO ---
         let score = 0;
         let level = 1;
         let bubbles = [];
         let particles = [];
         let bullet = { x: 225, y: 500, radius: 20, active: false, dx: 0, dy: 0 };
 
-        // --- ÁUDIO ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playPopSound() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
-
-        // --- EXPLOSÕES ---
         function createExplosion(x, y, color) {
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 15; i++) {
                 particles.push({
-                    x: x, y: y,
+                    x, y,
                     dx: (Math.random() - 0.5) * 8,
                     dy: (Math.random() - 0.5) * 8,
                     radius: Math.random() * 4,
-                    color: color,
+                    color,
                     life: 25
                 });
             }
@@ -118,49 +139,47 @@
 
         function initLevel() {
             bubbles = [];
-            const rows = 6; // 6 LINHAS
+            const rows = 6; // Fixado em 6 linhas
             for (let i = 0; i < rows; i++) {
                 let colorRow = colors[i % colors.length];
                 for (let j = 0; j < 8; j++) {
-                    bubbles.push({ x: 45 + (j * 52), y: 60 + (i * 45), radius: 19, color: colorRow, active: true });
+                    bubbles.push({ x: 45 + (j * 52), y: 70 + (i * 45), radius: 19, color: colorRow, active: true });
                 }
             }
         }
 
-        // --- CONEXÃO WEB3 ---
-        const btn = document.getElementById('connect-button');
-        const statusTxt = document.getElementById('status');
-
-        async function connect() {
-            if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                statusTxt.innerText = "STATUS: CONECTADO (" + accounts[0].substring(0,6) + ")";
-                statusTxt.style.color = "#00ff88";
-                btn.style.display = "none";
-            }
-        }
-        btn.onclick = connect;
-
-        // --- LOOP PRINCIPAL ---
+        // --- INTERAÇÃO E WEB3 ---
         canvas.addEventListener('mousedown', (e) => {
+            initAudio(); // Ativa o áudio no clique
             if (bullet.active) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
             const rect = canvas.getBoundingClientRect();
             const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-            bullet.dx = Math.cos(angle) * (10 + level);
-            bullet.dy = Math.sin(angle) * (10 + level);
+            bullet.dx = Math.cos(angle) * (11 + level);
+            bullet.dy = Math.sin(angle) * (11 + level);
             bullet.active = true;
         });
 
+        document.getElementById('connect-button').onclick = async () => {
+            if (window.ethereum) {
+                const acc = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                document.getElementById('status').innerText = "CONECTADO: " + acc[0].substring(0, 6);
+                document.getElementById('status').style.color = "#00ff88";
+                document.getElementById('connect-button').style.display = "none";
+            }
+        };
+
+        // --- ENGINE ---
         function update() {
             if (bullet.active) {
-                bullet.x += bullet.dx; bullet.y += bullet.dy;
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
                 if (bullet.x < 20 || bullet.x > canvas.width - 20) bullet.dx *= -1;
+
                 bubbles.forEach(b => {
                     if (b.active) {
-                        const dist = Math.hypot(bullet.x - b.x, bullet.y - b.y);
-                        if (dist < bullet.radius + b.radius) {
-                            b.active = false; score += 10;
+                        if (Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.radius + b.radius) {
+                            b.active = false;
+                            score += 10;
                             playPopSound();
                             createExplosion(b.x, b.y, b.color);
                             bullet.active = false; bullet.x = 225; bullet.y = 500;
@@ -169,20 +188,64 @@
                 });
                 if (bullet.y < 0 || bullet.y > canvas.height) { bullet.active = false; bullet.x = 225; bullet.y = 500; }
             }
+
             particles.forEach((p, i) => {
                 p.x += p.dx; p.y += p.dy; p.life--;
                 if (p.life <= 0) particles.splice(i, 1);
             });
-            if (bubbles.length > 0 && bubbles.every(b => !b.active)) { level++; initLevel(); }
+
+            if (bubbles.length > 0 && bubbles.every(b => !b.active)) {
+                level++;
+                initLevel();
+            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white"; ctx.font = "bold 16px Arial";
-            ctx.fillText(`SCORE: ${score}  LEVEL: ${level}`, 20, 30);
+            
+            // HUD
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText(`SCORE: ${score}`, 20, 30);
+            ctx.fillText(`LEVEL: ${level}`, canvas.width - 90, 30);
 
+            // Bolhas
             bubbles.forEach(b => {
                 if (b.active) {
                     const img = bubbleImages[b.color];
-                    if (img && img.complete) ctx.drawImage(img, b.x-b.radius, b.y-b.radius, b.radius*2, b.radius*2);
-                    else { ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2); ctx.fillStyle = b.color; ctx
+                    if (img && img.complete) {
+                        ctx.drawImage(img, b.x - b.radius, b.y - b.radius, b.radius * 2, b.radius * 2);
+                    } else {
+                        ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = b.color; ctx.fill(); ctx.closePath();
+                    }
+                }
+            });
+
+            // Explosões
+            particles.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 25;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.closePath();
+            });
+
+            // Atirador
+            if (shooterImg.complete) {
+                ctx.drawImage(shooterImg, bullet.x - bullet.radius, bullet.y - bullet.radius, bullet.radius * 2, bullet.radius * 2);
+            } else {
+                ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "yellow"; ctx.fill(); ctx.closePath();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        initLevel();
+        setInterval(update, 1000 / 60);
+        draw();
+    </script>
+</body>
+</html>
