@@ -6,81 +6,407 @@
     <title>Bubble Shooter Web3 PRO - Refatorado</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
     <style>
-        :root { --primary: #00ffaa; --secondary: #00aaff; --bg: #0a0a0a; }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
+        :root { 
+            --primary: #00ffaa; 
+            --secondary: #00aaff; 
+            --bg: #0a0a0a; 
+            --error: #ff4444;
+            --success: #00ffaa;
+        }
         
-        #layout { display: flex; width: 100vw; height: 100vh; padding: 15px; gap: 15px; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: var(--bg); 
+            color: #fff; 
+            overflow: hidden; 
+        }
+        
+        #layout { 
+            display: flex; 
+            width: 100vw; 
+            height: 100vh; 
+            padding: 15px; 
+            gap: 15px; 
+        }
         
         /* Painel Lateral */
         #panel { 
-            width: 320px; background: rgba(0,0,0,0.9); border: 1px solid rgba(0,255,170,0.3);
-            border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
-            backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            width: 320px; 
+            min-width: 320px;
+            background: rgba(0,0,0,0.95); 
+            border: 1px solid rgba(0,255,170,0.3);
+            border-radius: 16px; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            backdrop-filter: blur(10px); 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 100;
         }
-        h2 { text-align: center; color: var(--primary); margin: 0 0 10px; font-size: 22px; }
-        .stats { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
-        .row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
-        .val { font-weight: bold; color: var(--secondary); }
+        
+        h2 { 
+            text-align: center; 
+            color: var(--primary); 
+            margin: 0 0 10px; 
+            font-size: 24px; 
+            text-shadow: 0 0 10px rgba(0,255,170,0.5);
+        }
+        
+        .stats { 
+            background: rgba(255,255,255,0.05); 
+            padding: 15px; 
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            font-size: 14px; 
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .row:last-child { border-bottom: none; }
+        
+        .val { 
+            font-weight: bold; 
+            color: var(--secondary); 
+            font-family: 'Courier New', monospace;
+        }
+        
+        .combo-display {
+            background: linear-gradient(45deg, #ff0080, #00ffaa);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .combo-display.active {
+            opacity: 1;
+            transform: scale(1);
+        }
 
         button { 
-            width: 100%; padding: 12px; border: none; border-radius: 8px; 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 10px; 
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #000; font-weight: bold; cursor: pointer; transition: 0.3s;
+            color: #000; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
-        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.7s ease;
+            z-index: -1;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            filter: brightness(1.2);
+            box-shadow: 0 5px 15px rgba(0,255,170,0.4);
+        }
+        
+        button:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        
+        button:disabled { 
+            opacity: 0.4; 
+            cursor: not-allowed; 
+            background: linear-gradient(90deg, #666, #888);
+            color: #333;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .button-group button {
+            flex: 1;
+        }
 
         /* Jogo */
         #gameContainer { 
-            flex: 1; position: relative; border: 1px solid rgba(0,255,170,0.3);
-            border-radius: 16px; background: #000; overflow: hidden;
+            flex: 1; 
+            position: relative; 
+            border: 1px solid rgba(0,255,170,0.3);
+            border-radius: 16px; 
+            background: #000; 
+            overflow: hidden;
         }
-        canvas { width: 100%; height: 100%; display: block; }
+        
+        canvas { 
+            width: 100%; 
+            height: 100%; 
+            display: block;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
         #overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 10; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; text-align: center; padding: 20px;
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0,0,0,0.92);
+            z-index: 10; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            text-align: center; 
+            padding: 30px;
+            backdrop-filter: blur(5px);
+        }
+        
+        #overlay h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        #overlay p {
+            font-size: 1.2em;
+            color: #aaa;
+            max-width: 500px;
+            line-height: 1.5;
         }
 
         /* Barra de Força */
-        .bar-wrap { margin-top: 10px; font-size: 12px; color: #aaa; }
-        .bar { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 5px; }
-        #powerBar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ff88, #ff0000); transition: width 0.1s; }
+        .bar-wrap { 
+            margin-top: 10px; 
+            font-size: 14px; 
+            color: #aaa; 
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .bar { 
+            width: 100%; 
+            height: 12px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 6px; 
+            overflow: hidden; 
+            margin-top: 8px; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        #powerBar { 
+            height: 100%; 
+            width: 0%; 
+            background: linear-gradient(90deg, #00ff88, #ffaa00, #ff0000); 
+            transition: width 0.08s ease;
+            border-radius: 6px;
+        }
+        
+        .bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 4px;
+            color: #888;
+        }
 
         /* Ticker */
         #ticker {
-            position: absolute; bottom: 0; width: 100%; background: #000;
-            border-top: 1px solid var(--primary); padding: 5px 0; font-size: 12px;
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            background: rgba(0,0,0,0.9);
+            border-top: 1px solid var(--primary); 
+            padding: 8px 0; 
+            font-size: 13px;
+            z-index: 5;
+            overflow: hidden;
         }
-        #tickerTrack { display: inline-block; white-space: nowrap; animation: scroll 30s linear infinite; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        
+        #tickerTrack { 
+            display: inline-block; 
+            white-space: nowrap; 
+            padding-right: 50px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        @keyframes scroll { 
+            0% { transform: translateX(100%); } 
+            100% { transform: translateX(-100%); } 
+        }
+
+        /* Modal de Notificação */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: var(--success);
+            color: #000;
+            border-left: 5px solid #00cc88;
+        }
+        
+        .notification.error {
+            background: var(--error);
+            color: #fff;
+            border-left: 5px solid #cc0000;
+        }
+        
+        .notification.info {
+            background: var(--secondary);
+            color: #000;
+            border-left: 5px solid #0088cc;
+        }
+
+        /* Indicador de FPS */
+        #fpsCounter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            z-index: 5;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Indicador de Pausa */
+        #pauseOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: var(--primary);
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Efeito de Partículas */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
 
 <div id="layout">
     <div id="panel">
-        <h2>Bubble Shooter</h2>
+        <h2>Bubble Shooter PRO</h2>
         
         <div class="stats">
-            <div class="row"><span>Wallet:</span> <span id="wallet" class="val">---</span></div>
-            <div class="row"><span>Saldo ARC:</span> <span id="balance" class="val">0.000</span></div>
-            <div class="row"><span>Score:</span> <span id="score" class="val">0</span></div>
-            <div class="row"><span>Level:</span> <span id="level" class="val">1</span></div>
+            <div class="row">
+                <span>👛 Wallet:</span> 
+                <span id="wallet" class="val">---</span>
+            </div>
+            <div class="row">
+                <span>💰 Saldo ARC:</span> 
+                <span id="balance" class="val">0.0000</span>
+            </div>
+            <div class="row">
+                <span>🎯 Score:</span> 
+                <span id="score" class="val">0</span>
+            </div>
+            <div class="row">
+                <span>📈 Level:</span> 
+                <span id="level" class="val">1</span>
+            </div>
+            <div class="row">
+                <span>⚡ Combo:</span> 
+                <span id="combo" class="val">x1</span>
+            </div>
+        </div>
+
+        <div class="combo-display" id="comboDisplay">
+            COMBO <span id="comboValue">x1</span>!
         </div>
 
         <div class="bar-wrap">
             ⚡ Potência do Disparo
-            <div class="bar"><div id="powerBar"></div></div>
+            <div class="bar">
+                <div id="powerBar"></div>
+            </div>
+            <div class="bar-labels">
+                <span>Fraco</span>
+                <span>Médio</span>
+                <span>Forte</span>
+            </div>
         </div>
 
         <button id="btnConnect">1. Conectar MetaMask</button>
         <button id="btnSign" disabled>2. Assinar Termos</button>
         <button id="btnStart" disabled>3. Iniciar Partida</button>
+        
+        <div class="button-group">
+            <button id="btnPause" style="display: none;">⏸️ Pausar</button>
+            <button id="btnRestart" style="display: none;">🔄 Reiniciar</button>
+        </div>
 
-        <div style="margin-top:auto; font-size: 10px; color: #666; text-align: center;">
-            ARC Testnet v1.0 - Modo Simulação Protegido
+        <div style="margin-top: auto; font-size: 11px; color: #666; text-align: center; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            ARC Testnet v2.0 • Performance Otimizada
+            <br>
+            <span id="fps" style="font-family: 'Courier New'; color: #888;"></span>
         </div>
     </div>
 
@@ -88,270 +414,577 @@
         <div id="overlay">
             <h1 id="statusMsg">🔒 Bloqueado</h1>
             <p>Conecte sua carteira para liberar o acesso ao jogo.</p>
+            <p style="font-size: 0.9em; margin-top: 20px; color: #777;">
+                Use o mouse para mirar e segurar para carregar o poder do disparo.
+            </p>
         </div>
+        
+        <div id="pauseOverlay">
+            <div style="font-size: 2em;">⏸️</div>
+            <div style="margin-top: 20px; font-size: 0.5em; color: #aaa;">JOGO PAUSADO</div>
+            <div style="margin-top: 10px; font-size: 0.4em; color: #777;">Clique em "Continuar" no painel</div>
+        </div>
+        
         <canvas id="game"></canvas>
-        <div id="ticker"><div id="tickerTrack">Carregando mercado...</div></div>
+        <div id="ticker">
+            <div id="tickerTrack">Carregando dados de mercado...</div>
+        </div>
+        <div id="fpsCounter">FPS: 0</div>
     </div>
 </div>
 
+<!-- Container para partículas -->
+<div id="particleContainer"></div>
+
 <script>
-/* --- CONFIGURAÇÕES --- */
+/* ===== CONFIGURAÇÕES GERAIS ===== */
 const ARC_CHAIN = {
     chainId: "0x4CF7D2",
     chainName: "ARC Testnet",
     rpcUrls: ["https://rpc.testnet.arc.network"],
-    nativeCurrency: { name:"ARC", symbol:"ARC", decimals:18 }
+    nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 }
 };
 
+/* ===== VARIÁVEIS GLOBAIS ===== */
 let provider, signer, account;
 let signed = false;
-const state = { score: 0, balance: 0, level: 1, combo: 0 };
+let gameInitialized = false;
+let gameRunning = false;
+let gamePaused = false;
+let audioCtx;
+let startDebounce = false;
 
-/* --- ELEMENTOS UI --- */
+const state = { 
+    score: 0, 
+    balance: 0, 
+    level: 1, 
+    combo: 1,
+    maxCombo: 1
+};
+
+/* ===== SISTEMA DE NOTIFICAÇÕES ===== */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Mostrar notificação
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+/* ===== ELEMENTOS UI ===== */
 const ui = {
     wallet: document.getElementById("wallet"),
     balance: document.getElementById("balance"),
     score: document.getElementById("score"),
     level: document.getElementById("level"),
+    combo: document.getElementById("combo"),
+    comboValue: document.getElementById("comboValue"),
+    comboDisplay: document.getElementById("comboDisplay"),
     power: document.getElementById("powerBar"),
     overlay: document.getElementById("overlay"),
+    pauseOverlay: document.getElementById("pauseOverlay"),
     btnConnect: document.getElementById("btnConnect"),
     btnSign: document.getElementById("btnSign"),
-    btnStart: document.getElementById("btnStart")
+    btnStart: document.getElementById("btnStart"),
+    btnPause: document.getElementById("btnPause"),
+    btnRestart: document.getElementById("btnRestart"),
+    fps: document.getElementById("fps"),
+    fpsCounter: document.getElementById("fpsCounter")
 };
 
-function updateUI() {
-    ui.wallet.textContent = account ? `${account.slice(0,6)}...${account.slice(-4)}` : "---";
-    ui.balance.textContent = state.balance.toFixed(4);
-    ui.score.textContent = state.score;
-    ui.level.textContent = state.level;
+/* ===== SISTEMA DE FPS ===== */
+let fps = 0;
+let fpsInterval = 0;
+let lastFrameTime = 0;
+
+function updateFPS() {
+    const now = performance.now();
+    if (lastFrameTime > 0) {
+        const delta = now - lastFrameTime;
+        fps = Math.round(1000 / delta);
+    }
+    lastFrameTime = now;
+    
+    if (fpsInterval) clearInterval(fpsInterval);
+    fpsInterval = setInterval(() => {
+        ui.fps.textContent = `FPS: ${fps}`;
+        ui.fpsCounter.textContent = `FPS: ${fps}`;
+    }, 1000);
 }
 
-/* --- WEB3 LOGIC --- */
+/* ===== ATUALIZAÇÃO DA UI ===== */
+function updateUI() {
+    ui.wallet.textContent = account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "---";
+    ui.balance.textContent = state.balance.toFixed(4);
+    ui.score.textContent = state.score.toLocaleString();
+    ui.level.textContent = state.level;
+    ui.combo.textContent = `x${state.combo}`;
+    ui.comboValue.textContent = `x${state.combo}`;
+    
+    // Animação de combo
+    if (state.combo > 1) {
+        ui.comboDisplay.textContent = `COMBO x${state.combo}!`;
+        ui.comboDisplay.classList.add('active');
+        ui.comboDisplay.style.background = 
+            `linear-gradient(45deg, #ff0080, #ff${Math.min(255, state.combo * 20)}00)`;
+    } else {
+        ui.comboDisplay.classList.remove('active');
+    }
+}
+
+/* ===== WEB3 LOGIC ===== */
 ui.btnConnect.onclick = async () => {
-    if (!window.ethereum) return alert("MetaMask não encontrada!");
+    if (!window.ethereum) {
+        showNotification("MetaMask não encontrada! Instale a extensão.", "error");
+        return;
+    }
+    
     try {
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        showNotification("Conectando à rede ARC Testnet...", "info");
+        
         try {
-            await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ARC_CHAIN.chainId }] });
+            await ethereum.request({ 
+                method: "wallet_switchEthereumChain", 
+                params: [{ chainId: ARC_CHAIN.chainId }] 
+            });
         } catch (e) {
-            if (e.code === 4902) await ethereum.request({ method: "wallet_addEthereumChain", params: [ARC_CHAIN] });
+            if (e.code === 4902) {
+                await ethereum.request({ 
+                    method: "wallet_addEthereumChain", 
+                    params: [ARC_CHAIN] 
+                });
+                showNotification("Rede ARC Testnet adicionada!", "success");
+            } else {
+                throw e;
+            }
         }
+        
         provider = new ethers.BrowserProvider(window.ethereum);
         signer = await provider.getSigner();
         account = accounts[0];
+        
         ui.btnSign.disabled = false;
         ui.btnConnect.textContent = "✅ Conectado";
+        ui.btnConnect.disabled = true;
+        
+        showNotification(`Conectado: ${account.slice(0,6)}...${account.slice(-4)}`, "success");
         updateUI();
-    } catch (e) { alert("Falha na conexão."); }
+        
+    } catch (e) {
+        console.error("Erro de conexão:", e);
+        showNotification("Falha na conexão com MetaMask", "error");
+    }
 };
 
 ui.btnSign.onclick = async () => {
     try {
-        await signer.signMessage("Autenticação Bubble Shooter Web3");
+        const domain = window.location.hostname;
+        const timestamp = new Date().toISOString();
+        const nonce = Math.random().toString(36).substr(2, 9);
+        
+        const message = `Autenticação Bubble Shooter Web3\nDomínio: ${domain}\nData: ${timestamp}\nNonce: ${nonce}`;
+        
+        await signer.signMessage(message);
         signed = true;
         ui.btnStart.disabled = false;
         ui.btnSign.textContent = "✅ Assinado";
-        document.getElementById("statusMsg").textContent = "🔓 Pronto";
-    } catch (e) { alert("Assinatura necessária."); }
+        ui.btnSign.disabled = true;
+        
+        document.getElementById("statusMsg").textContent = "🔓 Pronto para Jogar";
+        showNotification("Assinatura confirmada! Pronto para jogar.", "success");
+        
+    } catch (e) {
+        console.error("Erro de assinatura:", e);
+        showNotification("Assinatura necessária para jogar", "error");
+    }
 };
 
 ui.btnStart.onclick = () => {
-    ui.overlay.style.display = "none";
-    initAudio(); // Inicializa áudio no clique do usuário
-    Game.init();
+    if (startDebounce) return;
+    startDebounce = true;
+    
+    if (!gameInitialized) {
+        ui.overlay.style.display = "none";
+        initAudio();
+        Game.init();
+        gameInitialized = true;
+        showNotification("Jogo iniciado! Segure o botão do mouse para carregar o tiro.", "info");
+    }
+    
+    gameRunning = true;
+    ui.btnStart.style.display = "none";
+    ui.btnPause.style.display = "block";
+    ui.btnRestart.style.display = "block";
+    
+    setTimeout(() => startDebounce = false, 500);
 };
 
-/* --- AUDIO ENGINE (WEB AUDIO API) --- */
-let audioCtx;
-function initAudio() { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-function playPop() {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+ui.btnPause.onclick = () => {
+    gamePaused = !gamePaused;
+    ui.pauseOverlay.style.display = gamePaused ? "flex" : "none";
+    ui.btnPause.textContent = gamePaused ? "▶️ Continuar" : "⏸️ Pausar";
+    
+    if (gamePaused) {
+        showNotification("Jogo pausado", "info");
+    }
+};
+
+ui.btnRestart.onclick = () => {
+    if (confirm("Reiniciar o jogo? Seu progresso será perdido.")) {
+        state.score = 0;
+        state.level = 1;
+        state.combo = 1;
+        state.balance = 0;
+        Game.generateLevel();
+        updateUI();
+        showNotification("Jogo reiniciado!", "info");
+    }
+};
+
+/* ===== AUDIO ENGINE ===== */
+function initAudio() { 
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
 }
 
-/* --- GAME ENGINE --- */
+function playSound(type, frequency = 440) {
+    if (!audioCtx) return;
+    
+    const now = audioCtx.currentTime;
+    
+    switch(type) {
+        case 'pop':
+            const popOsc = audioCtx.createOscillator();
+            const popGain = audioCtx.createGain();
+            popOsc.type = 'sine';
+            popOsc.frequency.setValueAtTime(400 + Math.random() * 200, now);
+            popOsc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+            popGain.gain.setValueAtTime(0.2, now);
+            popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            popOsc.connect(popGain);
+            popGain.connect(audioCtx.destination);
+            popOsc.start();
+            popOsc.stop(now + 0.2);
+            break;
+            
+        case 'shoot':
+            const shootOsc = audioCtx.createOscillator();
+            const shootGain = audioCtx.createGain();
+            shootOsc.type = 'square';
+            shootOsc.frequency.setValueAtTime(200, now);
+            shootOsc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            shootGain.gain.setValueAtTime(0.15, now);
+            shootGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            shootOsc.connect(shootGain);
+            shootGain.connect(audioCtx.destination);
+            shootOsc.start();
+            shootOsc.stop(now + 0.1);
+            break;
+            
+        case 'level':
+            const levelOsc = audioCtx.createOscillator();
+            const levelGain = audioCtx.createGain();
+            levelOsc.type = 'sine';
+            levelOsc.frequency.setValueAtTime(523.25, now); // C5
+            levelOsc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            levelOsc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            levelGain.gain.setValueAtTime(0.2, now);
+            levelGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            levelOsc.connect(levelGain);
+            levelGain.connect(audioCtx.destination);
+            levelOsc.start();
+            levelOsc.stop(now + 0.3);
+            break;
+    }
+}
+
+/* ===== SISTEMA DE PARTÍCULAS ===== */
+function createParticles(x, y, color, count = 8) {
+    const container = document.getElementById('particleContainer');
+    
+    for(let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const size = Math.random() * 8 + 4;
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 5 + 2;
+        const life = Math.random() * 20 + 20;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.background = color;
+        particle.style.boxShadow = `0 0 ${size/2}px ${color}`;
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        container.appendChild(particle);
+        
+        // Animação da partícula
+        let frame = 0;
+        function animateParticle() {
+            frame++;
+            const progress = frame / life;
+            
+            if (progress >= 1) {
+                particle.remove();
+                return;
+            }
+            
+            const currentX = x + Math.cos(angle) * velocity * frame;
+            const currentY = y + Math.sin(angle) * velocity * frame;
+            const currentSize = size * (1 - progress);
+            const currentOpacity = 1 - progress;
+            
+            particle.style.left = `${currentX}px`;
+            particle.style.top = `${currentY}px`;
+            particle.style.width = `${currentSize}px`;
+            particle.style.height = `${currentSize}px`;
+            particle.style.opacity = currentOpacity;
+            
+            requestAnimationFrame(animateParticle);
+        }
+        
+        animateParticle();
+    }
+}
+
+/* ===== GAME ENGINE ===== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const Game = {
     bubbles: [],
-    bullet: { x: 0, y: 0, r: 12, dx: 0, dy: 0, active: false, color: '#fff' },
+    particles: [],
+    bullet: { x: 0, y: 0, r: 14, dx: 0, dy: 0, active: false, color: '#fff' },
     isCharging: false,
     power: 0,
-    maxPower: 15,
-
+    maxPower: 20,
+    maxSpeed: 25,
+    friction: 0.992,
+    
     init() {
         this.resize();
-        window.onresize = () => this.resize();
+        window.addEventListener('resize', () => this.resize());
         this.generateLevel();
         this.resetBullet();
+        updateFPS();
         this.loop();
     },
-
+    
     resize() {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        canvas.style.width = `${canvas.width}px`;
+        canvas.style.height = `${canvas.height}px`;
     },
-
+    
     generateLevel() {
-        const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444"];
+        const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa00ff"];
         this.bubbles = [];
         const rows = 5 + state.level;
-        const cols = Math.floor(canvas.width / 45);
-        for(let r=0; r<rows; r++) {
-            for(let c=0; c<cols; c++) {
+        const cols = Math.floor(canvas.width / 50);
+        const offset = canvas.width > 800 ? 50 : 30;
+        
+        for(let r = 0; r < rows; r++) {
+            for(let c = 0; c < cols; c++) {
+                const x = offset + c * 45 + (r % 2 ? 22.5 : 0);
+                const y = 50 + r * 40;
+                
                 this.bubbles.push({
-                    x: 30 + c * 40,
-                    y: 40 + r * 35,
-                    r: 15,
-                    color: colors[Math.floor(Math.random()*colors.length)],
+                    x: x,
+                    y: y,
+                    r: 18,
+                    color: colors[Math.floor(Math.random() * colors.length)],
                     active: true
                 });
             }
         }
     },
-
+    
     resetBullet() {
         this.bullet.active = false;
         this.bullet.x = canvas.width / 2;
-        this.bullet.y = canvas.height - 50;
+        this.bullet.y = canvas.height - 60;
+        this.bullet.dx = 0;
+        this.bullet.dy = 0;
     },
-
+    
     update() {
+        if (!gameRunning || gamePaused) return;
+        
+        updateFPS();
+        
+        // Carregamento do poder
         if (this.isCharging) {
-            this.power = Math.min(this.maxPower, this.power + 0.2);
-            ui.power.style.width = (this.power / this.maxPower * 100) + "%";
+            this.power = Math.min(this.maxPower, this.power + 0.25);
+            ui.power.style.width = `${(this.power / this.maxPower) * 100}%`;
         }
-
+        
+        // Atualizar projétil
         if (this.bullet.active) {
+            // Aplicar atrito
+            this.bullet.dx *= this.friction;
+            this.bullet.dy *= this.friction;
+            
+            // Limitar velocidade
+            const speed = Math.hypot(this.bullet.dx, this.bullet.dy);
+            if (speed > this.maxSpeed) {
+                this.bullet.dx = (this.bullet.dx / speed) * this.maxSpeed;
+                this.bullet.dy = (this.bullet.dy / speed) * this.maxSpeed;
+            }
+            
+            // Mover projétil
             this.bullet.x += this.bullet.dx;
             this.bullet.y += this.bullet.dy;
-
-            // Colisão com Paredes (Refatorada para não prender)
+            
+            // Colisão com paredes
             if (this.bullet.x - this.bullet.r < 0) {
                 this.bullet.x = this.bullet.r;
-                this.bullet.dx *= -1;
+                this.bullet.dx *= -0.95;
             } else if (this.bullet.x + this.bullet.r > canvas.width) {
                 this.bullet.x = canvas.width - this.bullet.r;
-                this.bullet.dx *= -1;
+                this.bullet.dx *= -0.95;
             }
-
-            if (this.bullet.y < 0) {
+            
+            // Colisão com teto
+            if (this.bullet.y - this.bullet.r < 0) {
+                this.bullet.y = this.bullet.r;
+                this.bullet.dy *= -0.95;
+            }
+            
+            // Colisão com chão
+            if (this.bullet.y > canvas.height) {
+                state.combo = 1;
                 this.resetBullet();
-                state.combo = 0;
+                showNotification("Combo perdido!", "error");
             }
-
-            // Colisão com Bolhas
-            for (let b of this.bubbles) {
+            
+            // Otimização: Filtrar apenas bolhas próximas para colisão
+            const bulletBounds = {
+                left: this.bullet.x - 50,
+                right: this.bullet.x + 50,
+                top: this.bullet.y - 50,
+                bottom: this.bullet.y + 50
+            };
+            
+            for (let i = this.bubbles.length - 1; i >= 0; i--) {
+                const b = this.bubbles[i];
                 if (!b.active) continue;
+                
+                // Verificação rápida de bounding box
+                if (b.x < bulletBounds.left || b.x > bulletBounds.right || 
+                    b.y < bulletBounds.top || b.y > bulletBounds.bottom) {
+                    continue;
+                }
+                
                 const dist = Math.hypot(this.bullet.x - b.x, this.bullet.y - b.y);
                 if (dist < this.bullet.r + b.r) {
                     b.active = false;
                     this.bullet.active = false;
-                    playPop();
+                    
+                    // Efeitos
+                    playSound('pop');
+                    createParticles(b.x, b.y, b.color, 12);
+                    
+                    // Lógica de pontuação
+                    state.combo++;
+                    state.maxCombo = Math.max(state.maxCombo, state.combo);
+                    state.score += 10 * state.combo;
+                    state.balance += 0.0001 * state.combo;
+                    
+                    // Bônus por combo alto
+                    if (state.combo >= 5) {
+                        state.score += 50;
+                        showNotification(`COMBO x${state.combo}! +50 bônus`, "success");
+                    }
+                    
+                    updateUI();
                     this.resetBullet();
-                    this.scoreLogic();
                     break;
                 }
             }
         }
-
-        if (this.bubbles.filter(b => b.active).length === 0) {
+        
+        // Verificar se completou o nível
+        const activeBubbles = this.bubbles.filter(b => b.active).length;
+        if (activeBubbles === 0) {
             state.level++;
+            state.score += 100 * state.level; // Bônus por nível
+            state.balance += 0.001 * state.level;
+            playSound('level');
+            showNotification(`Level ${state.level} completo! +${100 * state.level} pontos`, "success");
             this.generateLevel();
+            this.resetBullet();
+            updateUI();
         }
     },
-
-    scoreLogic() {
-        state.combo++;
-        state.score += 10 * state.combo;
-        state.balance += 0.0001; // Simulação de ganho Web3
-        updateUI();
-    },
-
+    
     draw() {
+        if (!gameRunning) return;
+        
+        // Limpar canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Desenha Bolhas
+        // Fundo gradiente
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, 'rgba(0, 10, 20, 0.3)');
+        gradient.addColorStop(1, 'rgba(0, 20, 40, 0.1)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Desenhar grade de fundo
+        ctx.strokeStyle = 'rgba(0, 255, 170, 0.05)';
+        ctx.lineWidth = 1;
+        for(let x = 0; x < canvas.width; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        for(let y = 0; y < canvas.height; y += 50) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+        
+        // Desenhar bolhas
         this.bubbles.forEach(b => {
             if (!b.active) return;
+            
+            // Efeito de brilho
+            const glow = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * 1.5);
+            glow.addColorStop(0, b.color);
+            glow.addColorStop(0.7, b.color.replace(')', ', 0.5)').replace('rgb', 'rgba'));
+            glow.addColorStop(1, 'transparent');
+            
             ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-            ctx.fillStyle = b.color;
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fillStyle = glow;
             ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            
+            // Borda da bolha
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
             ctx.stroke();
-        });
-
-        // Desenha Projétil
-        ctx.beginPath();
-        ctx.arc(this.bullet.x, this.bullet.y, this.bullet.r, 0, Math.PI*2);
-        ctx.fillStyle = this.bullet.color;
-        ctx.fill();
-
-        // Linha de mira (se carregando)
-        if (this.isCharging) {
+            
+            // Reflexo
             ctx.beginPath();
-            ctx.moveTo(this.bullet.x, this.bullet.y);
-            ctx.lineTo(mouseX, mouseY);
-            ctx.strokeStyle = "rgba(0,255,170,0.3)";
-            ctx.setLineDash([5, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-    },
-
-    loop() {
-        Game.update();
-        Game.draw();
-        requestAnimationFrame(() => Game.loop());
-    }
-};
-
-/* --- INPUTS --- */
-let mouseX, mouseY;
-canvas.addEventListener("mousemove", e => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-});
-
-canvas.addEventListener("mousedown", () => { if(signed) Game.isCharging = true; });
-canvas.addEventListener("mouseup", () => {
-    if (!Game.isCharging) return;
-    Game.isCharging = false;
-    const angle = Math.atan2(mouseY - Game.bullet.y, mouseX - Game.bullet.x);
-    const speed = 5 + Game.power;
-    Game.bullet.dx = Math.cos(angle) * speed;
-    Game.bullet.dy = Math.sin(angle) * speed;
-    Game.bullet.active = true;
-    Game.power = 0;
-    ui.power.style.width = "0%";
-});
-
-/* --- TICKER REAL --- */
-async function fetchPrices() {
-    try {
-        const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,arc-block&vs_currencies=usd");
-        const data = await res.json();
-        document.getElementById("tickerTrack").innerHTML = 
-            `BTC: $${data.bitcoin.usd} | ETH: $${data.ethereum.usd} | ARC: $0.1242 (Testnet) • `;
-    } catch(e) { console.log("Ticker offline"); }
-}
-fetchPrices();
-setInterval(fetchPrices, 60000); // 1 minuto para evitar ban de IP
-
-</script>
-</body>
-</html>
+            ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fill();
+        });
+        
+        // Desenhar projétil
+        if (this.bullet.active || this.isCharging) {
+            // Brilho do projétil
