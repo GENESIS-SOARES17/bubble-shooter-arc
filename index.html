@@ -1,454 +1,104 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shooter Web3 PRO - Corrigido & Melhorado</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
-    <style>
-        :root { --primary: #00ffaa; --secondary: #00aaff; --bg: #0a0a0a; }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
-       
-        #layout { display: flex; width: 100vw; height: 100vh; padding: 15px; gap: 15px; }
-       
-        /* Painel Lateral */
-        #panel {
-            width: 320px; background: rgba(0,0,0,0.9); border: 1px solid rgba(0,255,170,0.3);
-            border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
-            backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        h2 { text-align: center; color: var(--primary); margin: 0 0 10px; font-size: 22px; }
-        .stats { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
-        .row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
-        .val { font-weight: bold; color: var(--secondary); }
-        button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #000; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
-        /* Jogo */
-        #gameContainer {
-            flex: 1; position: relative; border: 1px solid rgba(0,255,170,0.3);
-            border-radius: 16px; background: #000; overflow: hidden;
-        }
-        canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-        #overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 10; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; text-align: center; padding: 20px;
-        }
-        /* Barra de Força */
-        .bar-wrap { margin-top: 10px; font-size: 12px; color: #aaa; }
-        .bar { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 5px; }
-        #powerBar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ff88, #ff0000); transition: width 0.1s; }
-        /* Ticker */
-        #ticker {
-            position: absolute; bottom: 0; width: 100%; background: #000;
-            border-top: 1px solid var(--primary); padding: 5px 0; font-size: 12px;
-        }
-        #tickerTrack { display: inline-block; white-space: nowrap; animation: scroll 30s linear infinite; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-        /* Mobile */
-        @media (max-width: 768px) { #layout { flex-direction: column; padding: 10px; } #panel { width: auto; } }
-    </style>
-</head>
-<body>
-<div id="layout">
-    <div id="panel">
-        <h2>🫧 Bubble Shooter Web3</h2>
-       
-        <div class="stats">
-            <div class="row"><span>Wallet:</span> <span id="wallet" class="val">---</span></div>
-            <div class="row"><span>Saldo USDC:</span> <span id="balance" class="val">0.000000</span></div>
-            <div class="row"><span>Score:</span> <span id="score" class="val">0</span></div>
-            <div class="row"><span>Level:</span> <span id="level" class="val">1</span></div>
-            <div class="row"><span>Combo:</span> <span id="combo" class="val">0</span></div>
+
+import React, { useState, useEffect, useCallback } from 'react';
+import Sidebar from './components/Sidebar';
+import GameCanvas from './components/GameCanvas';
+import Ticker from './components/Ticker';
+import { useWeb3 } from './hooks/useWeb3';
+import { GameStatus, GameState } from './types';
+import { getAIStrategyTip } from './services/geminiService';
+
+const App: React.FC = () => {
+  const { account, balance, isSigned, connect, sign } = useWeb3();
+  const [status, setStatus] = useState<GameStatus>(GameStatus.LOCKED);
+  const [gameState, setGameState] = useState<GameState>({
+    score: 0,
+    balance: 0,
+    level: 1,
+    combo: 0
+  });
+  const [aiTip, setAiTip] = useState("Connect your wallet to begin.");
+
+  // Fetch AI tip when level changes
+  useEffect(() => {
+    const fetchTip = async () => {
+      const tip = await getAIStrategyTip(gameState.level, gameState.score);
+      setAiTip(tip);
+    };
+    if (isSigned) fetchTip();
+  }, [gameState.level, isSigned]);
+
+  const updateGameState = useCallback((update: Partial<GameState>) => {
+    setGameState(prev => ({ ...prev, ...update }));
+  }, []);
+
+  const startGame = () => {
+    setStatus(GameStatus.PLAYING);
+    setGameState({ score: 0, balance: 0, level: 1, combo: 0 });
+  };
+
+  return (
+    <div className="flex w-full h-screen overflow-hidden bg-background">
+      {/* Background visual effects */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[100px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[100px] rounded-full" />
+      </div>
+
+      <Sidebar 
+        account={account}
+        balance={balance}
+        isSigned={isSigned}
+        gameState={gameState}
+        onConnect={connect}
+        onSign={sign}
+        onStart={startGame}
+        status={status}
+        aiTip={aiTip}
+      />
+
+      <main className="flex-1 relative p-6 pb-12 flex items-center justify-center">
+        <div className="w-full max-w-4xl h-full flex flex-col">
+          <GameCanvas 
+            status={status}
+            gameState={gameState}
+            onUpdateState={updateGameState}
+            onGameEnd={() => setStatus(GameStatus.GAMEOVER)}
+          />
         </div>
-        <div class="bar-wrap">
-            ⚡ Potência do Disparo
-            <div class="bar"><div id="powerBar"></div></div>
-        </div>
-        <button id="btnConnect">1. 🔗 Conectar MetaMask</button>
-        <button id="btnSign" disabled>2. ✍️ Assinar SIWE</button>
-        <button id="btnStart" disabled>3. 🚀 Iniciar Partida</button>
-        <div style="margin-top:auto; font-size: 10px; color: #666; text-align: center;">
-            ARC Testnet v1.0 - Circle L1 (2026) | Faucet: arcscan.app
-        </div>
+
+        {/* Game Overlay Screens */}
+        {status === GameStatus.LOCKED && !isSigned && (
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-10 p-10 text-center">
+            <div className="w-20 h-20 mb-6 flex items-center justify-center bg-primary/20 rounded-full border border-primary animate-pulse">
+               <span className="text-4xl">🔒</span>
+            </div>
+            <h2 className="text-4xl font-black mb-4">ACCESS RESTRICTED</h2>
+            <p className="text-gray-400 max-w-md">
+              Please authenticate using MetaMask on the ARC Testnet to access the tactical simulation.
+            </p>
+          </div>
+        )}
+
+        {status === GameStatus.GAMEOVER && (
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-10 p-10 text-center">
+            <h2 className="text-5xl font-black text-red-500 mb-4">MISSION TERMINATED</h2>
+            <div className="text-2xl font-mono mb-8 space-y-2">
+              <p>Final Score: <span className="text-primary">{gameState.score}</span></p>
+              <p>Yield Generated: <span className="text-secondary">{gameState.balance.toFixed(4)} USDC</span></p>
+            </div>
+            <button 
+              onClick={startGame}
+              className="px-10 py-4 bg-primary text-black font-bold rounded-xl hover:scale-105 transition-all"
+            >
+              REDEPLOY MISSION
+            </button>
+          </div>
+        )}
+      </main>
+
+      <Ticker />
     </div>
-    <div id="gameContainer">
-        <div id="overlay">
-            <h1 id="statusMsg">🔒 Acesso Bloqueado</h1>
-            <p>Conecte MetaMask na ARC Testnet para jogar!</p>
-        </div>
-        <canvas id="game"></canvas>
-        <canvas id="staticCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
-        <div id="ticker"><div id="tickerTrack">Carregando preços crypto...</div></div>
-    </div>
-</div>
-<script>
-/* --- CONFIGURAÇÕES ARC TESTNET --- */
-const ARC_CHAIN = {
-    chainId: "0x4cef52", // 5042002 decimal - Circle ARC Testnet [web:17]
-    chainName: "ARC Testnet",
-    rpcUrls: ["https://rpc.testnet.arc.network"],
-    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-    blockExplorerUrls: ["https://arcscan.app"]
-};
-let provider, signer, account, balanceWei;
-let signed = false;
-const state = { score: 0, balance: 0, level: 1, combo: 0 };
-/* --- UI ELEMENTS --- */
-const ui = {
-    wallet: document.getElementById("wallet"),
-    balance: document.getElementById("balance"),
-    score: document.getElementById("score"),
-    level: document.getElementById("level"),
-    combo: document.getElementById("combo"),
-    power: document.getElementById("powerBar"),
-    overlay: document.getElementById("overlay"),
-    statusMsg: document.getElementById("statusMsg"),
-    btnConnect: document.getElementById("btnConnect"),
-    btnSign: document.getElementById("btnSign"),
-    btnStart: document.getElementById("btnStart")
-};
-function updateUI() {
-    ui.wallet.textContent = account ? `${account.slice(0,6)}...${account.slice(-4)}` : "---";
-    ui.balance.textContent = state.balance ? (state.balance / 1e6).toFixed(6) : "0.000000";
-    ui.score.textContent = state.score.toLocaleString();
-    ui.level.textContent = state.level;
-    ui.combo.textContent = state.combo;
-}
-/* --- WEB3 ENHANCED --- */
-ui.btnConnect.onclick = async () => {
-    if (!window.ethereum) return alert("🚫 Instale MetaMask!");
-    try {
-        // Request accounts
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        account = accounts[0];
-        
-        // Switch/Add Chain
-        try {
-            await ethereum.request({
-                method: "wallet_switchEthereumChain",
-                params: [{ chainId: ARC_CHAIN.chainId }]
-            });
-        } catch (switchError) {
-            if (switchError.code === 4902) {
-                await ethereum.request({
-                    method: "wallet_addEthereumChain",
-                    params: [ARC_CHAIN]
-                });
-            } else throw switchError;
-        }
-        
-        // Provider & Balance REAL
-        provider = new ethers.BrowserProvider(window.ethereum);
-        signer = await provider.getSigner();
-        const balance = await provider.getBalance(account);
-        state.balance = parseFloat(ethers.formatUnits(balance, 6)); // USDC decimals
-        
-        ui.btnSign.disabled = false;
-        ui.btnConnect.textContent = "✅ Conectado";
-        ui.btnConnect.disabled = true;
-        updateUI();
-        ui.statusMsg.textContent = "🔗 Carteira OK | Assine SIWE";
-    } catch (e) {
-        console.error(e);
-        alert(`❌ Erro: ${e.message}. Verifique console F12.`);
-    }
+  );
 };
 
-ui.btnSign.onclick = async () => {
-    if (!signer) return alert("Conecte primeiro!");
-    try {
-        ui.btnSign.textContent = "🔐 SIWE...";
-        ui.btnSign.disabled = true;
-        
-        // SIWE Melhorado - EIP-4361 style [web:20]
-        const domain = window.location.host;
-        const uri = window.location.origin;
-        const message = `BubbleShooterWeb3 login\n${domain} wants you to sign in\nNonce: ${Date.now()}\nChain: ARC Testnet`;
-        const signature = await signer.signMessage(message);
-        
-        signed = true; // Em prod, verify signature server-side
-        ui.btnSign.textContent = "✅ SIWE OK";
-        ui.btnStart.disabled = false;
-        ui.statusMsg.textContent = "✨ Pronto! Clique para jogar";
-        alert("✅ SIWE validado! Inicie partida.");
-    } catch (e) {
-        ui.btnSign.textContent = "2. ✍️ Assinar SIWE";
-        ui.btnSign.disabled = false;
-        if (e.code === 4001) alert("❌ Assinatura cancelada.");
-        else alert(`Falha: ${e.message}`);
-    }
-};
-
-ui.btnStart.onclick = () => {
-    ui.overlay.style.display = "none";
-    initAudio();
-    Game.init();
-};
-/* --- ÁUDIO WEB AUDIO API --- */
-let audioCtx;
-function initAudio() { 
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-}
-function playPop(frequency = 400) {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.15);
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-}
-/* --- GAME ENGINE MELHORADO --- */
-const canvas = document.getElementById("game");
-const staticCanvas = document.getElementById("staticCanvas");
-const ctx = canvas.getContext("2d");
-const staticCtx = staticCanvas.getContext("2d");
-
-const Game = {
-    bubbles: [],
-    nextBubbleColor: "#fff",
-    bullet: { x: 0, y: 0, r: 14, dx: 0, dy: 0, active: false },
-    particles: [],
-    isCharging: false,
-    power: 0,
-    maxPower: 20,
-    cols: 0,
-    rowHeight: 0,
-    init() {
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-        this.generateNextColor();
-        this.gameLoop();
-        this.updateStaticLayer(); // Bolhas estáticas em layer separado [web:14]
-    },
-    resize() {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = staticCanvas.width = rect.width;
-        canvas.height = staticCanvas.height = rect.height;
-        this.cols = Math.floor((canvas.width - 60) / 38);
-        this.rowHeight = 33;
-    },
-    generateNextColor() {
-        const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa44ff"];
-        this.nextBubbleColor = colors[Math.floor(Math.random() * colors.length)];
-    },
-    generateLevel() {
-        this.bubbles = [];
-        const rows = Math.max(4, 4 + Math.floor(state.level / 2));
-        const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa44ff"];
-        for (let r = 0; r < rows; r++) {
-            const offset = r % 2 * 19; // Hexagonal stagger
-            for (let c = 0; c < this.cols; c++) {
-                this.bubbles.push({
-                    x: 30 + offset + c * 38,
-                    y: 50 + r * this.rowHeight,
-                    r: 16,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    active: true,
-                    row: r,
-                    col: c
-                });
-            }
-        }
-        this.updateStaticLayer();
-    },
-    updateStaticLayer() {
-        staticCtx.clearRect(0, 0, staticCanvas.width, staticCanvas.height);
-        this.bubbles.forEach(b => {
-            if (!b.active) return;
-            staticCtx.beginPath();
-            staticCtx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            staticCtx.fillStyle = b.color;
-            staticCtx.fill();
-            staticCtx.strokeStyle = "rgba(255,255,255,0.3)";
-            staticCtx.lineWidth = 1;
-            staticCtx.stroke();
-        });
-        // Próxima bolha preview
-        staticCtx.beginPath();
-        staticCtx.arc(canvas.width - 60, canvas.height - 40, 16, 0, Math.PI * 2);
-        staticCtx.fillStyle = this.nextBubbleColor;
-        staticCtx.fill();
-        staticCtx.strokeStyle = "#fff";
-        staticCtx.lineWidth = 2;
-        staticCtx.stroke();
-    },
-    resetBullet() {
-        this.bullet.active = false;
-        this.bullet.x = canvas.width / 2;
-        this.bullet.y = canvas.height - 60;
-        this.generateNextColor();
-        this.updateStaticLayer();
-    },
-    findAttachPosition(bulletX, bulletY) {
-        // Encontra posição grid mais próxima para "stick"
-        for (let bubble of this.bubbles) {
-            if (!bubble.active) continue;
-            const dist = Math.hypot(bubble.x - bulletX, bubble.y - bulletY);
-            if (dist < bubble.r * 1.8) {
-                return { attachX: bubble.x, attachY: bubble.y, parent: bubble };
-            }
-        }
-        return null;
-    },
-    explodeGroup(startBubble) {
-        // BFS para grupo same color + drop floating [web:19]
-        const color = startBubble.color;
-        const visited = new Set();
-        const group = [];
-        const queue = [startBubble];
-        visited.add(startBubble);
-        
-        while (queue.length) {
-            const b = queue.shift();
-            group.push(b);
-            // Check 6 neighbors (hex grid)
-            const dirs = [[0,-this.rowHeight], [0,this.rowHeight], [-38,0], [38,0], [-19,this.rowHeight/2], [19,this.rowHeight/2]];
-            for (let dir of dirs) {
-                const nx = b.x + dir[0], ny = b.y + dir[1];
-                for (let other of this.bubbles) {
-                    if (other.active && !visited.has(other) && other.color === color &&
-                        Math.hypot(other.x - nx, other.y - ny) < 25) {
-                        queue.push(other);
-                        visited.add(other);
-                    }
-                }
-            }
-        }
-        if (group.length >= 3) {
-            group.forEach(b => {
-                b.active = false;
-                this.particles.push({x: b.x, y: b.y, vx: (Math.random()-0.5)*4, vy: -2, life: 30, color: b.color});
-            });
-            return group.length;
-        }
-        return 0;
-    },
-    updatePhysics() {
-        // Particles
-        this.particles = this.particles.filter(p => {
-            p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--;
-            if (p.life > 0) return true;
-        });
-        
-        if (this.isCharging) {
-            this.power = Math.min(this.maxPower, this.power + 0.3);
-            ui.power.style.width = `${this.power / this.maxPower * 100}%`;
-        }
-        if (this.bullet.active) {
-            this.bullet.x += this.bullet.dx;
-            this.bullet.y += this.bullet.dy;
-            
-            // Paredes
-            if (this.bullet.x - this.bullet.r < 20 || this.bullet.x + this.bullet.r > canvas.width - 20) {
-                this.bullet.dx *= -1;
-            }
-            if (this.bullet.y < 40) {
-                const attach = this.findAttachPosition(this.bullet.x, this.bullet.y);
-                if (attach) {
-                    // STICK & EXPLODE!
-                    this.bubbles.push({
-                        x: attach.attachX, y: attach.attachY, r: 16,
-                        color: this.nextBubbleColor, active: true,
-                        row: attach.parent.row, col: attach.parent.col
-                    });
-                    const popped = this.explodeGroup(this.bubbles[this.bubbles.length - 1]);
-                    if (popped > 0) {
-                        state.combo += popped;
-                        state.score += 25 * state.combo * popped;
-                        state.balance += popped * 0.001 * 1e6; // Simulate USDC micro-rewards
-                        playPop(600 - popped * 50);
-                    } else {
-                        state.combo = 0;
-                    }
-                } else {
-                    state.combo = 0;
-                }
-                this.resetBullet();
-                updateUI();
-                this.updateStaticLayer();
-            }
-        }
-        
-        // Win condition
-        if (this.bubbles.filter(b => b.active).length === 0) {
-            state.level++;
-            state.score += 1000 * state.level;
-            this.generateLevel();
-        }
-    },
-    scoreLogic() {
-        // Moved to explodeGroup
-    },
-    drawDynamic() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Bullet
-        if (this.bullet.active) {
-            ctx.beginPath();
-            ctx.arc(this.bullet.x, this.bullet.y, this.bullet.r, 0, Math.PI * 2);
-            ctx.fillStyle = this.nextBubbleColor;
-            ctx.shadowColor = this.nextBubbleColor;
-            ctx.shadowBlur = 15;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-        
-        // Mira se charging
-        if (this.isCharging && typeof mouseX !== 'undefined') {
-            ctx.strokeStyle = `rgba(0,255,170,0.4)`;
-            ctx.lineWidth = 2;
-            ctx.setLineDash([8, 8]);
-            ctx.beginPath();
-            ctx.moveTo(this.bullet.x, this.bullet.y);
-            ctx.lineTo(mouseX, mouseY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-        
-        // Particles
-        this.particles.forEach(p => {
-            ctx.save();
-            ctx.globalAlpha = p.life / 30;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.fill();
-            ctx.restore();
-        });
-    },
-    gameLoop() {
-        Game.updatePhysics();
-        Game.drawDynamic();
-        requestAnimationFrame(() => Game.gameLoop());
-    }
-};
-/* --- INPUTS TOUCH/ MOUSE --- */
-let mouseX = 0, mouseY = 0;
-function getMousePos(e) {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
-    mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
-}
-['mousemove', 'touchmove'].forEach(ev => canvas.addEventListener(ev, getMousePos));
-['mousedown', 'touchstart'].forEach(ev => 
-    canvas.addEventListener(ev, e => { e.preventDefault(); if (signed) Game.isCharging = true; })
-);
-['mouseup', 'touchend'].forEach(ev => 
-    canvas.addEventListener(ev, e => {
-        if (!Game.isCharging || !signed) return;
-        Game.isCharging = false;
-        const angle = Math.atan2(mouseY - Game.bullet.y, mouseX - Game.bullet.x);
-        const spe
+export default App;
