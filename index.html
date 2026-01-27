@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shooter Web3 PRO - Refatorado</title>
+    <title>Bubble Shooter Web3 PRO - Versão Corrigida</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
     <style>
         :root { 
@@ -404,7 +404,7 @@
         </div>
 
         <div style="margin-top: auto; font-size: 11px; color: #666; text-align: center; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-            ARC Testnet v2.0 • Performance Otimizada
+            ARC Testnet v2.0 • Conexão Corrigida
             <br>
             <span id="fps" style="font-family: 'Courier New'; color: #888;"></span>
         </div>
@@ -439,19 +439,26 @@
 <script>
 /* ===== CONFIGURAÇÕES GERAIS ===== */
 const ARC_CHAIN = {
-    chainId: "0x4CF7D2",
+    chainId: "0x4CF7D2",  // 5043474 em decimal
     chainName: "ARC Testnet",
     rpcUrls: ["https://rpc.testnet.arc.network"],
-    nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 }
+    nativeCurrency: { 
+        name: "ARC", 
+        symbol: "ARC", 
+        decimals: 18 
+    },
+    blockExplorerUrls: ["https://testnet.arc.network"]
 };
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
-let provider, signer, account;
+let provider = null;
+let signer = null;
+let account = null;
 let signed = false;
 let gameInitialized = false;
 let gameRunning = false;
 let gamePaused = false;
-let audioCtx;
+let audioCtx = null;
 let startDebounce = false;
 
 const state = { 
@@ -515,13 +522,15 @@ function updateFPS() {
     
     if (fpsInterval) clearInterval(fpsInterval);
     fpsInterval = setInterval(() => {
-        ui.fps.textContent = `FPS: ${fps}`;
-        ui.fpsCounter.textContent = `FPS: ${fps}`;
+        if (ui.fps) ui.fps.textContent = `FPS: ${fps}`;
+        if (ui.fpsCounter) ui.fpsCounter.textContent = `FPS: ${fps}`;
     }, 1000);
 }
 
 /* ===== ATUALIZAÇÃO DA UI ===== */
 function updateUI() {
+    if (!ui.wallet) return;
+    
     ui.wallet.textContent = account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "---";
     ui.balance.textContent = state.balance.toFixed(4);
     ui.score.textContent = state.score.toLocaleString();
@@ -530,84 +539,136 @@ function updateUI() {
     ui.comboValue.textContent = `x${state.combo}`;
     
     // Animação de combo
-    if (state.combo > 1) {
+    if (state.combo > 1 && ui.comboDisplay) {
         ui.comboDisplay.textContent = `COMBO x${state.combo}!`;
         ui.comboDisplay.classList.add('active');
+        const redValue = Math.min(255, state.combo * 30);
         ui.comboDisplay.style.background = 
-            `linear-gradient(45deg, #ff0080, #ff${Math.min(255, state.combo * 20)}00)`;
-    } else {
+            `linear-gradient(45deg, #ff0080, #ff${redValue.toString(16).padStart(2, '0')}00)`;
+    } else if (ui.comboDisplay) {
         ui.comboDisplay.classList.remove('active');
     }
 }
 
-/* ===== WEB3 LOGIC ===== */
+/* ===== WEB3 CONEXÃO SIMPLIFICADA ===== */
 ui.btnConnect.onclick = async () => {
-    if (!window.ethereum) {
+    // Verificar se MetaMask está instalado
+    if (typeof window.ethereum === 'undefined') {
         showNotification("MetaMask não encontrada! Instale a extensão.", "error");
         return;
     }
-    
+
     try {
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        showNotification("Conectando à rede ARC Testnet...", "info");
-        
-        try {
-            await ethereum.request({ 
-                method: "wallet_switchEthereumChain", 
-                params: [{ chainId: ARC_CHAIN.chainId }] 
-            });
-        } catch (e) {
-            if (e.code === 4902) {
-                await ethereum.request({ 
-                    method: "wallet_addEthereumChain", 
-                    params: [ARC_CHAIN] 
-                });
-                showNotification("Rede ARC Testnet adicionada!", "success");
-            } else {
-                throw e;
-            }
+        // Solicitar conexão da carteira
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_requestAccounts' 
+        });
+
+        if (!accounts || accounts.length === 0) {
+            showNotification("Nenhuma conta conectada.", "error");
+            return;
         }
-        
-        provider = new ethers.BrowserProvider(window.ethereum);
-        signer = await provider.getSigner();
+
         account = accounts[0];
         
+        // Tentar mudar para a rede ARC
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: ARC_CHAIN.chainId }]
+            });
+        } catch (switchError) {
+            // Se a rede não existir, adicioná-la
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [ARC_CHAIN]
+                    });
+                    showNotification("Rede ARC Testnet adicionada!", "success");
+                } catch (addError) {
+                    showNotification(`Erro ao adicionar rede: ${addError.message}`, "error");
+                    console.error("Erro ao adicionar rede:", addError);
+                }
+            } else {
+                showNotification(`Erro ao mudar de rede: ${switchError.message}`, "error");
+                console.error("Erro ao mudar de rede:", switchError);
+            }
+        }
+
+        // Criar provider ethers.js
+        provider = new ethers.BrowserProvider(window.ethereum);
+        
+        // Obter signer
+        signer = await provider.getSigner();
+        
+        // Atualizar UI
         ui.btnSign.disabled = false;
         ui.btnConnect.textContent = "✅ Conectado";
         ui.btnConnect.disabled = true;
         
         showNotification(`Conectado: ${account.slice(0,6)}...${account.slice(-4)}`, "success");
         updateUI();
-        
-    } catch (e) {
-        console.error("Erro de conexão:", e);
-        showNotification("Falha na conexão com MetaMask", "error");
+
+    } catch (error) {
+        console.error("Erro de conexão:", error);
+        showNotification(`Falha na conexão: ${error.message}`, "error");
     }
 };
 
+// Listener para mudança de conta
+if (window.ethereum) {
+    window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+            showNotification("Carteira desconectada.", "error");
+            account = null;
+            signed = false;
+            ui.btnSign.disabled = true;
+            ui.btnStart.disabled = true;
+            ui.btnSign.textContent = "2. Assinar Termos";
+            ui.btnConnect.textContent = "1. Conectar MetaMask";
+            ui.btnConnect.disabled = false;
+            updateUI();
+        } else {
+            account = accounts[0];
+            updateUI();
+            showNotification("Conta alterada!", "info");
+        }
+    });
+
+    window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+    });
+}
+
+/* ===== ASSINATURA DE MENSAGEM ===== */
 ui.btnSign.onclick = async () => {
+    if (!signer || !account) {
+        showNotification("Conecte uma carteira primeiro!", "error");
+        return;
+    }
+
     try {
-        const domain = window.location.hostname;
-        const timestamp = new Date().toISOString();
-        const nonce = Math.random().toString(36).substr(2, 9);
+        const message = `Bubble Shooter Web3 Authentication\n\nTimestamp: ${new Date().toISOString()}\nAccount: ${account}\n\nBy signing this message, you confirm you want to play Bubble Shooter.`;
         
-        const message = `Autenticação Bubble Shooter Web3\nDomínio: ${domain}\nData: ${timestamp}\nNonce: ${nonce}`;
+        const signature = await signer.signMessage(message);
         
-        await signer.signMessage(message);
-        signed = true;
-        ui.btnStart.disabled = false;
-        ui.btnSign.textContent = "✅ Assinado";
-        ui.btnSign.disabled = true;
-        
-        document.getElementById("statusMsg").textContent = "🔓 Pronto para Jogar";
-        showNotification("Assinatura confirmada! Pronto para jogar.", "success");
-        
-    } catch (e) {
-        console.error("Erro de assinatura:", e);
-        showNotification("Assinatura necessária para jogar", "error");
+        if (signature) {
+            signed = true;
+            ui.btnStart.disabled = false;
+            ui.btnSign.textContent = "✅ Assinado";
+            ui.btnSign.disabled = true;
+            
+            document.getElementById("statusMsg").textContent = "🔓 Pronto para Jogar";
+            showNotification("Assinatura confirmada! Pronto para jogar.", "success");
+        }
+    } catch (error) {
+        console.error("Erro de assinatura:", error);
+        showNotification("Assinatura cancelada ou falhou.", "error");
     }
 };
 
+/* ===== CONTROLES DO JOGO ===== */
 ui.btnStart.onclick = () => {
     if (startDebounce) return;
     startDebounce = true;
@@ -644,6 +705,7 @@ ui.btnRestart.onclick = () => {
         state.level = 1;
         state.combo = 1;
         state.balance = 0;
+        state.maxCombo = 1;
         Game.generateLevel();
         updateUI();
         showNotification("Jogo reiniciado!", "info");
@@ -652,63 +714,72 @@ ui.btnRestart.onclick = () => {
 
 /* ===== AUDIO ENGINE ===== */
 function initAudio() { 
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+    try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+        console.log("Áudio não suportado:", e);
+    }
 }
 
 function playSound(type, frequency = 440) {
     if (!audioCtx) return;
     
-    const now = audioCtx.currentTime;
-    
-    switch(type) {
-        case 'pop':
-            const popOsc = audioCtx.createOscillator();
-            const popGain = audioCtx.createGain();
-            popOsc.type = 'sine';
-            popOsc.frequency.setValueAtTime(400 + Math.random() * 200, now);
-            popOsc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
-            popGain.gain.setValueAtTime(0.2, now);
-            popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-            popOsc.connect(popGain);
-            popGain.connect(audioCtx.destination);
-            popOsc.start();
-            popOsc.stop(now + 0.2);
-            break;
-            
-        case 'shoot':
-            const shootOsc = audioCtx.createOscillator();
-            const shootGain = audioCtx.createGain();
-            shootOsc.type = 'square';
-            shootOsc.frequency.setValueAtTime(200, now);
-            shootOsc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-            shootGain.gain.setValueAtTime(0.15, now);
-            shootGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-            shootOsc.connect(shootGain);
-            shootGain.connect(audioCtx.destination);
-            shootOsc.start();
-            shootOsc.stop(now + 0.1);
-            break;
-            
-        case 'level':
-            const levelOsc = audioCtx.createOscillator();
-            const levelGain = audioCtx.createGain();
-            levelOsc.type = 'sine';
-            levelOsc.frequency.setValueAtTime(523.25, now); // C5
-            levelOsc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-            levelOsc.frequency.setValueAtTime(783.99, now + 0.2); // G5
-            levelGain.gain.setValueAtTime(0.2, now);
-            levelGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-            levelOsc.connect(levelGain);
-            levelGain.connect(audioCtx.destination);
-            levelOsc.start();
-            levelOsc.stop(now + 0.3);
-            break;
+    try {
+        const now = audioCtx.currentTime;
+        
+        switch(type) {
+            case 'pop':
+                const popOsc = audioCtx.createOscillator();
+                const popGain = audioCtx.createGain();
+                popOsc.type = 'sine';
+                popOsc.frequency.setValueAtTime(400 + Math.random() * 200, now);
+                popOsc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+                popGain.gain.setValueAtTime(0.2, now);
+                popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                popOsc.connect(popGain);
+                popGain.connect(audioCtx.destination);
+                popOsc.start();
+                popOsc.stop(now + 0.2);
+                break;
+                
+            case 'shoot':
+                const shootOsc = audioCtx.createOscillator();
+                const shootGain = audioCtx.createGain();
+                shootOsc.type = 'square';
+                shootOsc.frequency.setValueAtTime(200, now);
+                shootOsc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                shootGain.gain.setValueAtTime(0.15, now);
+                shootGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                shootOsc.connect(shootGain);
+                shootGain.connect(audioCtx.destination);
+                shootOsc.start();
+                shootOsc.stop(now + 0.1);
+                break;
+                
+            case 'level':
+                const levelOsc = audioCtx.createOscillator();
+                const levelGain = audioCtx.createGain();
+                levelOsc.type = 'sine';
+                levelOsc.frequency.setValueAtTime(523.25, now);
+                levelOsc.frequency.setValueAtTime(659.25, now + 0.1);
+                levelOsc.frequency.setValueAtTime(783.99, now + 0.2);
+                levelGain.gain.setValueAtTime(0.2, now);
+                levelGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                levelOsc.connect(levelGain);
+                levelGain.connect(audioCtx.destination);
+                levelOsc.start();
+                levelOsc.stop(now + 0.3);
+                break;
+        }
+    } catch (e) {
+        console.log("Erro no áudio:", e);
     }
 }
 
 /* ===== SISTEMA DE PARTÍCULAS ===== */
 function createParticles(x, y, color, count = 8) {
     const container = document.getElementById('particleContainer');
+    if (!container) return;
     
     for(let i = 0; i < count; i++) {
         const particle = document.createElement('div');
@@ -763,8 +834,15 @@ const ctx = canvas.getContext("2d");
 
 const Game = {
     bubbles: [],
-    particles: [],
-    bullet: { x: 0, y: 0, r: 14, dx: 0, dy: 0, active: false, color: '#fff' },
+    bullet: { 
+        x: 0, 
+        y: 0, 
+        r: 14, 
+        dx: 0, 
+        dy: 0, 
+        active: false, 
+        color: '#fff' 
+    },
     isCharging: false,
     power: 0,
     maxPower: 20,
@@ -782,6 +860,8 @@ const Game = {
     
     resize() {
         const parent = canvas.parentElement;
+        if (!parent) return;
+        
         canvas.width = parent.clientWidth;
         canvas.height = parent.clientHeight;
         canvas.style.width = `${canvas.width}px`;
@@ -792,7 +872,7 @@ const Game = {
         const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa00ff"];
         this.bubbles = [];
         const rows = 5 + state.level;
-        const cols = Math.floor(canvas.width / 50);
+        const cols = Math.max(5, Math.floor(canvas.width / 50));
         const offset = canvas.width > 800 ? 50 : 30;
         
         for(let r = 0; r < rows; r++) {
@@ -869,26 +949,17 @@ const Game = {
                 showNotification("Combo perdido!", "error");
             }
             
-            // Otimização: Filtrar apenas bolhas próximas para colisão
-            const bulletBounds = {
-                left: this.bullet.x - 50,
-                right: this.bullet.x + 50,
-                top: this.bullet.y - 50,
-                bottom: this.bullet.y + 50
-            };
-            
+            // Detecção de colisão com bolhas
             for (let i = this.bubbles.length - 1; i >= 0; i--) {
                 const b = this.bubbles[i];
                 if (!b.active) continue;
                 
-                // Verificação rápida de bounding box
-                if (b.x < bulletBounds.left || b.x > bulletBounds.right || 
-                    b.y < bulletBounds.top || b.y > bulletBounds.bottom) {
-                    continue;
-                }
+                // Verificação rápida de distância
+                const dx = this.bullet.x - b.x;
+                const dy = this.bullet.y - b.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                const dist = Math.hypot(this.bullet.x - b.x, this.bullet.y - b.y);
-                if (dist < this.bullet.r + b.r) {
+                if (distance < this.bullet.r + b.r) {
                     b.active = false;
                     this.bullet.active = false;
                     
@@ -919,7 +990,7 @@ const Game = {
         const activeBubbles = this.bubbles.filter(b => b.active).length;
         if (activeBubbles === 0) {
             state.level++;
-            state.score += 100 * state.level; // Bônus por nível
+            state.score += 100 * state.level;
             state.balance += 0.001 * state.level;
             playSound('level');
             showNotification(`Level ${state.level} completo! +${100 * state.level} pontos`, "success");
@@ -930,61 +1001,11 @@ const Game = {
     },
     
     draw() {
-        if (!gameRunning) return;
+        if (!gameRunning || !ctx) return;
         
         // Limpar canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         // Fundo gradiente
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, 'rgba(0, 10, 20, 0.3)');
-        gradient.addColorStop(1, 'rgba(0, 20, 40, 0.1)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Desenhar grade de fundo
-        ctx.strokeStyle = 'rgba(0, 255, 170, 0.05)';
-        ctx.lineWidth = 1;
-        for(let x = 0; x < canvas.width; x += 50) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
-            ctx.stroke();
-        }
-        for(let y = 0; y < canvas.height; y += 50) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            ctx.stroke();
-        }
-        
-        // Desenhar bolhas
-        this.bubbles.forEach(b => {
-            if (!b.active) return;
-            
-            // Efeito de brilho
-            const glow = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * 1.5);
-            glow.addColorStop(0, b.color);
-            glow.addColorStop(0.7, b.color.replace(')', ', 0.5)').replace('rgb', 'rgba'));
-            glow.addColorStop(1, 'transparent');
-            
-            ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            ctx.fillStyle = glow;
-            ctx.fill();
-            
-            // Borda da bolha
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Reflexo
-            ctx.beginPath();
-            ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fill();
-        });
-        
-        // Desenhar projétil
-        if (this.bullet.active || this.isCharging) {
-            // Brilho do projétil
+        gradient.addColorStop(0, 'rgba(0, 10, 20, 0.
