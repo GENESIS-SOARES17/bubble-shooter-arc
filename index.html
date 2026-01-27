@@ -2,28 +2,19 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ARC USDC Arcade - FIX Edition</title>
+    <title>USDC Bubble Pro - Session Edition</title>
     <style>
         :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
         body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #050505; font-family: sans-serif; color: white; overflow: hidden; }
-        
-        #game-container { 
-            background: rgba(20, 20, 20, 0.9); padding: 20px; border-radius: 24px; text-align: center; 
-            width: 480px; border: 1px solid rgba(255,255,255,0.1);
-        }
-
+        #game-container { background: rgba(20, 20, 20, 0.9); padding: 20px; border-radius: 24px; text-align: center; width: 480px; border: 1px solid rgba(255,255,255,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-
         canvas { background: #000; border: 2px solid #2775ca; border-radius: 16px; cursor: crosshair; }
-
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         button { border: none; padding: 12px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        button:hover { transform: scale(1.02); }
-
         #connect-btn { background: #00ff88; color: #000; grid-column: span 2; }
-        #withdraw-btn { background: #ffca28; color: #000; }
+        #withdraw-btn { background: #ffca28; }
         #reset-btn { background: #2775ca; color: #fff; }
         .locked { opacity: 0.2; pointer-events: none; filter: blur(4px); }
     </style>
@@ -39,26 +30,24 @@
 
     <div id="hud">
         <div class="stat-card">
-            <span style="font-size: 10px; opacity: 0.7;">MEU SALDO</span>
+            <span style="font-size: 10px; opacity: 0.7;">SALDO ACUMULADO</span>
             <div style="font-size: 18px; font-weight: bold; color: #00ff88;">$ <span id="usdc-balance">0.000</span></div>
         </div>
         <div class="stat-card">
             <span style="font-size: 10px; opacity: 0.7;">ENERGIA</span>
             <div id="energy-display" style="font-size: 18px; font-weight: bold;">-- / 3</div>
-            <div id="energy-timer" style="font-size: 10px; color: #ffca28;">CONECTE PARA VER</div>
+            <div id="energy-timer" style="font-size: 10px; color: #ffca28;">3H REGEN</div>
         </div>
     </div>
-
-    <div id="wallet-info" style="font-size: 10px; margin-bottom: 10px; color: #00ff88;">STATUS: DESCONECTADO</div>
 
     <div id="canvas-wrapper" class="locked">
         <canvas id="gameCanvas" width="400" height="400"></canvas>
     </div>
 
     <div class="controls">
-        <button id="connect-btn">CONECTAR CARTEIRA AGORA</button>
+        <button id="connect-btn">CONECTAR CARTEIRA</button>
         <button id="withdraw-btn">SACAR GANHOS</button>
-        <button id="reset-btn">JOGAR (-1⚡)</button>
+        <button id="reset-btn">PRÓXIMA FASE (-1⚡)</button>
     </div>
 </div>
 
@@ -67,35 +56,28 @@
     const ctx = canvas.getContext('2d');
     
     let wallet = null;
-    let totalEarned = 0;
+    let sessionBalance = 0; // Saldo que acumula entre as fases
     let energy = { count: 3, lastUsed: Date.now() };
-    const REGEN_TIME = 4 * 60 * 60 * 1000; 
+    const REGEN_TIME = 3 * 60 * 60 * 1000; // Tempo de espera ajustado para 3 horas
 
     // --- CONEXÃO WEB3 ---
     document.getElementById('connect-btn').onclick = async () => {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                wallet = accounts[0];
-                
-                // Carregar dados salvos
-                const saved = JSON.parse(localStorage.getItem('player_' + wallet));
-                if (saved) energy = saved.energy;
-
-                document.getElementById('wallet-info').innerText = "CONECTADO: " + wallet.substring(0,15) + "...";
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('canvas-wrapper').classList.remove('locked');
-                
-                startEnergySystem();
-            } catch (error) {
-                console.error("Usuário negou a conexão");
+        if (window.ethereum) {
+            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            wallet = accs[0];
+            const saved = JSON.parse(localStorage.getItem('p_' + wallet));
+            if (saved) {
+                energy = saved.energy;
+                sessionBalance = saved.balance || 0;
             }
-        } else {
-            alert("Por favor, instale a MetaMask!");
+            document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
+            document.getElementById('connect-btn').style.display = 'none';
+            document.getElementById('canvas-wrapper').classList.remove('locked');
+            startEnergyLoop();
         }
     };
 
-    function startEnergySystem() {
+    function startEnergyLoop() {
         setInterval(() => {
             const now = Date.now();
             const elapsed = now - energy.lastUsed;
@@ -104,52 +86,52 @@
             if (regen > 0 && energy.count < 3) {
                 energy.count = Math.min(3, energy.count + regen);
                 energy.lastUsed = now;
-                localStorage.setItem('player_' + wallet, JSON.stringify({energy}));
+                save();
             }
 
             document.getElementById('energy-display').innerText = `${energy.count} / 3`;
             if (energy.count < 3) {
-                const remaining = REGEN_TIME - (elapsed % REGEN_TIME);
-                const m = Math.floor(remaining / 60000);
-                document.getElementById('energy-timer').innerText = `REGEN EM ${m} MIN`;
+                const rem = REGEN_TIME - (elapsed % REGEN_TIME);
+                const m = Math.floor(rem / 60000);
+                document.getElementById('energy-timer').innerText = `REGEN: ${m}m`;
             } else {
-                document.getElementById('energy-timer').innerText = `ENERGIA CHEIA`;
+                document.getElementById('energy-timer').innerText = `CHEIA`;
             }
         }, 1000);
     }
 
-    // --- JOGO ---
+    function save() {
+        if (wallet) localStorage.setItem('p_' + wallet, JSON.stringify({energy, balance: sessionBalance}));
+    }
+
+    // --- LOGICA DO JOGO ---
     const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
-    let bubbles = [], particles = [];
-    let bullet = { x: 200, y: 370, r: 15, active: false, dx: 0, dy: 0 };
+    let bubbles = [], bullet = { x: 200, y: 370, r: 15, active: false, dx: 0, dy: 0 };
 
     function init() {
-        bubbles = [];
-        bullet.active = false;
+        bubbles = []; bullet.active = false;
         for (let i = 0; i < 5; i++) {
             for (let j = 0; j < 10; j++) {
-                bubbles.push({ x: 30 + (j * 38), y: 50 + (i * 38), r: 14, color: colors[i % 4], active: true });
+                bubbles.push({ x: 30+(j*38), y: 50+(i*38), r: 14, color: colors[i % 4], active: true });
             }
         }
     }
 
     document.getElementById('reset-btn').onclick = () => {
-        if (!wallet) return alert("Conecte a carteira!");
         if (energy.count > 0) {
             energy.count--;
             energy.lastUsed = Date.now();
-            localStorage.setItem('player_' + wallet, JSON.stringify({energy}));
-            totalEarned = 0;
-            document.getElementById('usdc-balance').innerText = "0.000";
+            save();
             init();
-        } else { alert("Sem energia!"); }
+        } else { alert("Aguarde as 3 horas de regeneração!"); }
     };
 
     document.getElementById('withdraw-btn').onclick = () => {
-        if (totalEarned > 0.10) {
-            alert(`Sacando ${(totalEarned - 0.10).toFixed(3)} USDC (Taxa 0.10 paga)`);
-            totalEarned = 0;
+        if (sessionBalance > 0.10) {
+            alert(`Sacando total acumulado: ${(sessionBalance - 0.10).toFixed(3)} USDC`);
+            sessionBalance = 0;
             document.getElementById('usdc-balance').innerText = "0.000";
+            save();
         } else { alert("Saldo insuficiente!"); }
     };
 
@@ -157,8 +139,7 @@
         if (bullet.active || !wallet) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        bullet.dx = Math.cos(angle) * 10;
-        bullet.dy = Math.sin(angle) * 10;
+        bullet.dx = Math.cos(angle) * 10; bullet.dy = Math.sin(angle) * 10;
         bullet.active = true;
     });
 
@@ -169,23 +150,20 @@
             for (let b of bubbles) {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
                     b.active = false;
-                    totalEarned += 0.002;
-                    document.getElementById('usdc-balance').innerText = totalEarned.toFixed(3);
-                    for(let k=0; k<8; k++) particles.push({x:b.x, y:b.y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, l:1, c:b.color});
+                    sessionBalance += 0.002; // Incrementa o saldo acumulado
+                    document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
                     bullet.active = false; bullet.x = 200; bullet.y = 370;
+                    save();
                     break;
                 }
             }
             if (bullet.y < 0 || bullet.y > 400) { bullet.active = false; bullet.x = 200; bullet.y = 370; }
         }
-        particles.forEach((p,i) => { p.x+=p.vx; p.y+=p.vy; p.l-=0.02; if(p.l<=0) particles.splice(i,1); });
     }
 
     function draw() {
         ctx.clearRect(0, 0, 400, 400);
         bubbles.forEach(b => { if(b.active){ ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); } });
-        particles.forEach(p => { ctx.globalAlpha=p.l; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,3,3); });
-        ctx.globalAlpha=1;
         ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
         ctx.fillStyle = "#00ff88"; ctx.fill();
         update();
