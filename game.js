@@ -1,42 +1,34 @@
-const ARC_CHAIN_ID = "0x4cece6"; // 5042002
+const ARC_CHAIN_ID = "0x4cece6"; 
 const ARC_RPC = "https://rpc.testnet.arc.network";
 
-// Função para forçar a atualização visual
-function forceUpdateUI(account, chainId) {
+// This function forces the screen to show the REAL status
+async function refreshWalletStatus() {
     const statusText = document.getElementById('status');
-    const btn = document.getElementById('connect-button');
+    const connectBtn = document.getElementById('connect-button');
 
-    if (account && chainId === ARC_CHAIN_ID) {
-        statusText.innerText = "Status: CONECTADO (" + account.substring(0, 6) + ")";
-        statusText.style.color = "#00ff88"; // Verde vivo
-        btn.innerText = "CARTEIRA ATIVA";
-        btn.style.opacity = "0.5";
-    } else if (account && chainId !== ARC_CHAIN_ID) {
-        statusText.innerText = "Status: TROQUE PARA REDE ARC";
-        statusText.style.color = "orange";
-    } else {
-        statusText.innerText = "Status: Desconectado";
-        statusText.style.color = "white";
+    if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+        if (accounts.length > 0 && chainId === ARC_CHAIN_ID) {
+            statusText.innerText = "STATUS: CONNECTED (" + accounts[0].substring(0, 6) + ")";
+            statusText.style.color = "#00ff88"; // Green
+            connectBtn.innerText = "WALLET ACTIVE";
+            connectBtn.style.opacity = "0.5";
+        } else if (accounts.length > 0 && chainId !== ARC_CHAIN_ID) {
+            statusText.innerText = "STATUS: WRONG NETWORK (SWITCH TO ARC)";
+            statusText.style.color = "#ffcc00"; // Yellow
+        } else {
+            statusText.innerText = "STATUS: DISCONNECTED";
+            statusText.style.color = "white";
+        }
     }
 }
 
-// Monitor de eventos da MetaMask (O segredo para funcionar)
-if (window.ethereum) {
-    // Escuta troca de conta
-    window.ethereum.on('accountsChanged', (accounts) => {
-        window.location.reload(); // Recarrega para garantir limpeza de cache
-    });
-
-    // Escuta troca de rede
-    window.ethereum.on('chainChanged', () => {
-        window.location.reload();
-    });
-}
-
-async function connectWallet() {
+async function connect() {
     if (window.ethereum) {
         try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
@@ -56,47 +48,46 @@ async function connectWallet() {
                     });
                 }
             }
-            const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
-            forceUpdateUI(accounts[0], currentChain);
+            // WAIT 1 SECOND AND REFRESH
+            setTimeout(refreshWalletStatus, 1000);
         } catch (error) {
-            console.log("Erro ao autorizar");
+            console.error("Connection error");
         }
     }
 }
 
-document.getElementById('connect-button').onclick = connectWallet;
+// LISTENERS: Detects every change in MetaMask automatically
+if (window.ethereum) {
+    window.ethereum.on('accountsChanged', refreshWalletStatus);
+    window.ethereum.on('chainChanged', () => window.location.reload());
+}
 
-// Verifica estado ao carregar a página
-window.onload = async () => {
-    if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (accounts.length > 0) {
-            forceUpdateUI(accounts[0], chainId);
-        }
-    }
-};
+document.getElementById('connect-button').onclick = connect;
+window.onload = refreshWalletStatus;
 
-// --- DESENHO ARCADE (Fiel à sua imagem) ---
+// --- GAME RENDER (Image reference image_301cda.png) ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
     for(let i=0; i<5; i++) {
         for(let j=0; j<8; j++) {
             ctx.beginPath();
-            ctx.arc(40 + j*45, 50 + i*40, 18, 0, Math.PI*2);
+            ctx.arc(40 + j*52, 50 + i*45, 19, 0, Math.PI*2);
             ctx.fillStyle = colors[i % colors.length];
             ctx.fill();
             ctx.strokeStyle = "rgba(255,255,255,0.2)";
             ctx.stroke();
         }
     }
-    // Bolha Atiradora amarela central
+    // Main Shooter Ball
     ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height - 50, 22, 0, Math.PI * 2);
+    ctx.arc(canvas.width/2, canvas.height-50, 24, 0, Math.PI*2);
     ctx.fillStyle = "yellow";
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "yellow";
     ctx.fill();
 }
 setInterval(draw, 50);
