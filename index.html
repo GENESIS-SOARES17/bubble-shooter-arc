@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shooter ARC - Transparência 70%</title>
+    <title>Bubble Shooter ARC - 90% Transparência</title>
     <style>
         body {
             margin: 0;
@@ -11,7 +11,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            /* Fundo principal com a imagem da Arc */
+            /* Usa sua imagem de fundo background.png */
             background: #0a0a0a url('background.png') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -20,24 +20,24 @@
         }
 
         #game-container {
-            background: rgba(0, 0, 0, 0.6); /* Painel levemente transparente */
+            background: rgba(0, 0, 0, 0.5); /* Painel leve para contraste */
             padding: 20px;
             border-radius: 20px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         canvas {
-            /* 70% de transparência (0.3 de cor preta) */
-            background: rgba(0, 0, 0, 0.3); 
+            /* 90% de transparência (0.1 de opacidade preta) */
+            background: rgba(0, 0, 0, 0.1); 
             border: 2px solid #00BFFF;
             border-radius: 12px;
             cursor: crosshair;
             display: block;
             margin: 0 auto;
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.3);
         }
 
         button {
@@ -54,13 +54,13 @@
 
         button:hover { transform: scale(1.05); }
 
-        #status { font-size: 14px; margin-bottom: 10px; color: #ffca28; }
+        #status { font-size: 14px; margin-bottom: 10px; color: #00ff88; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1 style="margin: 0 0 10px 0; font-size: 22px;">BUBBLE SHOOTER ARC</h1>
+    <h1 style="margin: 0 0 10px 0; font-size: 22px; text-shadow: 2px 2px 4px black;">BUBBLE SHOOTER ARC</h1>
     <button id="connect-wallet">CONECTAR CARTEIRA</button>
     <div id="status">CLIQUE NO JOGO PARA ATIVAR O SOM</div>
     <canvas id="gameCanvas" width="450" height="550"></canvas>
@@ -70,7 +70,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- ÁUDIO ---
+    // --- SISTEMA DE ÁUDIO ---
     let audioCtx = null;
     function initAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -82,17 +82,17 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(650, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     }
 
-    // --- IMAGENS ---
+    // --- IMAGENS DA PASTA ---
     const imgs = {};
-    const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; // Vermelho removido
+    const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; // Vermelho excluído
     const names = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
     
     colors.forEach(c => {
@@ -101,7 +101,7 @@
     });
     const shootImg = new Image(); shootImg.src = 'shooter.png';
 
-    // --- JOGO ---
+    // --- LÓGICA DO JOGO ---
     let score = 0, level = 1, bubbles = [], particles = [];
     let bullet = { x: 225, y: 500, r: 20, active: false, dx: 0, dy: 0 };
 
@@ -113,7 +113,7 @@
 
     function init() {
         bubbles = [];
-        const rows = 6; // 6 Linhas conforme pedido
+        const rows = 6; // 6 linhas de bolhas
         for (let i = 0; i < rows; i++) {
             let col = colors[i % colors.length];
             for (let j = 0; j < 8; j++) {
@@ -123,7 +123,7 @@
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        initAudio(); 
+        initAudio(); // Ativa áudio no clique
         if (bullet.active) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
@@ -158,4 +158,31 @@
     }
 
     function draw() {
-        ctx.clearRect(0, 0,
+        ctx.clearRect(0, 0, 450, 550);
+        ctx.fillStyle = "white"; ctx.font = "bold 16px Arial";
+        ctx.fillText(`SCORE: ${score}  NÍVEL: ${level}`, 20, 30);
+
+        bubbles.forEach(b => {
+            if (b.active) {
+                if (imgs[b.color].complete) ctx.drawImage(imgs[b.color], b.x-b.r, b.y-b.r, b.r*2, b.r*2);
+                else { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }
+            }
+        });
+
+        particles.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fillStyle = p.color; ctx.globalAlpha = p.life/25; ctx.fill(); ctx.globalAlpha = 1;
+        });
+
+        if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
+        else { ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2); ctx.fillStyle = "yellow"; ctx.fill(); }
+        
+        update();
+        requestAnimationFrame(draw);
+    }
+
+    init();
+    draw();
+</script>
+</body>
+</html>
