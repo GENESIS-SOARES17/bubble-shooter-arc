@@ -2,9 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC BUBBLE PRO - Elite Edition</title>
+    <title>USDC TERMINAL & ARCADE</title>
     <style>
-        :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; --danger: #ff4444; }
+        :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; --up: #00ff88; --down: #ff4444; }
         body { 
             margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
             background: #050505 url('background.png') no-repeat center center fixed; background-size: cover; 
@@ -12,78 +12,81 @@
         }
         
         #game-container { 
-            background: rgba(15, 15, 15, 0.8); /* Transparência de 80% */
-            padding: 25px; border-radius: 28px; text-align: center; width: 500px; 
-            border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(12px);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); position: relative;
+            background: rgba(15, 15, 15, 0.8); /* 80% Transparência */
+            padding: 20px; border-radius: 28px; width: 600px; 
+            border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(15px);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        /* Leaderboard Style */
-        #leaderboard { 
-            background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 10px; 
-            font-size: 11px; margin-bottom: 15px; border: 1px border rgba(255,202,40,0.3);
+        /* Ticker Top 10 Animado */
+        #top10-ticker {
+            background: rgba(0,0,0,0.6); padding: 8px; border-radius: 10px;
+            margin-bottom: 15px; overflow: hidden; white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.05); font-size: 12px;
+        }
+        .marquee { display: inline-block; animation: marquee 30s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .coin-box { display: inline-block; margin-right: 25px; font-weight: bold; }
+
+        .calc-section { 
+            background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; 
+            margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: rgba(0, 0, 0, 0.6); padding: 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .stat-card { background: rgba(0, 0, 0, 0.6); padding: 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
 
-        canvas { background: rgba(0,0,0,0.9); border: 2px solid var(--secondary); border-radius: 18px; cursor: crosshair; }
+        canvas { background: rgba(0,0,0,0.95); border: 2px solid var(--secondary); border-radius: 18px; cursor: crosshair; }
 
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         button { border: none; padding: 12px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        
         #connect-btn { background: var(--primary); color: #000; grid-column: span 2; }
-        #withdraw-btn { background: var(--gold); color: #000; }
+        #withdraw-btn { background: var(--gold); }
         #reset-btn { background: var(--secondary); color: #fff; }
 
-        .locked { opacity: 0.1; pointer-events: none; filter: blur(10px); }
-
-        /* Pop-up Notifications */
-        #notification { 
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--primary); color: black; padding: 8px 20px; border-radius: 20px;
-            font-weight: bold; font-size: 12px; opacity: 0; transition: 0.5s; z-index: 100;
-        }
+        .locked { opacity: 0.1; pointer-events: none; filter: blur(12px); }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="notification">MENSAGEM</div>
-
-    <div class="header">
-        <img src="logo_a.png" width="40" onerror="this.style.display='none'">
-        <h3 style="margin: 0; color: var(--primary);">USDC BUBBLE PRO</h3>
-        <img src="logo_circle.png" width="40" onerror="this.style.display='none'">
+    <div id="top10-ticker">
+        <div class="marquee" id="marquee-content">CARREGANDO MARKET DATA...</div>
     </div>
 
-    <div id="leaderboard">
-        🏆 MELHOR DO DIA: <span id="top-player" style="color: var(--gold);">AGUARDANDO...</span> 
-        (<span id="top-score">0.00</span> USDC)
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0; color: var(--primary); font-size: 16px;">USDC TERMINAL PRO</h3>
+        <span id="wallet-status" style="font-size: 9px; opacity: 0.5;">DISCONNECTED</span>
+    </div>
+
+    <div class="calc-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 14px;">Saldo: <span id="calc-usdc" style="color:var(--primary); font-weight:bold;">0.00</span> USDC</div>
+            <div style="text-align: right; font-size: 14px; color: var(--gold);">
+                ≈ <span id="calc-brl">R$ 0,00</span>
+            </div>
+        </div>
     </div>
 
     <div id="hud">
         <div class="stat-card">
-            <span style="font-size: 9px; opacity: 0.7;">SALDO ACUMULADO</span>
-            <div style="font-size: 18px; font-weight: bold; color: var(--primary);">$ <span id="usdc-balance">0.000</span></div>
+            <span style="font-size: 9px; opacity: 0.7;">GANHOS</span>
+            <div style="font-size: 16px; font-weight: bold; color: var(--primary);">$ <span id="usdc-balance">0.000</span></div>
         </div>
         <div class="stat-card">
             <span style="font-size: 9px; opacity: 0.7;">ENERGIA</span>
-            <div id="energy-display" style="font-size: 18px; font-weight: bold;">-- / 3</div>
-            <div id="energy-timer" style="font-size: 9px; color: var(--gold);">3H REGEN</div>
+            <div id="energy-display" style="font-size: 16px; font-weight: bold;">-- / 3</div>
         </div>
     </div>
 
     <div id="canvas-wrapper" class="locked">
-        <canvas id="gameCanvas" width="440" height="400"></canvas>
+        <canvas id="gameCanvas" width="560" height="300"></canvas>
     </div>
 
     <div class="controls">
         <button id="connect-btn">CONECTAR CARTEIRA</button>
         <button id="withdraw-btn">SACAR</button>
-        <button id="reset-btn">NOVA FASE (-1⚡)</button>
+        <button id="reset-btn">JOGAR (-1⚡)</button>
     </div>
 </div>
 
@@ -94,149 +97,76 @@
     let wallet = null;
     let sessionBalance = 0; 
     let energy = { count: 3, lastUsed: Date.now() };
-    const REGEN_TIME = 3 * 60 * 60 * 1000; // 3 Horas
+    const REGEN_TIME = 3 * 60 * 60 * 1000; 
+    let usdInBrl = 5.00;
 
-    // --- NOTIFICAÇÕES ---
-    function notify(msg) {
-        const el = document.getElementById('notification');
-        el.innerText = msg; el.style.opacity = "1";
-        setTimeout(() => el.style.opacity = "0", 3000);
+    // --- BUSCA TOP 10 MOEDAS ---
+    async function fetchTop10() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&sparkline=false&price_change_percentage=24h');
+            const data = await res.json();
+            
+            const marquee = document.getElementById('marquee-content');
+            marquee.innerHTML = ''; // Limpa
+
+            data.forEach(coin => {
+                const change = coin.price_change_percentage_24h;
+                const colorClass = change >= 0 ? '#00ff88' : '#ff4444';
+                const sign = change >= 0 ? '+' : '';
+                
+                marquee.innerHTML += `
+                    <span class="coin-box">
+                        ${coin.symbol.toUpperCase()}: $${coin.current_price.toLocaleString()} 
+                        <span style="color: ${colorClass}; font-size: 10px;">${sign}${change.toFixed(2)}%</span>
+                    </span>
+                `;
+                if(coin.id === 'usd-coin') usdInBrl = coin.current_price; // Simulação para cálculo
+            });
+
+            // Fallback para BRL caso não venha no Top 10
+            const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
+            const brlData = await brlRes.json();
+            usdInBrl = brlData['usd-coin'].brl;
+            
+            updateCalculations();
+        } catch (e) { console.log("Erro API"); }
     }
 
-    // --- LEADERBOARD SIMULADO ---
-    function updateLeaderboard() {
-        const top = JSON.parse(localStorage.getItem('global_top')) || { addr: "0x71...3A2", score: 1.450 };
-        document.getElementById('top-player').innerText = top.addr;
-        document.getElementById('top-score').innerText = top.score.toFixed(3);
+    function updateCalculations() {
+        document.getElementById('calc-usdc').innerText = sessionBalance.toFixed(3);
+        document.getElementById('calc-brl').innerText = `R$ ${(sessionBalance * usdInBrl).toFixed(2)}`;
     }
 
-    // --- CONEXÃO ---
+    // --- WEB3 ---
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            wallet = accounts[0];
-            const saved = JSON.parse(localStorage.getItem('pro_' + wallet));
+            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            wallet = accs[0];
+            const saved = JSON.parse(localStorage.getItem('terminal_' + wallet));
             if (saved) { energy = saved.energy; sessionBalance = saved.balance || 0; }
             
             document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
+            document.getElementById('wallet-status').innerText = "ONLINE: " + wallet.substring(0,6);
             document.getElementById('connect-btn').style.display = 'none';
             document.getElementById('canvas-wrapper').classList.remove('locked');
-            notify("✅ CARTEIRA CONECTADA!");
-            startSystems();
+            
+            fetchTop10();
+            setInterval(fetchTop10, 60000);
+            startEnergyLoop();
         }
     };
 
-    function startSystems() {
-        updateLeaderboard();
+    function startEnergyLoop() {
         setInterval(() => {
             const now = Date.now();
             const elapsed = now - energy.lastUsed;
             if (Math.floor(elapsed / REGEN_TIME) > 0 && energy.count < 3) {
-                energy.count++; energy.lastUsed = now; save();
+                energy.count++; energy.lastUsed = now;
             }
             document.getElementById('energy-display').innerText = `${energy.count} / 3`;
+            updateCalculations();
         }, 1000);
     }
 
-    function save() {
-        if (!wallet) return;
-        localStorage.setItem('pro_' + wallet, JSON.stringify({energy, balance: sessionBalance}));
-        // Atualiza recorde global
-        const currentTop = JSON.parse(localStorage.getItem('global_top')) || { score: 0 };
-        if (sessionBalance > currentTop.score) {
-            localStorage.setItem('global_top', JSON.stringify({ addr: wallet.substring(0,6)+"..."+wallet.slice(-2), score: sessionBalance }));
-            updateLeaderboard();
-        }
-    }
-
-    // --- LOGICA DE JOGO (NÍVEIS VARIADOS) ---
-    const types = { NORMAL: '#00BFFF', TOUGH: '#FF1493', BOMB: '#FFD700' };
-    let bubbles = [], bullet = { x: 220, y: 370, r: 15, active: false, dx: 0, dy: 0 };
-
-    function init() {
-        bubbles = [];
-        for (let i = 0; i < 5; i++) {
-            for (let j = 0; j < 11; j++) {
-                let type = "NORMAL";
-                if (Math.random() > 0.85) type = "BOMB";
-                else if (Math.random() > 0.7) type = "TOUGH";
-
-                bubbles.push({ 
-                    x: 35+(j*37), y: 50+(i*37), r: 15, 
-                    type: type, color: types[type], 
-                    hp: type === "TOUGH" ? 2 : 1, 
-                    active: true 
-                });
-            }
-        }
-    }
-
-    document.getElementById('reset-btn').onclick = () => {
-        if (energy.count > 0) {
-            energy.count--; energy.lastUsed = Date.now();
-            save(); init(); notify("🚀 FASE INICIADA!");
-        } else alert("Energia insuficiente!");
-    };
-
-    canvas.addEventListener('mousedown', (e) => {
-        if (bullet.active || !wallet) return;
-        const rect = canvas.getBoundingClientRect();
-        const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        bullet.dx = Math.cos(angle) * 10; bullet.dy = Math.sin(angle) * 10;
-        bullet.active = true;
-    });
-
-    function update() {
-        if (bullet.active) {
-            bullet.x += bullet.dx; bullet.y += bullet.dy;
-            if (bullet.x < bullet.r || bullet.x > canvas.width - bullet.r) bullet.dx *= -1;
-            
-            for (let b of bubbles) {
-                if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
-                    b.hp--;
-                    if (b.hp <= 0) {
-                        b.active = false;
-                        sessionBalance += 0.005;
-                        if (b.type === "BOMB") explode(b.x, b.y);
-                    } else {
-                        b.color = "#FFF"; // Indica que foi atingida mas resistiu
-                    }
-                    bullet.active = false; bullet.x = 220; bullet.y = 370;
-                    document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
-                    save();
-                    break;
-                }
-            }
-            if (bullet.y < 0 || bullet.y > 400) { bullet.active = false; bullet.x = 220; bullet.y = 370; }
-        }
-    }
-
-    function explode(x, y) {
-        bubbles.forEach(b => {
-            if (b.active && Math.hypot(x - b.x, y - b.y) < 60) {
-                b.active = false;
-                sessionBalance += 0.005;
-            }
-        });
-        notify("💥 BÔNUS DE EXPLOSÃO!");
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, 440, 400);
-        bubbles.forEach(b => {
-            if (b.active) {
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                ctx.fillStyle = b.color; ctx.fill();
-                if(b.type === "BOMB") { ctx.strokeStyle = "red"; ctx.lineWidth=2; ctx.stroke(); }
-            }
-        });
-        ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
-        ctx.fillStyle = "#00ff88"; ctx.fill();
-        update();
-        requestAnimationFrame(draw);
-    }
-
-    init(); draw();
-</script>
-</body>
-</html>
+    // --- JOGO ---
+    const colors = ['#00BFFF', '#FF1493', '#
