@@ -134,4 +134,3 @@ function draw() {
 initLevel(level);
 setInterval(update, 1000 / 60);
 draw();
-
