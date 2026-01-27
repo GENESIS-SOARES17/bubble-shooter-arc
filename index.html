@@ -1,144 +1,399 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>USDC TERMINAL - REFORCED 2026</title>
-    <style>
-        :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
-        body { 
-            margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
-            background: #050505; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
-        }
-        
-        /* Container com 80% de transparência e desfoque */
-        #game-container { 
-            background: rgba(15, 15, 15, 0.8); 
-            padding: 20px; border-radius: 28px; width: 850px; 
-            border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(15px);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        }
+<meta charset="UTF-8">
+<title>USDC TERMINAL PRO 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* Ticker Top 10 Moedas */
-        #ticker-top {
-            background: rgba(0,0,0,0.7); padding: 12px; border-radius: 14px;
-            margin-bottom: 20px; border: 1px solid #333; overflow: hidden;
-        }
-        .marquee-container { display: flex; overflow: hidden; white-space: nowrap; }
-        .marquee-content { display: inline-block; animation: scroll 35s linear infinite; color: var(--primary); font-weight: bold; font-size: 14px; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+<style>
+:root {
+  --primary:#00ff88;
+  --secondary:#2775ca;
+  --gold:#ffca28;
+  --danger:#ff4444;
+  --bg:#050505;
+}
 
-        /* HUD e Calculadora */
-        .hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .info-card { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 18px; border: 1px solid #444; text-align: center; }
+*{box-sizing:border-box}
 
-        /* Jogo 50% Maior */
-        canvas { background: #000; border: 2px solid var(--secondary); border-radius: 20px; cursor: crosshair; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(39, 117, 202, 0.3); }
+body{
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#0b1a14,#000);
+  font-family:Segoe UI, sans-serif;
+  color:#fff;
+}
 
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        button { border: none; padding: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.3s; }
-        
-        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; box-shadow: 0 0 15px rgba(0, 255, 136, 0.5); }
-        #withdraw-btn { background: var(--gold); color: #000; }
-        #reset-btn { background: var(--secondary); color: #fff; }
+/* Container */
+#app{
+  width:min(920px,95vw);
+  background:rgba(15,15,15,.85);
+  border-radius:26px;
+  padding:18px;
+  border:1px solid rgba(0,255,136,.25);
+  backdrop-filter:blur(14px);
+  box-shadow:0 0 50px rgba(0,0,0,.9);
+}
 
-        .locked { opacity: 0.15; pointer-events: none; filter: blur(15px); }
-        .coin-span { margin-right: 45px; }
-    </style>
+/* Ticker */
+#ticker{
+  background:rgba(0,0,0,.7);
+  border:1px solid #333;
+  border-radius:14px;
+  padding:10px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+#ticker span{
+  display:inline-block;
+  padding-right:40px;
+  font-size:13px;
+  font-weight:bold;
+  color:var(--primary);
+  animation:scroll 30s linear infinite;
+  white-space:nowrap;
+}
+@keyframes scroll{
+  0%{transform:translateX(100%)}
+  100%{transform:translateX(-100%)}
+}
+
+/* HUD */
+.hud{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:10px;
+}
+.card{
+  background:rgba(0,0,0,.6);
+  border:1px solid #444;
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
+}
+.card small{opacity:.6;font-size:11px}
+.card strong{font-size:26px;color:var(--primary)}
+
+/* Game */
+#gameBox{
+  margin-top:10px;
+  border-radius:20px;
+  border:2px solid var(--secondary);
+  overflow:hidden;
+  position:relative;
+}
+canvas{
+  display:block;
+  width:100%;
+  background:#000;
+}
+
+/* Effects */
+.float-text{
+  position:absolute;
+  font-size:14px;
+  color:var(--gold);
+  animation:float 1.2s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes float{
+  from{opacity:1;transform:translateY(0)}
+  to{opacity:0;transform:translateY(-40px)}
+}
+
+/* Buttons */
+.buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+button{
+  border:none;
+  border-radius:12px;
+  padding:14px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover{transform:scale(1.03)}
+#connectBtn{
+  grid-column:span 2;
+  background:var(--primary);
+  color:#000;
+  font-size:17px;
+}
+#nextBtn{background:var(--secondary);color:#fff}
+#withdrawBtn{background:var(--gold);color:#000}
+
+.locked{
+  opacity:.2;
+  pointer-events:none;
+  filter:blur(8px);
+}
+</style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="ticker-top">
-        <div class="marquee-container">
-            <div class="marquee-content" id="price-marquee">SINCRONIZANDO RANKING GLOBAL...</div>
-        </div>
-    </div>
+<div id="app">
 
-    <div class="hud-row">
-        <div class="info-card">
-            <span style="font-size: 11px; opacity: 0.6;">GANHOS ACUMULADOS</span>
-            <div style="font-size: 26px; font-weight: bold; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
-            <div id="brl-val" style="color: var(--gold); font-size: 13px; font-weight: bold;">R$ 0,00 (CALCULANDO...)</div>
-        </div>
-        <div class="info-card">
-            <span style="font-size: 11px; opacity: 0.6;">ENERGIA DISPONÍVEL</span>
-            <div id="energy-val" style="font-size: 26px; font-weight: bold;">-- / 3</div>
-            <div id="timer-val" style="font-size: 11px; color: var(--gold);">REGEN: 3 HORAS</div>
-        </div>
-    </div>
+  <div id="ticker">Carregando mercado...</div>
 
-    <div id="canvas-wrapper" class="locked">
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
+  <div class="hud">
+    <div class="card">
+      <small>GANHOS</small>
+      <strong>$<span id="usdVal">0.000</span></strong>
+      <div id="brlVal" style="color:var(--gold);font-size:13px">R$ 0,00</div>
     </div>
+    <div class="card">
+      <small>ENERGIA</small>
+      <strong><span id="energyVal">3</span>/3</strong>
+      <div id="timerVal" style="font-size:12px;color:var(--gold)">REGEN ATIVO</div>
+    </div>
+  </div>
 
-    <div class="btn-row">
-        <button id="connect-btn">🔌 CONECTAR CARTEIRA AGORA</button>
-        <button id="withdraw-btn">💰 SACAR (TAXA 0.10)</button>
-        <button id="reset-btn">🚀 PRÓXIMA FASE (-1⚡)</button>
-    </div>
+  <div id="gameBox" class="locked">
+    <canvas id="game"></canvas>
+  </div>
+
+  <div class="buttons">
+    <button id="connectBtn">🔌 CONECTAR CARTEIRA</button>
+    <button id="withdrawBtn">💰 SACAR</button>
+    <button id="nextBtn">🚀 PRÓXIMA FASE (-1⚡)</button>
+  </div>
+
 </div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    let wallet = null;
-    let balance = 0; 
-    let energy = { count: 3, lastUsed: Date.now() };
-    let brlPrice = 5.50;
+/* ===========================
+   CONFIG / STATE
+=========================== */
+const State = {
+  wallet:null,
+  balance:0,
+  level:1,
+  energy:{count:3,last:Date.now()},
+  brl:5.5,
+  offlineBalance:0 // jogar sem wallet
+};
 
-    // --- 1. CHAMADA DA CARTEIRA (Prioridade Máxima) ---
-    document.getElementById('connect-btn').addEventListener('click', async () => {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                wallet = accounts[0];
-                
-                // Tenta recuperar progresso do localStorage
-                const saved = JSON.parse(localStorage.getItem('usdc_terminal_' + wallet));
-                if (saved) {
-                    balance = saved.balance || 0;
-                    energy = saved.energy;
-                }
+/* ===========================
+   UTILS
+=========================== */
+const $ = id => document.getElementById(id);
 
-                // Libera a interface
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('canvas-wrapper').classList.remove('locked');
-                updateUI();
-                startLoop();
-            } catch (err) {
-                alert("Conexão cancelada pelo usuário.");
-            }
-        } else {
-            alert("MetaMask não encontrada. Por favor, instale a extensão.");
-        }
-    });
+function save(){
+  if(State.wallet){
+    localStorage.setItem("usdc_"+State.wallet, JSON.stringify({
+      balance:State.balance,
+      energy:State.energy,
+      level:State.level
+    }));
+  }
+}
 
-    // --- 2. COTAÇÕES TOP 10 E CONVERSOR ---
-    async function getMarketData() {
-        try {
-            // Pega Top 10 moedas
-            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&price_change_percentage=24h');
-            const data = await res.json();
-            
-            const marquee = document.getElementById('price-marquee');
-            marquee.innerHTML = data.map(coin => `
-                <span class="coin-span">
-                    ${coin.symbol.toUpperCase()}: $${coin.current_price.toLocaleString()} 
-                    <span style="color: ${coin.price_change_percentage_24h >= 0 ? '#00ff88' : '#ff4444'}">
-                        ${coin.price_change_percentage_24h >= 0 ? '▲' : '▼'} ${coin.price_change_percentage_24h.toFixed(2)}%
-                    </span>
-                </span>
-            `).join('');
+function load(){
+  if(!State.wallet) return;
+  const data = JSON.parse(localStorage.getItem("usdc_"+State.wallet));
+  if(data){
+    State.balance=data.balance||0;
+    State.energy=data.energy||State.energy;
+    State.level=data.level||1;
+  }
+}
 
-            // Cotação Real
-            const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
-            const brlData = await brlRes.json();
-            brlPrice = brlData['usd-coin'].brl;
-            updateUI();
-        } catch (e) { console.error("Falha ao buscar preços."); }
+/* ===========================
+   UI
+=========================== */
+function updateUI(){
+  $("usdVal").innerText=State.balance.toFixed(3);
+  $("brlVal").innerText="R$ "+(State.balance*State.brl).toFixed(2);
+  $("energyVal").innerText=State.energy.count;
+}
+
+function floatText(text,x,y){
+  const div=document.createElement("div");
+  div.className="float-text";
+  div.innerText=text;
+  div.style.left=x+"px";
+  div.style.top=y+"px";
+  $("gameBox").appendChild(div);
+  setTimeout(()=>div.remove(),1200);
+}
+
+/* ===========================
+   ENERGY SYSTEM (FIXED)
+=========================== */
+function energyLoop(){
+  const now=Date.now();
+  const REGEN=3*60*60*1000;
+  const elapsed=now-State.energy.last;
+  const regen=Math.floor(elapsed/REGEN);
+  if(regen>0){
+    State.energy.count=Math.min(3,State.energy.count+regen);
+    State.energy.last+=regen*REGEN;
+    save();
+  }
+  updateUI();
+}
+setInterval(energyLoop,1000);
+
+/* ===========================
+   MARKET DATA
+=========================== */
+async function market(){
+  try{
+    const res=await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=8");
+    const data=await res.json();
+    $("ticker").innerHTML=data.map(c=>`
+      <span>${c.symbol.toUpperCase()} $${c.current_price.toLocaleString()}
+      <span style="color:${c.price_change_percentage_24h>=0?"#00ff88":"#ff4444"}">
+      ${c.price_change_percentage_24h>=0?"▲":"▼"}${c.price_change_percentage_24h.toFixed(2)}%</span></span>
+    `).join("");
+    const brl=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl");
+    const brlData=await brl.json();
+    State.brl=brlData["usd-coin"].brl;
+    updateUI();
+  }catch(e){}
+}
+market();
+setInterval(market,60000);
+
+/* ===========================
+   WEB3 CONNECT
+=========================== */
+$("connectBtn").onclick=async()=>{
+  if(window.ethereum){
+    const acc=await ethereum.request({method:"eth_requestAccounts"});
+    State.wallet=acc[0];
+    load();
+    $("connectBtn").style.display="none";
+    $("gameBox").classList.remove("locked");
+    updateUI();
+  }else{
+    alert("MetaMask não encontrada.");
+  }
+};
+
+/* ===========================
+   GAME ENGINE
+=========================== */
+const canvas=$("game");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+  canvas.width=Math.min(820,window.innerWidth-60);
+  canvas.height=canvas.width*0.55;
+}
+resize();
+window.onresize=resize;
+
+const Game={
+  bubbles:[],
+  bullet:{x:0,y:0,r:12,dx:0,dy:0,active:false},
+  init(){
+    this.bubbles=[];
+    const colors=["#00ff88","#2775ca","#ffca28","#ff4444"];
+    for(let i=0;i<5;i++){
+      for(let j=0;j<14;j++){
+        this.bubbles.push({
+          x:40+j*50,
+          y:40+i*45,
+          r:18,
+          color:colors[i%4],
+          active:true
+        });
+      }
     }
+    this.bullet.x=canvas.width/2;
+    this.bullet.y=canvas.height-30;
+    this.bullet.active=false;
+  },
+  shoot(x,y){
+    if(this.bullet.active) return;
+    const angle=Math.atan2(y-this.bullet.y,x-this.bullet.x);
+    this.bullet.dx=Math.cos(angle)*10;
+    this.bullet.dy=Math.sin(angle)*10;
+    this.bullet.active=true;
+  },
+  update(){
+    if(this.bullet.active){
+      this.bullet.dy+=0.15; // gravidade
+      this.bullet.x+=this.bullet.dx;
+      this.bullet.y+=this.bullet.dy;
 
-    function updateUI() {
-        document.getElementById('usdc-val').innerText = balance.toFixed(3);
-        document.getElementById('brl-val').innerText = `R$ ${(balance * brlPrice).
+      if(this.bullet.x<0||this.bullet.x>canvas.width) this.bullet.dx*=-1;
+
+      this.bubbles.forEach(b=>{
+        if(b.active && Math.hypot(this.bullet.x-b.x,this.bullet.y-b.y)<b.r+this.bullet.r){
+          b.active=false;
+          const reward=(0.006/(1+State.level*0.15));
+          State.balance+=reward;
+          floatText("+"+reward.toFixed(3)+" USDC",this.bullet.x,this.bullet.y);
+          save();
+          this.resetBullet();
+        }
+      });
+
+      if(this.bullet.y<0||this.bullet.y>canvas.height) this.resetBullet();
+    }
+  },
+  resetBullet(){
+    this.bullet.active=false;
+    this.bullet.x=canvas.width/2;
+    this.bullet.y=canvas.height-30;
+  },
+  draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    this.bubbles.forEach(b=>{
+      if(b.active){
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.fillStyle=b.color;
+        ctx.fill();
+      }
+    });
+    ctx.beginPath();
+    ctx.arc(this.bullet.x,this.bullet.y,this.bullet.r,0,Math.PI*2);
+    ctx.fillStyle="#fff";
+    ctx.fill();
+  }
+};
+
+canvas.addEventListener("mousedown",e=>{
+  const rect=canvas.getBoundingClientRect();
+  Game.shoot(e.clientX-rect.left,e.clientY-rect.top);
+});
+
+function loop(){
+  Game.update();
+  Game.draw();
+  requestAnimationFrame(loop);
+}
+Game.init();
+loop();
+
+/* ===========================
+   BUTTONS
+=========================== */
+$("nextBtn").onclick=()=>{
+  if(State.energy.count>0){
+    State.energy.count--;
+    State.energy.last=Date.now();
+    State.level++;
+    Game.init();
+    save();
+    updateUI();
+  }else alert("Energia insuficiente!");
+};
+
+$("withdrawBtn").onclick=()=>{
+  alert("Sistema de saque real deve ser conectado a smart contract.");
+};
+</script>
+</body>
+</html>
