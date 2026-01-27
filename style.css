@@ -1,5 +1,31 @@
-body { background-color: #0d1117; color: white; font-family: sans-serif; text-align: center; }
-#game-container { margin-top: 50px; }
-canvas { background: #161b22; border: 4px solid #30363d; border-radius: 10px; }
-button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #238636; color: white; border: none; border-radius: 5px; }
-button:hover { background: #2ea043; }
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    /* ABAIXO: Carrega sua imagem de fundo */
+    background-image: url('background.png'); 
+    background-size: cover; /* Faz a imagem cobrir a tela toda */
+    background-position: center; /* Centraliza a imagem */
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Mantém o fundo parado ao rolar */
+    font-family: 'Arial', sans-serif;
+    color: white;
+}
+
+#gameCanvas {
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente para destacar as bolhas */
+    border: 4px solid #00BFFF;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+    display: block;
+}
+
+#status {
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
