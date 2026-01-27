@@ -2,37 +2,49 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC Bubble Pro - Connect & Play</title>
+    <title>USDC Bubble Pro - Wallet Fix</title>
     <style>
         :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
-        body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #050505; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
+        body { 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            background: #050505 url('background.png') no-repeat center center fixed; 
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            color: white; 
+            overflow: hidden; 
+        }
         
         #game-container { 
-            background: rgba(15, 15, 15, 0.95); padding: 25px; border-radius: 28px; text-align: center; 
-            width: 480px; border: 1px solid rgba(0, 255, 136, 0.2);
-            box-shadow: 0 0 40px rgba(0, 255, 136, 0.05);
+            /* Transparência de 80% aplicada aqui */
+            background: rgba(15, 15, 15, 0.8); 
+            padding: 25px; 
+            border-radius: 28px; 
+            text-align: center; 
+            width: 480px; 
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
         #hud { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); }
+        .stat-card { background: rgba(0, 0, 0, 0.6); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
 
-        canvas { background: #000; border: 2px solid var(--secondary); border-radius: 18px; cursor: crosshair; }
+        canvas { background: rgba(0,0,0,0.9); border: 2px solid var(--secondary); border-radius: 18px; cursor: crosshair; }
 
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-        button { border: none; padding: 14px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 13px; }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        #connect-btn { 
-            background: linear-gradient(135deg, #00ff88, #00ba63); color: #000; 
-            grid-column: span 2; font-size: 15px; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-        }
+        button { border: none; padding: 14px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        
+        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); }
         #withdraw-btn { background: var(--gold); color: #000; }
         #reset-btn { background: var(--secondary); color: #fff; }
 
-        .locked { opacity: 0.15; pointer-events: none; filter: blur(6px); transition: 0.5s; }
-        #status-msg { font-size: 11px; color: var(--primary); margin-bottom: 10px; min-height: 15px; }
+        .locked { opacity: 0.1; pointer-events: none; filter: blur(8px); }
+        #status-msg { font-size: 11px; color: var(--primary); margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -40,32 +52,32 @@
 <div id="game-container">
     <div class="header">
         <img src="logo_a.png" width="45" onerror="this.style.display='none'">
-        <h2 style="margin: 0; color: var(--primary); letter-spacing: 1px;">USDC BUBBLE PRO</h2>
+        <h2 style="margin: 0; color: var(--primary);">USDC BUBBLE PRO</h2>
         <img src="logo_circle.png" width="45" onerror="this.style.display='none'">
     </div>
 
     <div id="hud">
         <div class="stat-card">
-            <span style="font-size: 10px; opacity: 0.6; display: block; margin-bottom: 4px;">SALDO ACUMULADO</span>
+            <span style="font-size: 10px; opacity: 0.7;">SALDO ACUMULADO</span>
             <div style="font-size: 20px; font-weight: bold; color: var(--primary);">$ <span id="usdc-balance">0.000</span></div>
         </div>
         <div class="stat-card">
-            <span style="font-size: 10px; opacity: 0.6; display: block; margin-bottom: 4px;">ENERGIA DISPONÍVEL</span>
+            <span style="font-size: 10px; opacity: 0.7;">ENERGIA</span>
             <div id="energy-display" style="font-size: 20px; font-weight: bold;">-- / 3</div>
-            <div id="energy-timer" style="font-size: 10px; color: var(--gold); margin-top: 2px;">CONECTE SUA WALLET</div>
+            <div id="energy-timer" style="font-size: 10px; color: var(--gold);">CONECTE A WALLET</div>
         </div>
     </div>
 
-    <div id="status-msg">AGUARDANDO CONEXÃO...</div>
+    <div id="status-msg">METAMASK NECESSÁRIA</div>
 
     <div id="canvas-wrapper" class="locked">
         <canvas id="gameCanvas" width="400" height="400"></canvas>
     </div>
 
     <div class="controls">
-        <button id="connect-btn">🔌 CONECTAR METAMASK AGORA</button>
-        <button id="withdraw-btn">💰 SACAR GANHOS</button>
-        <button id="reset-btn">🚀 JOGAR FASE (-1⚡)</button>
+        <button id="connect-btn">CONECTAR CARTEIRA</button>
+        <button id="withdraw-btn">SACAR</button>
+        <button id="reset-btn">JOGAR (-1⚡)</button>
     </div>
 </div>
 
@@ -74,43 +86,43 @@
     const ctx = canvas.getContext('2d');
     
     let wallet = null;
-    let sessionBalance = 0; // Acumula entre fases
+    let sessionBalance = 0; 
     let energy = { count: 3, lastUsed: Date.now() };
-    const REGEN_TIME = 3 * 60 * 60 * 1000; // 3 Horas para regenerar
+    const REGEN_TIME = 3 * 60 * 60 * 1000; // 3 horas
 
-    // --- FUNÇÃO DE CONEXÃO (CHAMA A CARTEIRA IMEDIATAMENTE) ---
-    async function connectWallet() {
-        if (typeof window.ethereum !== 'undefined') {
+    // --- FUNÇÃO DE CONEXÃO DIRETA ---
+    const btnConnect = document.getElementById('connect-btn');
+    
+    btnConnect.addEventListener('click', async () => {
+        if (window.ethereum) {
             try {
-                // Esta linha abre a MetaMask na hora
+                // Força a abertura da MetaMask
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 wallet = accounts[0];
                 
-                // Recuperar dados persistentes
+                // Carrega progresso
                 const saved = JSON.parse(localStorage.getItem('usdc_pro_' + wallet));
                 if (saved) {
                     energy = saved.energy;
                     sessionBalance = saved.balance || 0;
                 }
 
-                // UI Update
+                // Libera o jogo
                 document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
-                document.getElementById('status-msg').innerText = "CARTEIRA: " + wallet.substring(0,10) + "..." + wallet.slice(-4);
-                document.getElementById('connect-btn').style.display = 'none';
+                document.getElementById('status-msg').innerText = "CONECTADO: " + wallet.substring(0,6) + "...";
+                btnConnect.style.display = 'none';
                 document.getElementById('canvas-wrapper').classList.remove('locked');
                 
-                startSystem();
+                startRegenTimer();
             } catch (err) {
-                document.getElementById('status-msg').innerText = "ERRO: CONEXÃO RECUSADA";
+                alert("Conexão cancelada pelo usuário.");
             }
         } else {
-            alert("MetaMask não detectada! Instale a extensão para jogar.");
+            alert("Instale a MetaMask!");
         }
-    }
+    });
 
-    document.getElementById('connect-btn').onclick = connectWallet;
-
-    function startSystem() {
+    function startRegenTimer() {
         setInterval(() => {
             const now = Date.now();
             const elapsed = now - energy.lastUsed;
@@ -119,74 +131,63 @@
             if (regen > 0 && energy.count < 3) {
                 energy.count = Math.min(3, energy.count + regen);
                 energy.lastUsed = now;
-                saveData();
+                save();
             }
 
             document.getElementById('energy-display').innerText = `${energy.count} / 3`;
             if (energy.count < 3) {
                 const rem = REGEN_TIME - (elapsed % REGEN_TIME);
-                const h = Math.floor(rem / 3600000);
-                const m = Math.floor((rem % 3600000) / 60000);
-                document.getElementById('energy-timer').innerText = `REGEN EM: ${h}h ${m}m`;
+                const m = Math.floor(rem / 60000);
+                document.getElementById('energy-timer').innerText = `REGEN: ${m} MIN`;
             } else {
-                document.getElementById('energy-timer').innerText = `PRONTO PARA O COMBATE`;
+                document.getElementById('energy-timer').innerText = `ENERGIA CHEIA`;
             }
         }, 1000);
     }
 
-    function saveData() {
-        if (wallet) {
-            localStorage.setItem('usdc_pro_' + wallet, JSON.stringify({
-                energy, 
-                balance: sessionBalance 
-            }));
-        }
+    function save() {
+        if (wallet) localStorage.setItem('usdc_pro_' + wallet, JSON.stringify({energy, balance: sessionBalance}));
     }
 
-    // --- LÓGICA DO JOGO ---
+    // --- JOGO ---
     const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
-    let bubbles = [], bullet = { x: 200, y: 370, r: 16, active: false, dx: 0, dy: 0 };
+    let bubbles = [], bullet = { x: 200, y: 370, r: 15, active: false, dx: 0, dy: 0 };
 
-    function initGame() {
+    function init() {
         bubbles = [];
         bullet.active = false;
-        bullet.x = 200; bullet.y = 370;
         for (let i = 0; i < 5; i++) {
             for (let j = 0; j < 10; j++) {
-                bubbles.push({ x: 30 + (j * 38), y: 50 + (i * 38), r: 14, color: colors[i % 4], active: true });
+                bubbles.push({ x: 30+(j*38), y: 50+(i*38), r: 14, color: colors[i % 4], active: true });
             }
         }
     }
 
     document.getElementById('reset-btn').onclick = () => {
-        if (!wallet) return connectWallet();
+        if (!wallet) return alert("Conecte a carteira primeiro!");
         if (energy.count > 0) {
             energy.count--;
             energy.lastUsed = Date.now();
-            saveData();
-            initGame();
-        } else {
-            alert("Energia esgotada! Aguarde a regeneração de 3 horas.");
-        }
+            save();
+            init();
+        } else { alert("Aguarde a regeneração de 3 horas!"); }
     };
 
     document.getElementById('withdraw-btn').onclick = () => {
         if (sessionBalance > 0.10) {
-            alert(`Processando Saque Acumulado: ${(sessionBalance - 0.10).toFixed(3)} USDC enviado para sua carteira!`);
+            alert(`Sacando acumulado: ${(sessionBalance - 0.10).toFixed(3)} USDC`);
             sessionBalance = 0;
             document.getElementById('usdc-balance').innerText = "0.000";
-            saveData();
-        } else {
-            alert("Saldo mínimo para saque não atingido (mínimo 0.10 USDC).");
-        }
+            save();
+        } else { alert("Mínimo 0.10 USDC para saque."); }
     };
 
     canvas.addEventListener('mousedown', (e) => {
         if (bullet.active || !wallet) return;
         const rect = canvas.getBoundingClientRect();
         const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        bullet.dx = Math.cos(angle) * 11;
-        bullet.dy = Math.sin(angle) * 11;
+        bullet.dx = Math.cos(angle) * 10;
+        bullet.dy = Math.sin(angle) * 10;
         bullet.active = true;
     });
 
@@ -194,14 +195,13 @@
         if (bullet.active) {
             bullet.x += bullet.dx; bullet.y += bullet.dy;
             if (bullet.x < bullet.r || bullet.x > canvas.width - bullet.r) bullet.dx *= -1;
-            
             for (let b of bubbles) {
                 if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
                     b.active = false;
-                    sessionBalance += 0.005; // Acumulando saldo
+                    sessionBalance += 0.005; // Saldo acumulado
                     document.getElementById('usdc-balance').innerText = sessionBalance.toFixed(3);
                     bullet.active = false; bullet.x = 200; bullet.y = 370;
-                    saveData();
+                    save();
                     break;
                 }
             }
@@ -211,23 +211,14 @@
 
     function draw() {
         ctx.clearRect(0, 0, 400, 400);
-        bubbles.forEach(b => {
-            if (b.active) {
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                ctx.fillStyle = b.color; ctx.fill();
-                ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.stroke();
-            }
-        });
+        bubbles.forEach(b => { if(b.active){ ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); } });
         ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2);
-        ctx.fillStyle = "#fff"; ctx.fill();
-        ctx.strokeStyle = var(--primary); ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#00ff88"; ctx.fill();
         update();
         requestAnimationFrame(draw);
     }
 
-    function var(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-    initGame();
+    init();
     draw();
 </script>
 </body>
