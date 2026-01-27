@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARC Bubble Shooter - Escala Pro</title>
+    <title>ARC Bubble USDC Arcade</title>
     <style>
         body {
             margin: 0;
@@ -36,8 +36,8 @@
 
         .controls {
             margin-top: 10px;
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
 
@@ -45,169 +45,101 @@
             background: #00ff88;
             color: black;
             border: none;
-            padding: 8px 15px;
+            padding: 10px;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        button:hover { transform: scale(1.05); }
-        .btn-skip { background: #ffca28; }
-        .btn-reset { background: #ff4444; color: white; }
+        button:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .btn-deposit { background: #2775ca; color: white; } /* Cor USDC */
 
-        #wallet-display {
-            font-size: 12px;
-            color: #00ff88;
-            margin-top: 5px;
-            font-family: monospace;
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h2 style="margin: 0;">ARCADE ARC</h2>
-    <div id="wallet-display">DESCONECTADO</div>
-    <div class="controls">
-        <button id="connect-btn">CONECTAR</button>
-        <button class="btn-reset" onclick="resetGame()">REINICIAR</button>
-        <button class="btn-skip" onclick="skipLevel()">PULAR FASE</button>
+    <h2 style="margin: 0 0 10px 0;">USDC BUBBLE ARCADE</h2>
+    
+    <div id="hud">
+        <div>💰 SALDO: <span id="usdc-balance">0.000</span> USDC</div>
+        <div>🏦 POOL: <span id="pool-total">0.00</span> USDC</div>
     </div>
-    <div id="status" style="font-size: 13px; margin: 10px 0;">SHOOTER GIGANTE ATIVADO!</div>
-    <canvas id="gameCanvas" width="450" height="550"></canvas>
+
+    <div id="wallet-info" style="font-size: 11px; margin-bottom: 10px; color: #00ff88;">DESCONECTADO</div>
+
+    <canvas id="gameCanvas" width="450" height="500"></canvas>
+
+    <div class="controls">
+        <button id="connect-btn">CONECTAR CARTEIRA</button>
+        <button class="btn-deposit" onclick="depositPool()">DEPOSITAR NA POOL</button>
+        <button style="background: #ff4444; color: white;" onclick="resetGame()">REINICIAR</button>
+        <button style="background: #ffca28;" onclick="skipLevel()">PULAR FASE</button>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
 
-    // --- ÁUDIO ---
-    let audioCtx = null;
-    function playPop() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.frequency.setValueAtTime(600 + (level * 50), audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-    }
-
-    // --- CONFIGURAÇÃO ---
-    const imgs = {};
+    // --- CONFIGURAÇÃO RECOMPENSAS ---
+    const rewardMap = {'#00BFFF': 0.001, '#FF1493': 0.002, '#32CD32': 0.003, '#FFD700': 0.004};
     const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700'];
     const names = {'#00BFFF': 'blue', '#FF1493': 'pink', '#32CD32': 'green', '#FFD700': 'yellow'};
-    const pointsMap = {'#00BFFF': 10, '#FF1493': 20, '#32CD32': 30, '#FFD700': 50};
     
-    colors.forEach(c => {
-        imgs[c] = new Image();
-        imgs[c].src = names[c] + '.png';
-    });
+    let totalEarned = 0, level = 1, bubbles = [], floatingTexts = [];
+    let bullet = { x: 225, y: 460, r: 40, active: false, dx: 0, dy: 0 };
+
+    // --- IMAGENS ---
+    const imgs = {};
+    colors.forEach(c => { imgs[c] = new Image(); imgs[c].src = names[c] + '.png'; });
     const shootImg = new Image(); shootImg.src = 'shooter.png';
 
-    let score = 0, level = 1, bubbles = [], floatingTexts = [];
-    // Shooter 100% maior (Raio 40)
-    let bullet = { x: 225, y: 500, r: 40, active: false, dx: 0, dy: 0 };
-
-    function init(lvl) {
-        bubbles = [];
-        floatingTexts = [];
-        bullet.active = false;
-        bullet.x = 225; bullet.y = 500;
-        
-        const rows = 5 + lvl; 
-        for (let i = 0; i < rows; i++) {
-            let col = colors[i % colors.length];
-            // Bolhas 50% menores (Raio 10) e mais juntas (Espaço 25)
-            for (let j = 0; j < 16; j++) { 
-                bubbles.push({ x: 35 + (j * 25), y: 70 + (i * 25), r: 10, color: col, active: true });
-            }
-        }
-        document.getElementById('status').innerText = `FASE ${lvl}: ALVOS PEQUENOS!`;
-    }
-
-    function resetGame() { score = 0; level = 1; init(1); }
-    function skipLevel() { if (level < 3) { level++; init(level); } }
+    // --- WEB3 LOGIC ---
+    let provider, signer, walletAddress;
 
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
-            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            document.getElementById('wallet-display').innerText = "CARTEIRA: " + accs[0].substring(0,6) + "..." + accs[0].substring(38);
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = provider.getSigner();
+            walletAddress = await signer.getAddress();
+            document.getElementById('wallet-info').innerText = "CONECTADO: " + walletAddress;
             document.getElementById('connect-btn').style.display = "none";
         }
     };
 
-    canvas.addEventListener('mousedown', (e) => {
-        if (!audioCtx) playPop();
-        if (bullet.active) return;
-        const rect = canvas.getBoundingClientRect();
-        const angle = Math.atan2((e.clientY - rect.top) - bullet.y, (e.clientX - rect.left) - bullet.x);
-        const speed = 12 + (level * 2);
-        bullet.dx = Math.cos(angle) * speed;
-        bullet.dy = Math.sin(angle) * speed;
-        bullet.active = true;
-    });
-
-    function update() {
-        if (bullet.active) {
-            bullet.x += bullet.dx; bullet.y += bullet.dy;
-            if (bullet.x < bullet.r || bullet.x > canvas.width - bullet.r) bullet.dx *= -1;
-            
-            bubbles.forEach(b => {
-                if (b.active && Math.hypot(bullet.x - b.x, bullet.y - b.y) < bullet.r + b.r) {
-                    b.active = false;
-                    const gained = pointsMap[b.color];
-                    score += gained;
-                    floatingTexts.push({ x: b.x, y: b.y, text: "+" + gained, opacity: 1 });
-                    playPop();
-                    // O Shooter não reseta ao tocar, ele atravessa destruindo tudo no caminho até o topo!
-                }
-            });
-            if (bullet.y < 0 || bullet.y > 550) { bullet.active = false; bullet.x = 225; bullet.y = 500; }
-        }
-
-        floatingTexts.forEach((t, i) => {
-            t.y -= 1; t.opacity -= 0.02;
-            if (t.opacity <= 0) floatingTexts.splice(i, 1);
-        });
-
-        if (bubbles.length > 0 && bubbles.every(b => !b.active)) {
-            if (level < 3) { level++; init(level); }
-            else { document.getElementById('status').innerText = "🏆 MESTRE DO ARCADE!"; }
+    async function depositPool() {
+        const amount = prompt("Quanto USDC deseja depositar na Pool?");
+        if (amount && signer) {
+            alert(`Iniciando depósito de ${amount} USDC para o contrato ${USDC_ADDRESS}`);
+            // Aqui entraria a chamada de contrato: contract.transfer(pool_address, amount)
         }
     }
 
-    function draw() {
-        ctx.clearRect(0, 0, 450, 550);
-        ctx.fillStyle = "white"; ctx.font = "bold 16px Arial";
-        ctx.fillText(`PONTOS: ${score}`, 20, 30);
-        ctx.fillText(`FASE: ${level}/3`, 360, 30);
-
-        bubbles.forEach(b => {
-            if (b.active) {
-                if (imgs[b.color].complete) ctx.drawImage(imgs[b.color], b.x-b.r, b.y-b.r, b.r*2, b.r*2);
-                else { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }
+    function init(lvl) {
+        bubbles = [];
+        bullet.active = false; bullet.x = 225; bullet.y = 460;
+        const rows = 4 + lvl; 
+        for (let i = 0; i < rows; i++) {
+            let col = colors[i % colors.length];
+            for (let j = 0; j < 16; j++) { 
+                bubbles.push({ x: 35 + (j * 25), y: 60 + (i * 25), r: 10, color: col, active: true });
             }
-        });
-
-        floatingTexts.forEach(t => {
-            ctx.fillStyle = `rgba(0, 255, 136, ${t.opacity})`;
-            ctx.font = "bold 14px Arial";
-            ctx.fillText(t.text, t.x - 5, t.y);
-        });
-
-        if (shootImg.complete) ctx.drawImage(shootImg, bullet.x-bullet.r, bullet.y-bullet.r, bullet.r*2, bullet.r*2);
-        else { ctx.beginPath(); ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI*2); ctx.fillStyle = "yellow"; ctx.fill(); }
-        
-        update();
-        requestAnimationFrame(draw);
+        }
     }
 
-    init(1);
-    draw();
-</script>
-</body>
-</html>
+    canvas.addEventListener('mousedown', (e) => {
+        if
