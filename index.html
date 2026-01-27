@@ -2,70 +2,69 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>USDC TERMINAL - 80% TRANSPARENCY & SOUND</title>
+    <title>USDC TERMINAL - 90% TRANSPARENCY</title>
     <style>
         :root { --primary: #00ff88; --secondary: #2775ca; --gold: #ffca28; }
         
         body { 
             margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; 
-            /* Uso do background.png da sua pasta */
             background: #050505 url('background.png') no-repeat center center fixed; 
             background-size: cover; 
             font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; 
         }
         
         #game-container { 
-            /* 80% de Transparência aplicada com Blur para efeito Glassmorphism */
-            background: rgba(15, 15, 15, 0.8); 
-            padding: 20px; border-radius: 28px; width: 850px; 
-            border: 1px solid rgba(0, 255, 136, 0.3); 
-            backdrop-filter: blur(15px);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            /* Ajustado para 90% de Transparência (rgba 0.1) */
+            background: rgba(10, 10, 10, 0.1); 
+            padding: 25px; border-radius: 32px; width: 850px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(20px); /* Aumentei o blur para manter a elegância */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
             position: relative;
         }
 
-        /* Ticker Top 10 */
+        /* Ticker Top 10 com fundo sutil */
         #ticker-top {
-            background: rgba(0,0,0,0.7); padding: 10px; border-radius: 12px;
-            margin-bottom: 20px; border: 1px solid #333; overflow: hidden;
+            background: rgba(0, 0, 0, 0.3); padding: 12px; border-radius: 16px;
+            margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
         }
         .marquee-content { display: inline-block; animation: scroll 35s linear infinite; color: var(--primary); font-weight: bold; font-size: 14px; white-space: nowrap; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        .hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .info-card { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 18px; border: 1px solid #444; text-align: center; }
+        .hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .info-card { background: rgba(0, 0, 0, 0.4); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
 
-        /* Jogo 50% Maior */
-        canvas { background: rgba(0,0,0,0.9); border: 2px solid var(--secondary); border-radius: 20px; cursor: crosshair; display: block; margin: 0 auto; }
+        /* Canvas do Jogo */
+        canvas { background: rgba(0, 0, 0, 0.5); border: 2px solid var(--secondary); border-radius: 22px; cursor: crosshair; display: block; margin: 0 auto; }
 
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        button { border: none; padding: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        button { border: none; padding: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 14px; }
         
-        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
+        #connect-btn { background: var(--primary); color: #000; grid-column: span 2; font-size: 18px; box-shadow: 0 0 25px rgba(0, 255, 136, 0.3); }
         #withdraw-btn { background: var(--gold); color: #000; }
         #reset-btn { background: var(--secondary); color: #fff; }
 
-        .locked { opacity: 0.1; pointer-events: none; filter: blur(20px); }
-        .coin-span { margin-right: 45px; }
+        .locked { opacity: 0.05; pointer-events: none; filter: blur(25px); }
+        .coin-span { margin-right: 50px; text-shadow: 1px 1px 2px black; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="ticker-top">
-        <div class="marquee-content" id="price-marquee">SINCRONIZANDO COM O MERCADO GLOBAL...</div>
+        <div class="marquee-content" id="price-marquee">CONECTANDO AO MERCADO EM TEMPO REAL...</div>
     </div>
 
     <div class="hud-row">
         <div class="info-card">
-            <span style="font-size: 11px; opacity: 0.6;">SALDO ACUMULADO</span>
-            <div style="font-size: 26px; font-weight: bold; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
-            <div id="brl-val" style="color: var(--gold); font-size: 13px; font-weight: bold;">R$ 0,00</div>
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Saldo USDC</span>
+            <div style="font-size: 28px; font-weight: 900; color: var(--primary);">$ <span id="usdc-val">0.000</span></div>
+            <div id="brl-val" style="color: var(--gold); font-size: 14px; font-weight: bold; margin-top: 5px;">R$ 0,00</div>
         </div>
         <div class="info-card">
-            <span style="font-size: 11px; opacity: 0.6;">ENERGIA DISPONÍVEL</span>
-            <div id="energy-val" style="font-size: 26px; font-weight: bold;">-- / 3</div>
-            <div style="font-size: 11px; color: var(--gold);">REGEN: 3 HORAS</div>
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Energia</span>
+            <div id="energy-val" style="font-size: 28px; font-weight: 900;">-- / 3</div>
+            <div style="font-size: 11px; color: var(--gold); margin-top: 5px;">Recarga: 3 Horas</div>
         </div>
     </div>
 
@@ -74,14 +73,13 @@
     </div>
 
     <div class="btn-row">
-        <button id="connect-btn">🔌 CONECTAR CARTEIRA AGORA</button>
-        <button id="withdraw-btn">💰 SACAR USDC</button>
-        <button id="reset-btn">🚀 JOGAR FASE (-1⚡)</button>
+        <button id="connect-btn">🔌 ATIVAR TERMINAL WEB3</button>
+        <button id="withdraw-btn">💰 REALIZAR SAQUE</button>
+        <button id="reset-btn">🎮 NOVA PARTIDA</button>
     </div>
 </div>
 
 <script>
-    // --- LÓGICA DE ÁUDIO ---
     const soundExplosion = new Audio('explosion.mp3'); 
     soundExplosion.volume = 0.4;
 
@@ -98,19 +96,14 @@
     let energy = { count: 3, lastUsed: Date.now() };
     let brlPrice = 5.60;
 
-    // --- CONEXÃO WEB3 ---
     document.getElementById('connect-btn').onclick = async () => {
         if (window.ethereum) {
             try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 wallet = accounts[0];
-                
-                // Ativa áudio após interação do usuário
                 soundExplosion.play().then(() => { soundExplosion.pause(); });
-
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('canvas-wrapper').classList.remove('locked');
-                
                 fetchMarketData();
                 setInterval(fetchMarketData, 60000);
                 startEnergySystem();
@@ -120,19 +113,17 @@
 
     async function fetchMarketData() {
         try {
-            // Top 10 Ranking
             const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10');
             const data = await res.json();
             document.getElementById('price-marquee').innerHTML = data.map(c => `
                 <span class="coin-span">${c.symbol.toUpperCase()}: $${c.current_price.toLocaleString()}</span>
             `).join('');
 
-            // Conversão BRL
             const brlRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=brl');
             const brlData = await brlRes.json();
             brlPrice = brlData['usd-coin'].brl;
             updateUI();
-        } catch (e) { console.log("Erro ao carregar preços."); }
+        } catch (e) { console.log("Erro API"); }
     }
 
     function updateUI() {
@@ -145,7 +136,6 @@
         setInterval(updateUI, 1000);
     }
 
-    // --- ENGINE DO JOGO ---
     let bubbles = [], bullet = { x: 400, y: 420, r: 16, active: false, dx: 0, dy: 0 };
 
     function initGame() {
