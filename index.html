@@ -37,21 +37,21 @@
             display: flex; 
             width: 100vw; 
             height: 100vh; 
-            padding: 15px; 
-            gap: 15px; 
+            padding: 10px; 
+            gap: 10px; 
         }
         
-        /* Painel Lateral */
-        #panel { 
-            width: 320px; 
-            min-width: 320px;
+        /* Painel Esquerdo - Controles do Jogo */
+        #leftPanel { 
+            width: 280px; 
+            min-width: 280px;
             background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
             border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
-            padding: 20px; 
+            padding: 15px; 
             display: flex; 
             flex-direction: column; 
-            gap: 15px;
+            gap: 12px;
             box-shadow: 
                 0 10px 40px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -62,19 +62,55 @@
             max-height: 100%;
         }
         
+        /* Painel Direito - Calculadora e Configurações */
+        #rightPanel { 
+            width: 280px; 
+            min-width: 280px;
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            border: 2px solid rgba(0, 255, 170, 0.6);
+            border-radius: 16px; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 170, 0.3);
+            z-index: 100;
+            position: relative;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+        
+        /* Área Central do Jogo */
+        #gameContainer { 
+            flex: 1; 
+            min-width: 0;
+            position: relative; 
+            border: 2px solid rgba(0, 255, 170, 0.6);
+            border-radius: 16px; 
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            overflow: hidden;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 170, 0.3);
+        }
+        
         /* Logo ARC */
         .arc-logo {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
             border-bottom: 2px solid rgba(0, 255, 170, 0.3);
         }
         
         .arc-logo .logo-icon {
-            font-size: 32px;
+            font-size: 28px;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -86,7 +122,7 @@
             text-align: center; 
             color: var(--primary); 
             margin: 0; 
-            font-size: 24px; 
+            font-size: 22px; 
             text-shadow: 0 0 15px rgba(0, 255, 170, 0.7);
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
@@ -96,9 +132,18 @@
             letter-spacing: 1px;
         }
         
+        .panel-title {
+            color: var(--primary);
+            font-size: 18px;
+            margin: 10px 0 5px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+            text-align: center;
+        }
+        
         .stats { 
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
-            padding: 15px; 
+            padding: 12px; 
             border-radius: 12px;
             border: 1px solid rgba(0, 255, 170, 0.4);
             box-shadow: 
@@ -109,9 +154,9 @@
         .row { 
             display: flex; 
             justify-content: space-between; 
-            margin: 10px 0; 
-            font-size: 15px; 
-            padding: 6px 0;
+            margin: 8px 0; 
+            font-size: 14px; 
+            padding: 5px 0;
             border-bottom: 1px solid rgba(0, 255, 170, 0.2);
         }
         
@@ -122,24 +167,24 @@
             color: var(--secondary); 
             font-family: 'Courier New', monospace;
             text-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
-            font-size: 16px;
+            font-size: 15px;
         }
         
         .combo-display {
             background: linear-gradient(45deg, rgba(255, 0, 128, 0.7), rgba(0, 255, 170, 0.7));
-            padding: 10px 15px;
-            border-radius: 25px;
+            padding: 8px 12px;
+            border-radius: 20px;
             font-weight: bold;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
             opacity: 0;
             transform: scale(0.9);
             transition: all 0.3s ease;
             border: 2px solid rgba(255, 255, 255, 0.3);
             box-shadow: 
-                0 0 25px rgba(255, 0, 128, 0.5),
+                0 0 20px rgba(255, 0, 128, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            font-size: 18px;
+            font-size: 16px;
         }
         
         .combo-display.active {
@@ -149,28 +194,28 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 25px rgba(255, 0, 128, 0.5); }
-            50% { box-shadow: 0 0 35px rgba(255, 0, 128, 0.7); }
-            100% { box-shadow: 0 0 25px rgba(255, 0, 128, 0.5); }
+            0% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 0, 128, 0.7); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.5); }
         }
 
         button { 
             width: 100%; 
-            padding: 14px; 
+            padding: 12px; 
             border: none; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             background: linear-gradient(145deg, var(--primary), var(--secondary));
             color: #000; 
             font-weight: bold; 
             cursor: pointer; 
             transition: all 0.3s ease;
-            font-size: 16px;
+            font-size: 14px;
             position: relative;
             overflow: hidden;
             z-index: 1;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 
-                0 5px 20px rgba(0, 0, 0, 0.4),
+                0 4px 15px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         
@@ -187,10 +232,10 @@
         }
         
         button:hover:not(:disabled) {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             filter: brightness(1.3);
             box-shadow: 
-                0 8px 30px rgba(0, 255, 170, 0.6),
+                0 6px 20px rgba(0, 255, 170, 0.6),
                 inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
         
@@ -212,26 +257,12 @@
         
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
         }
         
         .button-group button {
             flex: 1;
-        }
-
-        /* Área do Jogo */
-        #gameContainer { 
-            flex: 1; 
-            position: relative; 
-            border: 2px solid rgba(0, 255, 170, 0.6);
-            border-radius: 16px; 
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
-            overflow: hidden;
-            box-shadow: 
-                0 10px 40px rgba(0, 0, 0, 0.8),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 0 30px rgba(0, 255, 170, 0.3);
         }
         
         canvas { 
@@ -254,55 +285,55 @@
             align-items: center;
             justify-content: center; 
             text-align: center; 
-            padding: 30px;
+            padding: 20px;
             border-radius: 16px;
         }
         
         #overlay h1 {
-            font-size: 3.5em;
-            margin-bottom: 25px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 25px rgba(0, 255, 170, 0.7);
+            text-shadow: 0 0 20px rgba(0, 255, 170, 0.7);
         }
         
         #overlay p {
-            font-size: 1.3em;
+            font-size: 1.1em;
             color: rgba(255, 255, 255, 0.95);
             max-width: 500px;
-            line-height: 1.6;
+            line-height: 1.5;
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
-            padding: 20px 30px;
-            border-radius: 15px;
+            padding: 15px 20px;
+            border-radius: 12px;
             border: 1px solid rgba(0, 255, 170, 0.4);
-            box-shadow: 0 0 25px rgba(0, 255, 170, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
         }
 
         /* Barra de Força */
         .bar-wrap { 
-            margin-top: 15px; 
-            font-size: 16px; 
+            margin-top: 10px; 
+            font-size: 14px; 
             color: rgba(255, 255, 255, 0.95); 
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
-            padding: 15px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
             border: 1px solid rgba(0, 255, 170, 0.4);
             box-shadow: 
-                inset 0 2px 10px rgba(0, 0, 0, 0.5),
-                0 0 20px rgba(0, 255, 170, 0.2);
+                inset 0 2px 8px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(0, 255, 170, 0.2);
         }
         
         .bar { 
             width: 100%; 
-            height: 15px; 
+            height: 12px; 
             background: rgba(0, 0, 0, 0.6); 
-            border-radius: 8px; 
+            border-radius: 6px; 
             overflow: hidden; 
-            margin-top: 10px; 
+            margin-top: 8px; 
             border: 1px solid rgba(0, 255, 170, 0.3);
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
         }
         
         #powerBar { 
@@ -310,15 +341,15 @@
             width: 0%; 
             background: linear-gradient(90deg, #00ff88, #ffaa00, #ff0000); 
             transition: width 0.08s ease;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            border-radius: 6px;
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
         }
         
         .bar-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            margin-top: 8px;
+            font-size: 11px;
+            margin-top: 6px;
             color: rgba(255, 255, 255, 0.8);
         }
 
@@ -327,26 +358,26 @@
             position: absolute; 
             bottom: 0; 
             width: 100%; 
-            height: 60px;
+            height: 50px;
             background: linear-gradient(90deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.98));
             border-top: 2px solid rgba(0, 255, 170, 0.6); 
-            padding: 12px 0; 
-            font-size: 14px;
+            padding: 10px 0; 
+            font-size: 13px;
             z-index: 5;
             overflow: hidden;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.7);
         }
         
         #tickerTrack { 
             display: inline-block; 
             white-space: nowrap; 
-            padding-right: 50px;
+            padding-right: 40px;
             font-family: 'Courier New', monospace;
             color: rgba(255, 255, 255, 0.95);
-            text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+            text-shadow: 0 0 6px rgba(0, 255, 170, 0.5);
             font-weight: bold;
             animation: scroll 40s linear infinite;
-            padding-top: 5px;
+            padding-top: 4px;
         }
         
         @keyframes scroll { 
@@ -356,37 +387,37 @@
 
         .crypto-ticker-item {
             display: inline-block;
-            margin: 0 25px;
-            padding: 8px 15px;
+            margin: 0 20px;
+            padding: 6px 12px;
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid rgba(0, 255, 170, 0.4);
-            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
             transition: all 0.3s ease;
         }
         
         .crypto-ticker-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(0, 255, 170, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
         }
         
         .crypto-ticker-item .symbol {
             color: var(--primary);
             font-weight: bold;
-            margin-right: 8px;
-            font-size: 15px;
+            margin-right: 6px;
+            font-size: 14px;
         }
         
         .crypto-ticker-item .price {
             color: var(--secondary);
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .crypto-ticker-item .change {
-            margin-left: 10px;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 5px;
+            margin-left: 8px;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: bold;
         }
         
@@ -403,16 +434,16 @@
         /* Indicador de FPS */
         #fpsCounter {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
             font-family: 'Courier New', monospace;
             z-index: 5;
             border: 1px solid rgba(0, 255, 170, 0.4);
-            box-shadow: 0 0 25px rgba(0, 255, 170, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
             color: rgba(255, 255, 255, 0.95);
         }
 
@@ -429,10 +460,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 3em;
+            font-size: 2.5em;
             color: var(--primary);
             border-radius: 16px;
-            text-shadow: 0 0 30px rgba(0, 255, 170, 0.8);
+            text-shadow: 0 0 25px rgba(0, 255, 170, 0.8);
         }
 
         /* Efeito de Partículas */
@@ -441,7 +472,7 @@
             pointer-events: none;
             border-radius: 50%;
             z-index: 2;
-            box-shadow: 0 0 20px currentColor;
+            box-shadow: 0 0 15px currentColor;
         }
         
         /* Canvas para Fundo Animado */
@@ -458,12 +489,11 @@
         /* Calculadora */
         .calculator-container {
             background: linear-gradient(145deg, var(--calculator-bg), #0f0f0f);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 15px;
+            border-radius: 12px;
+            padding: 15px;
             border: 2px solid rgba(0, 255, 170, 0.6);
             box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.8),
+                0 8px 25px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
         
@@ -471,50 +501,50 @@
             background: var(--calculator-display);
             color: var(--primary);
             font-family: 'Courier New', monospace;
-            font-size: 28px;
-            padding: 15px;
-            border-radius: 10px;
+            font-size: 24px;
+            padding: 12px;
+            border-radius: 8px;
             text-align: right;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border: 1px solid rgba(0, 255, 170, 0.4);
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
-            min-height: 70px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             overflow: hidden;
-            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+            text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
         }
         
         .calculator-buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
         
         .calculator-button {
             background: linear-gradient(145deg, var(--calculator-button), #2a2a2a);
             border: none;
             color: white;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 15px 0;
-            border-radius: 10px;
+            padding: 12px 0;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
         }
         
         .calculator-button:hover {
             background: linear-gradient(145deg, var(--calculator-button-hover), #3a3a3a);
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         }
         
         .calculator-button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
         }
         
         .calculator-button.operator {
@@ -548,65 +578,64 @@
         /* Seção de Personalização */
         .customization-section {
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 15px;
+            border-radius: 12px;
+            padding: 15px;
             border: 2px solid rgba(0, 255, 170, 0.6);
             box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.8),
+                0 8px 25px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
         
         .customization-title {
             color: var(--primary);
             text-align: center;
-            margin-bottom: 15px;
-            font-size: 18px;
-            text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+            margin-bottom: 12px;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
             border-bottom: 1px solid rgba(0, 255, 170, 0.3);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         
         .customization-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .customization-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #00aaff;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
         }
         
         .customization-select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             background: #1a1a1a;
             color: white;
             border: 2px solid rgba(0, 255, 170, 0.3);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             cursor: pointer;
         }
         
         .customization-select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+            box-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
         }
         
         .color-picker-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .color-picker {
-            width: 50px;
-            height: 40px;
+            width: 45px;
+            height: 35px;
             border: 2px solid rgba(0, 255, 170, 0.5);
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             background: transparent;
         }
@@ -617,31 +646,31 @@
         
         .color-picker::-webkit-color-swatch {
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
         }
         
         .effects-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
         }
         
         .effect-button {
-            padding: 10px;
+            padding: 8px;
             background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             border: 1px solid rgba(0, 255, 170, 0.4);
-            border-radius: 8px;
+            border-radius: 6px;
             color: white;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.3s ease;
         }
         
         .effect-button:hover {
             background: linear-gradient(145deg, rgba(0, 20, 40, 0.9), rgba(0, 30, 60, 0.9));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 170, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
         }
         
         .effect-button.active {
@@ -653,28 +682,28 @@
         /* Footer */
         .footer {
             margin-top: auto;
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.7);
             text-align: center;
-            padding-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid rgba(0, 255, 170, 0.3);
         }
         
         /* Notificações */
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
+            top: 15px;
+            right: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
             font-weight: bold;
             z-index: 1000;
             transform: translateX(150%);
             transition: transform 0.3s ease;
-            max-width: 300px;
+            max-width: 250px;
             box-shadow: 
-                0 5px 20px rgba(0, 0, 0, 0.5),
-                0 0 20px rgba(0, 255, 170, 0.3);
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(0, 255, 170, 0.3);
             backdrop-filter: blur(15px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: rgba(0, 0, 0, 0.8);
@@ -703,22 +732,76 @@
         }
         
         /* Scrollbar Personalizada */
-        #panel::-webkit-scrollbar {
-            width: 8px;
+        #leftPanel::-webkit-scrollbar,
+        #rightPanel::-webkit-scrollbar {
+            width: 6px;
         }
         
-        #panel::-webkit-scrollbar-track {
+        #leftPanel::-webkit-scrollbar-track,
+        #rightPanel::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
+            border-radius: 3px;
         }
         
-        #panel::-webkit-scrollbar-thumb {
+        #leftPanel::-webkit-scrollbar-thumb,
+        #rightPanel::-webkit-scrollbar-thumb {
             background: rgba(0, 255, 170, 0.4);
-            border-radius: 4px;
+            border-radius: 3px;
         }
         
-        #panel::-webkit-scrollbar-thumb:hover {
+        #leftPanel::-webkit-scrollbar-thumb:hover,
+        #rightPanel::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 255, 170, 0.6);
+        }
+        
+        /* Estilos para telas menores */
+        @media (max-width: 1200px) {
+            #layout {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            #leftPanel, #rightPanel {
+                width: 100%;
+                min-width: auto;
+                max-height: 40vh;
+            }
+            
+            #gameContainer {
+                height: 60vh;
+            }
+        }
+        
+        /* Tab system para mobile */
+        .tab-container {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
@@ -726,11 +809,14 @@
     <canvas id="particleBackground"></canvas>
     
     <div id="layout">
-        <div id="panel">
+        <!-- Painel Esquerdo - Controles do Jogo -->
+        <div id="leftPanel">
             <div class="arc-logo">
                 <div class="logo-icon">✦</div>
                 <h2>ARC BUBBLE SHOOTER</h2>
             </div>
+            
+            <div class="panel-title">🎮 CONTROLES DO JOGO</div>
             
             <div class="stats">
                 <div class="row">
@@ -779,8 +865,44 @@
                 <button id="btnPause" style="display: none;">⏸️ Pausar</button>
                 <button id="btnRestart" style="display: none;">🔄 Reiniciar</button>
             </div>
+            
+            <div class="footer">
+                ARC Testnet v3.0 • Layout Otimizado
+                <br>
+                <span id="fps" style="font-family: 'Courier New'; color: rgba(255, 255, 255, 0.8);"></span>
+            </div>
+        </div>
 
-            <!-- Calculadora -->
+        <!-- Área Central do Jogo -->
+        <div id="gameContainer">
+            <div id="overlay">
+                <h1 id="statusMsg">🔒 BLOQUEADO</h1>
+                <p>Conecte sua carteira para liberar o acesso ao jogo.</p>
+                <p style="font-size: 0.9em; margin-top: 15px; color: rgba(255, 255, 255, 0.9);">
+                    Use o mouse para mirar e segurar para carregar o poder do disparo.
+                </p>
+            </div>
+            
+            <div id="pauseOverlay">
+                <div style="font-size: 2em; text-shadow: 0 0 25px rgba(0, 255, 170, 0.8);">⏸️</div>
+                <div style="margin-top: 20px; font-size: 0.5em; color: rgba(255, 255, 255, 0.95);">JOGO PAUSADO</div>
+                <div style="margin-top: 10px; font-size: 0.4em; color: rgba(255, 255, 255, 0.8);">Clique em "Continuar" no painel</div>
+            </div>
+            
+            <canvas id="game"></canvas>
+            
+            <!-- Ticker de Criptomoedas -->
+            <div id="ticker">
+                <div id="tickerTrack">Carregando cotações...</div>
+            </div>
+            
+            <div id="fpsCounter">FPS: 0</div>
+        </div>
+
+        <!-- Painel Direito - Calculadora e Configurações -->
+        <div id="rightPanel">
+            <div class="panel-title">🧮 CALCULADORA</div>
+            
             <div class="calculator-container">
                 <div class="calculator-display" id="calcDisplay">0</div>
                 <div class="calculator-buttons">
@@ -808,16 +930,15 @@
                     <button class="calculator-button equals" onclick="calculateResult()">=</button>
                 </div>
             </div>
-
-            <!-- Seção de Personalização -->
+            
+            <div class="panel-title">🎨 PERSONALIZAÇÃO</div>
+            
             <div class="customization-section">
-                <div class="customization-title">🎨 PERSONALIZAÇÃO</div>
-                
                 <div class="customization-group">
                     <label class="customization-label">🎯 Cor das Bolhas:</label>
                     <div class="color-picker-container">
                         <input type="color" id="bubbleColor" value="#00ffaa" class="color-picker">
-                        <span style="color: #fff; font-size: 14px;">Cor selecionada</span>
+                        <span style="color: #fff; font-size: 13px;">Cor selecionada</span>
                     </div>
                 </div>
                 
@@ -849,41 +970,10 @@
                     </div>
                 </div>
                 
-                <button id="resetCustomization" style="width: 100%; padding: 12px; margin-top: 10px; background: linear-gradient(145deg, #ff4444, #cc0000); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer;">
+                <button id="resetCustomization" style="width: 100%; padding: 10px; margin-top: 8px; background: linear-gradient(145deg, #ff4444, #cc0000); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">
                     🔄 Redefinir Tudo
                 </button>
             </div>
-
-            <div class="footer">
-                ARC Testnet v3.0 • Personalização Completa
-                <br>
-                <span id="fps" style="font-family: 'Courier New'; color: rgba(255, 255, 255, 0.8);"></span>
-            </div>
-        </div>
-
-        <div id="gameContainer">
-            <div id="overlay">
-                <h1 id="statusMsg">🔒 BLOQUEADO</h1>
-                <p>Conecte sua carteira para liberar o acesso ao jogo.</p>
-                <p style="font-size: 0.9em; margin-top: 20px; color: rgba(255, 255, 255, 0.9);">
-                    Use o mouse para mirar e segurar para carregar o poder do disparo.
-                </p>
-            </div>
-            
-            <div id="pauseOverlay">
-                <div style="font-size: 2.5em; text-shadow: 0 0 30px rgba(0, 255, 170, 0.8);">⏸️</div>
-                <div style="margin-top: 25px; font-size: 0.6em; color: rgba(255, 255, 255, 0.95);">JOGO PAUSADO</div>
-                <div style="margin-top: 15px; font-size: 0.5em; color: rgba(255, 255, 255, 0.8);">Clique em "Continuar" no painel</div>
-            </div>
-            
-            <canvas id="game"></canvas>
-            
-            <!-- Ticker de Criptomoedas -->
-            <div id="ticker">
-                <div id="tickerTrack">Carregando cotações...</div>
-            </div>
-            
-            <div id="fpsCounter">FPS: 0</div>
         </div>
     </div>
 
@@ -989,9 +1079,9 @@
             calcExpression = result.toString();
             ui.calcDisplay.textContent = calcExpression;
             
-            ui.calcDisplay.style.textShadow = '0 0 20px rgba(0, 255, 170, 0.8)';
+            ui.calcDisplay.style.textShadow = '0 0 15px rgba(0, 255, 170, 0.8)';
             setTimeout(() => {
-                ui.calcDisplay.style.textShadow = '0 0 10px rgba(0, 255, 170, 0.5)';
+                ui.calcDisplay.style.textShadow = '0 0 8px rgba(0, 255, 170, 0.5)';
             }, 300);
         } catch (error) {
             ui.calcDisplay.textContent = 'Erro';
@@ -1254,10 +1344,10 @@
             const particle = document.createElement('div');
             particle.className = 'particle';
             
-            const size = Math.random() * 10 + 5;
+            const size = Math.random() * 8 + 4;
             const angle = Math.random() * Math.PI * 2;
-            const velocity = Math.random() * 6 + 3;
-            const life = Math.random() * 25 + 25;
+            const velocity = Math.random() * 5 + 2;
+            const life = Math.random() * 20 + 20;
             
             particle.style.width = `${size}px`;
             particle.style.height = `${size}px`;
@@ -1305,7 +1395,7 @@
         bullet: { 
             x: 0, 
             y: 0, 
-            r: 16, 
+            r: 14, 
             dx: 0, 
             dy: 0, 
             active: false, 
@@ -1340,18 +1430,18 @@
             const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa00ff"];
             this.bubbles = [];
             const rows = 5 + state.level;
-            const cols = Math.max(5, Math.floor(canvas.width / 50));
-            const offset = canvas.width > 800 ? 50 : 30;
+            const cols = Math.max(5, Math.floor(canvas.width / 45));
+            const offset = canvas.width > 800 ? 40 : 25;
             
             for(let r = 0; r < rows; r++) {
                 for(let c = 0; c < cols; c++) {
-                    const x = offset + c * 45 + (r % 2 ? 22.5 : 0);
-                    const y = 50 + r * 40;
+                    const x = offset + c * 40 + (r % 2 ? 20 : 0);
+                    const y = 40 + r * 35;
                     
                     this.bubbles.push({
                         x: x,
                         y: y,
-                        r: 20,
+                        r: 18,
                         color: colors[Math.floor(Math.random() * colors.length)],
                         active: true
                     });
@@ -1362,7 +1452,7 @@
         resetBullet() {
             this.bullet.active = false;
             this.bullet.x = canvas.width / 2;
-            this.bullet.y = canvas.height - 70;
+            this.bullet.y = canvas.height - 60;
             this.bullet.dx = 0;
             this.bullet.dy = 0;
         },
@@ -1422,7 +1512,7 @@
                         this.bullet.active = false;
                         
                         playSound('pop');
-                        createParticles(b.x, b.y, b.color, 15);
+                        createParticles(b.x, b.y, b.color, 12);
                         
                         state.combo++;
                         state.maxCombo = Math.max(state.maxCombo, state.combo);
@@ -1470,13 +1560,13 @@
             if (window.showGrid) {
                 ctx.strokeStyle = 'rgba(0, 255, 170, 0.15)';
                 ctx.lineWidth = 1;
-                for(let x = 0; x < canvas.width; x += 50) {
+                for(let x = 0; x < canvas.width; x += 40) {
                     ctx.beginPath();
                     ctx.moveTo(x, 0);
                     ctx.lineTo(x, canvas.height);
                     ctx.stroke();
                 }
-                for(let y = 0; y < canvas.height; y += 50) {
+                for(let y = 0; y < canvas.height; y += 40) {
                     ctx.beginPath();
                     ctx.moveTo(0, y);
                     ctx.lineTo(canvas.width, y);
@@ -1499,7 +1589,7 @@
                 ctx.fill();
                 
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2;
                 ctx.stroke();
                 
                 ctx.beginPath();
@@ -1545,7 +1635,7 @@
                 ctx.beginPath();
                 ctx.arc(this.bullet.x, this.bullet.y, powerRadius, 0, Math.PI * 2);
                 ctx.strokeStyle = `rgba(255, ${255 - (this.power * 10)}, 0, 0.5)`;
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 3;
                 ctx.stroke();
             }
         },
@@ -1670,13 +1760,13 @@
         
         // Criar partículas
         particleBgParticles = [];
-        const particleCount = Math.min(80, Math.floor((window.innerWidth * window.innerHeight) / 15000));
+        const particleCount = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 15000));
         
         for (let i = 0; i < particleCount; i++) {
             particleBgParticles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.random() * 3 + 1,
+                size: Math.random() * 2 + 1,
                 speedX: Math.random() * 0.5 - 0.25,
                 speedY: Math.random() * 0.5 - 0.25,
                 color: `rgba(${Math.random() * 100}, ${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, ${Math.random() * 0.3 + 0.1})`
@@ -1707,9 +1797,9 @@
                     const dy = particle.y - otherParticle.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < 100) {
+                    if (distance < 80) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(0, 255, 170, ${0.1 * (1 - distance/100)})`;
+                        ctx.strokeStyle = `rgba(0, 255, 170, ${0.1 * (1 - distance/80)})`;
                         ctx.lineWidth = 0.3;
                         ctx.moveTo(particle.x, particle.y);
                         ctx.lineTo(otherParticle.x, otherParticle.y);
@@ -1834,8 +1924,8 @@
         elements.forEach(el => {
             if (showShadows) {
                 el.style.boxShadow = el.style.boxShadow.includes('inset') ? 
-                    'inset 0 2px 10px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,170,0.2)' :
-                    '0 10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2)';
+                    'inset 0 2px 8px rgba(0,0,0,0.5), 0 0 15px rgba(0,255,170,0.2)' :
+                    '0 8px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2)';
             } else {
                 el.style.boxShadow = 'none';
             }
@@ -1898,9 +1988,9 @@
             const elements = document.querySelectorAll('.stats, .bar-wrap, .calculator-container, .customization-section');
             elements.forEach(el => {
                 if (el.classList.contains('stats') || el.classList.contains('bar-wrap')) {
-                    el.style.boxShadow = 'inset 0 2px 10px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,170,0.2)';
+                    el.style.boxShadow = 'inset 0 2px 8px rgba(0,0,0,0.5), 0 0 15px rgba(0,255,170,0.2)';
                 } else {
-                    el.style.boxShadow = '0 10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2)';
+                    el.style.boxShadow = '0 8px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2)';
                 }
             });
             
@@ -2034,10 +2124,11 @@
     setInterval(fetchTopCryptos, 60000); // Atualiza a cada minuto
 
     /* ===== INICIALIZAÇÃO ===== */
-    console.log("ARC Bubble Shooter v3.0 inicializado com sucesso!");
+    console.log("ARC Bubble Shooter v3.0 - Layout Triplo Inicializado!");
     console.log("Recursos disponíveis:");
+    console.log("- Layout de 3 colunas (Controles/Jogo/Configurações)");
     console.log("- Jogo Web3 completo com MetaMask");
-    console.log("- Calculadora integrada");
+    console.log("- Calculadora integrada no painel direito");
     console.log("- Ticker de 20 criptomoedas em tempo real");
     console.log("- Sistema completo de personalização");
     console.log("- 12 temas de fundo diferentes");
