@@ -1,4 +1,4 @@
-// Dados da sua rede ARC TST
+// Configurações da rede ARC TST fornecidas por você
 const ARC_CHAIN_ID = "0x4cece6"; // ID 5042002 em Hexadecimal
 const ARC_RPC_URL = "https://rpc.testnet.arc.network";
 
@@ -7,21 +7,21 @@ const ctx = canvas.getContext('2d');
 const statusText = document.getElementById('status');
 const connectBtn = document.getElementById('connect-button');
 
-// --- FUNÇÃO DE CONEXÃO REVISADA ---
+// --- SISTEMA DE CONEXÃO REVISADO ---
 async function connectWallet() {
-    if (window.ethereum) {
+    if (typeof window.ethereum !== 'undefined') {
         try {
-            // 1. Pede permissão para ver a carteira
+            // Solicita acesso à conta primeiro
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            // 2. Tenta trocar para a rede Arc automaticamente
+            // Tenta mudar para a Arc Testnet de forma segura
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: ARC_CHAIN_ID }],
                 });
             } catch (switchError) {
-                // Se a rede não estiver na MetaMask, ele tenta adicionar
+                // Se a rede não estiver na MetaMask, solicita para adicionar
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
@@ -35,34 +35,38 @@ async function connectWallet() {
                     });
                 }
             }
-            
-            // 3. Atualiza a tela se der tudo certo
+
+            // Atualização visual de sucesso
             statusText.innerText = "Status: Conectado (" + accounts[0].substring(0,6) + "...)";
             statusText.style.color = "#00ff88";
             connectBtn.innerHTML = "CARTEIRA ATIVA";
-            connectBtn.style.background = "#333";
+            console.log("Conectado com sucesso na rede Arc!");
 
         } catch (error) {
-            console.log("Erro silencioso de conexão:", error);
-            // Removemos o alerta chato para não travar o seu jogo
+            // Log no console para evitar o pop-up de erro persistente
+            console.error("Erro na conexão:", error);
         }
     } else {
-        alert("Instale a MetaMask para usar a rede ARC!");
+        alert("MetaMask não detectada. Por favor, instale a extensão.");
     }
 }
 
-connectBtn.onclick = connectWallet;
+// Atribui a função ao botão
+if (connectBtn) {
+    connectBtn.onclick = connectWallet;
+}
 
-// --- VISUAL DO ARCADE (Inspirado na sua imagem) ---
-const colors = ['#00d4ff', '#ff0055', '#00ff88', '#ffcc00', '#9d00ff'];
+// --- VISUAL DO JOGO ARCADE ---
+// Cores baseadas na imagem do jogo enviada
+const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
 let bubbles = [];
 
-function initGrid() {
+function createGrid() {
     bubbles = [];
     for (let row = 0; row < 5; row++) {
         for (let col = 0; col < 8; col++) {
             bubbles.push({
-                x: 40 + (col * 45),
+                x: 45 + (col * 44),
                 y: 50 + (row * 40),
                 color: colors[Math.floor(Math.random() * colors.length)]
             });
@@ -73,26 +77,27 @@ function initGrid() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Bolhas do topo
+    // Desenha a grade de bolhas
     bubbles.forEach(b => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, 18, 0, Math.PI * 2);
         ctx.fillStyle = b.color;
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
         ctx.stroke();
         ctx.closePath();
     });
 
-    // Bolha Atiradora (Central)
+    // Desenha a bolha de disparo (amarela/colorida)
     ctx.beginPath();
     ctx.arc(canvas.width / 2, canvas.height - 50, 22, 0, Math.PI * 2);
-    ctx.fillStyle = "yellow"; 
+    ctx.fillStyle = "yellow";
     ctx.shadowBlur = 15;
     ctx.shadowColor = "yellow";
     ctx.fill();
     ctx.closePath();
 }
 
-initGrid();
+// Inicializa o visual
+createGrid();
 setInterval(draw, 50);
