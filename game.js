@@ -5,19 +5,17 @@ const ctx = canvas.getContext('2d');
 
 // --- CARREGAMENTO DE IMAGENS ---
 const bubbleImages = {};
-const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700', '#FF4500'];
+// REMOVIDO O VERMELHO DA LISTA
+const colors = ['#00BFFF', '#FF1493', '#32CD32', '#FFD700']; 
 const colorNames = {
     '#00BFFF': 'blue',
     '#FF1493': 'pink',
     '#32CD32': 'green',
-    '#FFD700': 'yellow',
-    '#FF4500': 'orange'
+    '#FFD700': 'yellow'
 };
 
-// Carrega as imagens para cada cor com fallback
 colors.forEach(color => {
     const img = new Image();
-    // Tente manter tudo em minúsculo no seu GitHub
     img.src = colorNames[color] + '.png'; 
     bubbleImages[color] = img;
 });
@@ -29,40 +27,42 @@ shooterImg.src = 'shooter.png';
 let score = 0;
 let level = 1;
 let bubbles = [];
-let particles = [];
 let bullet = { x: 225, y: 500, radius: 20, active: false, dx: 0, dy: 0 };
 
-// --- WEB3 E CONEXÃO ---
+// --- WEB3 ---
 async function checkWallet() {
     if (window.ethereum) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
         const statusText = document.getElementById('status');
-        if (accounts.length > 0 && chainId === ARC_CHAIN_ID) {
-            statusText.innerText = "STATUS: CONNECTED (" + accounts[0].substring(0, 6) + ")";
+        if (accounts.length > 0) {
+            statusText.innerText = "STATUS: CONECTADO (" + accounts[0].substring(0, 6) + ")";
             statusText.style.color = "#00ff88";
             document.getElementById('connect-button').style.display = "none";
         }
     }
 }
 
-// --- LÓGICA DO JOGO ---
+// --- INICIALIZAR COM 6 LINHAS ---
 function initLevel(lvl) {
     bubbles = [];
-    const rows = 2 + lvl;
+    const rows = 6; // FIXADO EM 6 LINHAS
+    const cols = 8;
     for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < 8; j++) {
+        // Escolhe uma cor baseada na linha para ficar organizado
+        const colorIndex = i % colors.length; 
+        for (let j = 0; j < cols; j++) {
             bubbles.push({
                 x: 45 + (j * 52),
                 y: 60 + (i * 45),
                 radius: 19,
-                color: colors[Math.floor(Math.random() * colors.length)],
+                color: colors[colorIndex],
                 active: true
             });
         }
     }
 }
 
+// --- DISPARO E ATUALIZAÇÃO ---
 canvas.addEventListener('mousedown', (e) => {
     if (bullet.active) return;
     const rect = canvas.getBoundingClientRect();
@@ -108,7 +108,6 @@ function draw() {
     bubbles.forEach(b => {
         if (b.active) {
             const img = bubbleImages[b.color];
-            // Lógica de desenhar imagem OU círculo se a imagem falhar
             if (img && img.complete && img.naturalWidth !== 0) {
                 ctx.drawImage(img, b.x - b.radius, b.y - b.radius, b.radius * 2, b.radius * 2);
             } else {
