@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Bubble Shooter</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="particleBackground"></canvas>
+    
+    <div id="layout">
+        <!-- Painel Esquerdo - Controles do Jogo -->
+        <div id="leftPanel">
+            <div class="arc-logo">
+                <div class="logo-icon">✦</div>
+                <h2>ARC BUBBLE SHOOTER</h2>
+            </div>
+            
+            <div class="panel-title">🎮 CONTROLES DO JOGO</div>
+            
+            <div class="stats">
+                <div class="row">
+                    <span>👛 Wallet:</span> 
+                    <span id="wallet" class="val">---</span>
+                </div>
+                <div class="row">
+                    <span>💰 Saldo ARC:</span> 
+                    <span id="balance" class="val">0.0000</span>
+                </div>
+                <div class="row">
+                    <span>🎯 Score:</span> 
+                    <span id="score" class="val">0</span>
+                </div>
+                <div class="row">
+                    <span>📈 Level:</span> 
+                    <span id="level" class="val">1</span>
+                </div>
+                <div class="row">
+                    <span>⚡ Combo:</span> 
+                    <span id="combo" class="val">x1</span>
+                </div>
+            </div>
+
+            <div class="combo-display" id="comboDisplay">
+                COMBO <span id="comboValue">x1</span>!
+            </div>
+
+            <div class="bar-wrap">
+                ⚡ Potência do Disparo
+                <div class="bar">
+                    <div id="powerBar"></div>
+                </div>
+                <div class="bar-labels">
+                    <span>Fraco</span>
+                    <span>Médio</span>
+                    <span>Forte</span>
+                </div>
+            </div>
+
+            <button id="btnConnect">1. Conectar MetaMask</button>
+            <button id="btnSign" disabled>2. Assinar Termos</button>
+            <button id="btnStart" disabled>3. Iniciar Partida</button>
+            
+            <div class="button-group">
+                <button id="btnPause" style="display: none;">⏸️ Pausar</button>
+                <button id="btnRestart" style="display: none;">🔄 Reiniciar</button>
+            </div>
+            
+            <div class="footer">
+                ARC Testnet v3.0 • Layout Otimizado
+                <br>
+                <span id="fps" style="font-family: 'Courier New'; color: rgba(255, 255, 255, 0.8);"></span>
+            </div>
+        </div>
+
+        <!-- Área Central do Jogo -->
+        <div id="gameContainer">
+            <div id="overlay">
+                <h1 id="statusMsg">🔒 BLOQUEADO</h1>
+                <p>Conecte sua carteira para liberar o acesso ao jogo.</p>
+                <p style="font-size: 0.9em; margin-top: 15px; color: rgba(255, 255, 255, 0.9);">
+                    Use o mouse para mirar e segurar para carregar o poder do disparo.
+                </p>
+            </div>
+            
+            <div id="pauseOverlay">
+                <div style="font-size: 2em; text-shadow: 0 0 25px rgba(0, 255, 170, 0.8);">⏸️</div>
+                <div style="margin-top: 20px; font-size: 0.5em; color: rgba(255, 255, 255, 0.95);">JOGO PAUSADO</div>
+                <div style="margin-top: 10px; font-size: 0.4em; color: rgba(255, 255, 255, 0.8);">Clique em "Continuar" no painel</div>
+            </div>
+            
+            <canvas id="game"></canvas>
+            
+            <!-- Ticker de Criptomoedas -->
+            <div id="ticker">
+                <div id="tickerTrack">Carregando cotações...</div>
+            </div>
+            
+            <div id="fpsCounter">FPS: 0</div>
+        </div>
+
+        <!-- Painel Direito - Calculadora e Configurações -->
+        <div id="rightPanel">
+            <div class="panel-title">🧮 CALCULADORA</div>
+            
+            <div class="calculator-container">
+                <div class="calculator-display" id="calcDisplay">0</div>
+                <div class="calculator-buttons">
+                    <button class="calculator-button clear" onclick="Calculator.clear()">C</button>
+                    <button class="calculator-button" onclick="Calculator.backspace()">⌫</button>
+                    <button class="calculator-button operator" onclick="Calculator.append('/')">/</button>
+                    <button class="calculator-button operator" onclick="Calculator.append('*')">×</button>
+                    
+                    <button class="calculator-button" onclick="Calculator.append('7')">7</button>
+                    <button class="calculator-button" onclick="Calculator.append('8')">8</button>
+                    <button class="calculator-button" onclick="Calculator.append('9')">9</button>
+                    <button class="calculator-button operator" onclick="Calculator.append('-')">-</button>
+                    
+                    <button class="calculator-button" onclick="Calculator.append('4')">4</button>
+                    <button class="calculator-button" onclick="Calculator.append('5')">5</button>
+                    <button class="calculator-button" onclick="Calculator.append('6')">6</button>
+                    <button class="calculator-button operator" onclick="Calculator.append('+')">+</button>
+                    
+                    <button class="calculator-button" onclick="Calculator.append('1')">1</button>
+                    <button class="calculator-button" onclick="Calculator.append('2')">2</button>
+                    <button class="calculator-button" onclick="Calculator.append('3')">3</button>
+                    <button class="calculator-button" onclick="Calculator.append('0')">0</button>
+                    
+                    <button class="calculator-button" onclick="Calculator.append('.')">.</button>
+                    <button class="calculator-button equals" onclick="Calculator.calculate()">=</button>
+                </div>
+            </div>
+            
+            <div class="panel-title">🎨 PERSONALIZAÇÃO</div>
+            
+            <div class="customization-section">
+                <div class="customization-group">
+                    <label class="customization-label">🎯 Cor das Bolhas:</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="bubbleColor" value="#00ffaa" class="color-picker">
+                        <span style="color: #fff; font-size: 13px;">Cor selecionada</span>
+                    </div>
+                </div>
+                
+                <div class="customization-group">
+                    <label class="customization-label">🌌 Fundo do Jogo:</label>
+                    <select id="gameBgSelect" class="customization-select">
+                        <option value="default">Padrão (Gradiente Escuro)</option>
+                        <option value="space">Espaço Sideral</option>
+                        <option value="matrix">Matrix Digital</option>
+                        <option value="nebula">Nebulosa Colorida</option>
+                        <option value="circuits">Circuitos</option>
+                        <option value="abstract">Abstrato Moderno</option>
+                        <option value="solid_black">Preto Sólido</option>
+                        <option value="solid_blue">Azul Profundo</option>
+                        <option value="solid_purple">Roxo Espacial</option>
+                        <option value="gradient_blue">Gradiente Azul</option>
+                        <option value="gradient_green">Gradiente Verde</option>
+                        <option value="gradient_red">Gradiente Vermelho</option>
+                    </select>
+                </div>
+                
+                <div class="customization-group">
+                    <label class="customization-label">✨ Efeitos Visuais:</label>
+                    <div class="effects-buttons">
+                        <button id="toggleParticleBg" class="effect-button">🌟 Fundo Animado</button>
+                        <button id="toggleBloom" class="effect-button">💫 Efeito Bloom</button>
+                        <button id="toggleGrid" class="effect-button">🔲 Grade de Fundo</button>
+                        <button id="toggleShadows" class="effect-button">👥 Sombras</button>
+                    </div>
+                </div>
+                
+                <button id="resetCustomization" style="width: 100%; padding: 10px; margin-top: 8px; background: linear-gradient(145deg, rgba(255, 68, 68, 0.8), rgba(204, 0, 0, 0.8)); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">
+                    🔄 Redefinir Tudo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container para partículas -->
+    <div id="particleContainer"></div>
+
+    <!-- Inclua os módulos JavaScript -->
+    <script src="audioEngine.js"></script>
+    <script src="particleSystem.js"></script>
+    <script src="cryptoTicker.js"></script>
+    <script src="calculator.js"></script>
+    <script src="customization.js"></script>
+    <script src="web3Integration.js"></script>
+    <script src="gameEngine.js"></script>
+    <script src="uiManager.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

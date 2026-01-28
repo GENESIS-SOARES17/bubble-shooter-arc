@@ -1,0 +1,776 @@
+/* style.css */
+:root { 
+    --primary: #00ffaa; 
+    --secondary: #00aaff; 
+    --bg: #0a0a0a; 
+    --error: #ff4444;
+    --success: #00ffaa;
+    --calculator-bg: #1a1a1a;
+    --calculator-display: #000;
+    --calculator-button: #333;
+    --calculator-button-hover: #444;
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0;
+    padding: 0;
+}
+
+body { 
+    margin: 0; 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    background: linear-gradient(135deg, #0a0a0a 0%, #001a1a 100%); 
+    color: #fff; 
+    overflow: hidden; 
+    transition: background 0.5s ease;
+}
+
+#layout { 
+    display: flex; 
+    width: 100vw; 
+    height: 100vh; 
+    padding: 10px; 
+    gap: 10px; 
+}
+
+/* Painel Esquerdo - Controles do Jogo */
+#leftPanel { 
+    width: 280px; 
+    min-width: 280px;
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    border-radius: 16px; 
+    padding: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 30px rgba(0, 255, 170, 0.3);
+    z-index: 100;
+    position: relative;
+    overflow-y: auto;
+    max-height: 100%;
+    backdrop-filter: blur(10px);
+}
+
+/* Painel Direito - Calculadora e Configurações */
+#rightPanel { 
+    width: 280px; 
+    min-width: 280px;
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    border-radius: 16px; 
+    padding: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 30px rgba(0, 255, 170, 0.3);
+    z-index: 100;
+    position: relative;
+    overflow-y: auto;
+    max-height: 100%;
+    backdrop-filter: blur(10px);
+}
+
+/* Área Central do Jogo */
+#gameContainer { 
+    flex: 1; 
+    min-width: 0;
+    position: relative; 
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    border-radius: 16px; 
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    overflow: hidden;
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 30px rgba(0, 255, 170, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+/* Logo ARC */
+.arc-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(0, 255, 170, 0.3);
+}
+
+.arc-logo .logo-icon {
+    font-size: 28px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 170, 0.5));
+}
+
+h2 { 
+    text-align: center; 
+    color: var(--primary); 
+    margin: 0; 
+    font-size: 22px; 
+    text-shadow: 0 0 15px rgba(0, 255, 170, 0.7);
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.panel-title {
+    color: var(--primary);
+    font-size: 18px;
+    margin: 10px 0 5px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+    text-align: center;
+}
+
+.stats { 
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+    padding: 12px; 
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 255, 170, 0.2);
+}
+
+.row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin: 8px 0; 
+    font-size: 14px; 
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0, 255, 170, 0.2);
+}
+
+.row:last-child { border-bottom: none; }
+
+.val { 
+    font-weight: bold; 
+    color: var(--secondary); 
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+    font-size: 15px;
+}
+
+.combo-display {
+    background: linear-gradient(45deg, rgba(255, 0, 128, 0.7), rgba(0, 255, 170, 0.7));
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 0 20px rgba(255, 0, 128, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    font-size: 16px;
+}
+
+.combo-display.active {
+    opacity: 1;
+    transform: scale(1);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 0, 128, 0.7); }
+    100% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.5); }
+}
+
+button { 
+    width: 100%; 
+    padding: 12px; 
+    border: none; 
+    border-radius: 10px; 
+    background: linear-gradient(145deg, var(--primary), var(--secondary));
+    color: #000; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transition: left 0.7s ease;
+    z-index: -1;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.3);
+    box-shadow: 
+        0 6px 20px rgba(0, 255, 170, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+button:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+button:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+button:disabled { 
+    opacity: 0.6; 
+    cursor: not-allowed; 
+    background: linear-gradient(145deg, rgba(102, 102, 102, 0.8), rgba(136, 136, 136, 0.8));
+    color: #666;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.button-group button {
+    flex: 1;
+}
+
+canvas { 
+    width: 100%; 
+    height: 100%; 
+    display: block;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#overlay {
+    position: absolute; 
+    inset: 0; 
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    z-index: 10; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center; 
+    text-align: center; 
+    padding: 20px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+#overlay h1 {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(0, 255, 170, 0.7);
+}
+
+#overlay p {
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 500px;
+    line-height: 1.5;
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+}
+
+/* Barra de Força */
+.bar-wrap { 
+    margin-top: 10px; 
+    font-size: 14px; 
+    color: rgba(255, 255, 255, 0.95); 
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(0, 255, 170, 0.2);
+}
+
+.bar { 
+    width: 100%; 
+    height: 12px; 
+    background: rgba(0, 0, 0, 0.6); 
+    border-radius: 6px; 
+    overflow: hidden; 
+    margin-top: 8px; 
+    border: 1px solid rgba(0, 255, 170, 0.3);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+#powerBar { 
+    height: 100%; 
+    width: 0%; 
+    background: linear-gradient(90deg, #00ff88, #ffaa00, #ff0000); 
+    transition: width 0.08s ease;
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+}
+
+.bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Ticker de Criptomoedas */
+#ticker {
+    position: absolute; 
+    bottom: 0; 
+    width: 100%; 
+    height: 50px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    border-top: 2px solid rgba(0, 255, 170, 0.6); 
+    padding: 10px 0; 
+    font-size: 13px;
+    z-index: 5;
+    overflow: hidden;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+}
+
+#tickerTrack { 
+    display: inline-block; 
+    white-space: nowrap; 
+    padding-right: 40px;
+    font-family: 'Courier New', monospace;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 0 6px rgba(0, 255, 170, 0.5);
+    font-weight: bold;
+    animation: scroll 40s linear infinite;
+    padding-top: 4px;
+}
+
+@keyframes scroll { 
+    0% { transform: translateX(100%); } 
+    100% { transform: translateX(-100%); } 
+}
+
+.crypto-ticker-item {
+    display: inline-block;
+    margin: 0 20px;
+    padding: 6px 12px;
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
+    transition: all 0.3s ease;
+}
+
+.crypto-ticker-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
+}
+
+.crypto-ticker-item .symbol {
+    color: var(--primary);
+    font-weight: bold;
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+.crypto-ticker-item .price {
+    color: var(--secondary);
+    font-size: 13px;
+}
+
+.crypto-ticker-item .change {
+    margin-left: 8px;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.crypto-ticker-item .change.positive {
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.15);
+}
+
+.crypto-ticker-item .change.negative {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.15);
+}
+
+/* Indicador de FPS */
+#fpsCounter {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    z-index: 5;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+    color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Indicador de Pausa */
+#pauseOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
+    z-index: 9;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    color: var(--primary);
+    border-radius: 16px;
+    text-shadow: 0 0 25px rgba(0, 255, 170, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* Efeito de Partículas */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 15px currentColor;
+}
+
+/* Canvas para Fundo Animado */
+#particleBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Calculadora */
+.calculator-container {
+    background: linear-gradient(145deg, rgba(26, 26, 26, 0.8), rgba(15, 15, 15, 0.8));
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.calculator-display {
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: right;
+    margin-bottom: 12px;
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: hidden;
+    text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.calculator-button {
+    background: linear-gradient(145deg, rgba(51, 51, 51, 0.8), rgba(42, 42, 42, 0.8));
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.calculator-button:hover {
+    background: linear-gradient(145deg, rgba(68, 68, 68, 0.9), rgba(58, 58, 58, 0.9));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.calculator-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.calculator-button.operator {
+    background: linear-gradient(145deg, rgba(255, 153, 0, 0.8), rgba(204, 122, 0, 0.8));
+    color: #000;
+}
+
+.calculator-button.operator:hover {
+    background: linear-gradient(145deg, rgba(255, 170, 0, 0.9), rgba(221, 139, 0, 0.9));
+}
+
+.calculator-button.equals {
+    background: linear-gradient(145deg, rgba(0, 255, 170, 0.8), rgba(0, 204, 136, 0.8));
+    color: #000;
+    grid-column: span 2;
+}
+
+.calculator-button.equals:hover {
+    background: linear-gradient(145deg, rgba(0, 255, 187, 0.9), rgba(0, 221, 153, 0.9));
+}
+
+.calculator-button.clear {
+    background: linear-gradient(145deg, rgba(255, 68, 68, 0.8), rgba(204, 0, 0, 0.8));
+    color: #fff;
+}
+
+.calculator-button.clear:hover {
+    background: linear-gradient(145deg, rgba(255, 85, 85, 0.9), rgba(221, 0, 0, 0.9));
+}
+
+/* Seção de Personalização */
+.customization-section {
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.customization-title {
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 16px;
+    text-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+    border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+    padding-bottom: 6px;
+}
+
+.customization-group {
+    margin-bottom: 12px;
+}
+
+.customization-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #00aaff;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.customization-select {
+    width: 100%;
+    padding: 8px;
+    background: rgba(26, 26, 26, 0.8);
+    color: white;
+    border: 2px solid rgba(0, 255, 170, 0.3);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.customization-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+}
+
+.color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-picker {
+    width: 45px;
+    height: 35px;
+    border: 2px solid rgba(0, 255, 170, 0.5);
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+.effects-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.effect-button {
+    padding: 8px;
+    background: linear-gradient(145deg, rgba(0, 10, 20, 0.6), rgba(0, 20, 40, 0.6));
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.effect-button:hover {
+    background: linear-gradient(145deg, rgba(0, 20, 40, 0.8), rgba(0, 30, 60, 0.8));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
+}
+
+.effect-button.active {
+    background: linear-gradient(145deg, rgba(0, 255, 170, 0.8), rgba(0, 204, 136, 0.8));
+    color: #000;
+    font-weight: bold;
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 255, 170, 0.3);
+}
+
+/* Notificações */
+.notification {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 1000;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    max-width: 250px;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(0, 255, 170, 0.3);
+    backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    color: var(--success);
+    border-left: 4px solid var(--success);
+    background: rgba(0, 255, 170, 0.2);
+}
+
+.notification.error {
+    color: var(--error);
+    border-left: 4px solid var(--error);
+    background: rgba(255, 68, 68, 0.2);
+}
+
+.notification.info {
+    color: var(--secondary);
+    border-left: 4px solid var(--secondary);
+    background: rgba(0, 170, 255, 0.2);
+}
+
+/* Scrollbar Personalizada */
+#leftPanel::-webkit-scrollbar,
+#rightPanel::-webkit-scrollbar {
+    width: 6px;
+}
+
+#leftPanel::-webkit-scrollbar-track,
+#rightPanel::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+#leftPanel::-webkit-scrollbar-thumb,
+#rightPanel::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 170, 0.4);
+    border-radius: 3px;
+}
+
+#leftPanel::-webkit-scrollbar-thumb:hover,
+#rightPanel::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 170, 0.6);
+}
+
+/* Estilos para telas menores */
+@media (max-width: 1200px) {
+    #layout {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    #leftPanel, #rightPanel {
+        width: 100%;
+        min-width: auto;
+        max-height: 40vh;
+    }
+
+    #gameContainer {
+        height: 60vh;
+    }
+}
