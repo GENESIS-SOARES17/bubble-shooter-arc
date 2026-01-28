@@ -45,7 +45,7 @@
         #leftPanel { 
             width: 280px; 
             min-width: 280px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
             padding: 15px; 
@@ -60,13 +60,14 @@
             position: relative;
             overflow-y: auto;
             max-height: 100%;
+            backdrop-filter: blur(10px);
         }
         
         /* Painel Direito - Calculadora e Configurações */
         #rightPanel { 
             width: 280px; 
             min-width: 280px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
             padding: 15px; 
@@ -81,6 +82,7 @@
             position: relative;
             overflow-y: auto;
             max-height: 100%;
+            backdrop-filter: blur(10px);
         }
         
         /* Área Central do Jogo */
@@ -90,12 +92,13 @@
             position: relative; 
             border: 2px solid rgba(0, 255, 170, 0.6);
             border-radius: 16px; 
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             overflow: hidden;
             box-shadow: 
                 0 10px 40px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2),
                 0 0 30px rgba(0, 255, 170, 0.3);
+            backdrop-filter: blur(5px);
         }
         
         /* Logo ARC */
@@ -142,7 +145,7 @@
         }
         
         .stats { 
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             padding: 12px; 
             border-radius: 12px;
             border: 1px solid rgba(0, 255, 170, 0.4);
@@ -278,7 +281,7 @@
         #overlay {
             position: absolute; 
             inset: 0; 
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.97), rgba(20, 20, 20, 0.97));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             z-index: 10; 
             display: flex; 
             flex-direction: column; 
@@ -287,6 +290,7 @@
             text-align: center; 
             padding: 20px;
             border-radius: 16px;
+            backdrop-filter: blur(10px);
         }
         
         #overlay h1 {
@@ -304,7 +308,7 @@
             color: rgba(255, 255, 255, 0.95);
             max-width: 500px;
             line-height: 1.5;
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             padding: 15px 20px;
             border-radius: 12px;
             border: 1px solid rgba(0, 255, 170, 0.4);
@@ -316,7 +320,7 @@
             margin-top: 10px; 
             font-size: 14px; 
             color: rgba(255, 255, 255, 0.95); 
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             padding: 12px;
             border-radius: 10px;
             border: 1px solid rgba(0, 255, 170, 0.4);
@@ -359,13 +363,14 @@
             bottom: 0; 
             width: 100%; 
             height: 50px;
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.98));
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             border-top: 2px solid rgba(0, 255, 170, 0.6); 
             padding: 10px 0; 
             font-size: 13px;
             z-index: 5;
             overflow: hidden;
             box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
         }
         
         #tickerTrack { 
@@ -389,7 +394,7 @@
             display: inline-block;
             margin: 0 20px;
             padding: 6px 12px;
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             border-radius: 8px;
             border: 1px solid rgba(0, 255, 170, 0.4);
             box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
@@ -436,7 +441,7 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 12px;
@@ -445,6 +450,7 @@
             border: 1px solid rgba(0, 255, 170, 0.4);
             box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
             color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
         }
 
         /* Indicador de Pausa */
@@ -454,7 +460,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.97), rgba(20, 20, 20, 0.97));
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.8));
             z-index: 9;
             display: none;
             flex-direction: column;
@@ -464,6 +470,7 @@
             color: var(--primary);
             border-radius: 16px;
             text-shadow: 0 0 25px rgba(0, 255, 170, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         /* Efeito de Partículas */
@@ -488,17 +495,18 @@
         
         /* Calculadora */
         .calculator-container {
-            background: linear-gradient(145deg, var(--calculator-bg), #0f0f0f);
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.8), rgba(15, 15, 15, 0.8));
             border-radius: 12px;
             padding: 15px;
             border: 2px solid rgba(0, 255, 170, 0.6);
             box-shadow: 
                 0 8px 25px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
         
         .calculator-display {
-            background: var(--calculator-display);
+            background: rgba(0, 0, 0, 0.8);
             color: var(--primary);
             font-family: 'Courier New', monospace;
             font-size: 24px;
@@ -523,7 +531,7 @@
         }
         
         .calculator-button {
-            background: linear-gradient(145deg, var(--calculator-button), #2a2a2a);
+            background: linear-gradient(145deg, rgba(51, 51, 51, 0.8), rgba(42, 42, 42, 0.8));
             border: none;
             color: white;
             font-size: 18px;
@@ -537,7 +545,7 @@
         }
         
         .calculator-button:hover {
-            background: linear-gradient(145deg, var(--calculator-button-hover), #3a3a3a);
+            background: linear-gradient(145deg, rgba(68, 68, 68, 0.9), rgba(58, 58, 58, 0.9));
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         }
@@ -548,42 +556,43 @@
         }
         
         .calculator-button.operator {
-            background: linear-gradient(145deg, #ff9900, #cc7a00);
+            background: linear-gradient(145deg, rgba(255, 153, 0, 0.8), rgba(204, 122, 0, 0.8));
             color: #000;
         }
         
         .calculator-button.operator:hover {
-            background: linear-gradient(145deg, #ffaa00, #dd8b00);
+            background: linear-gradient(145deg, rgba(255, 170, 0, 0.9), rgba(221, 139, 0, 0.9));
         }
         
         .calculator-button.equals {
-            background: linear-gradient(145deg, var(--primary), #00cc88);
+            background: linear-gradient(145deg, rgba(0, 255, 170, 0.8), rgba(0, 204, 136, 0.8));
             color: #000;
             grid-column: span 2;
         }
         
         .calculator-button.equals:hover {
-            background: linear-gradient(145deg, #00ffbb, #00dd99);
+            background: linear-gradient(145deg, rgba(0, 255, 187, 0.9), rgba(0, 221, 153, 0.9));
         }
         
         .calculator-button.clear {
-            background: linear-gradient(145deg, #ff4444, #cc0000);
+            background: linear-gradient(145deg, rgba(255, 68, 68, 0.8), rgba(204, 0, 0, 0.8));
             color: #fff;
         }
         
         .calculator-button.clear:hover {
-            background: linear-gradient(145deg, #ff5555, #dd0000);
+            background: linear-gradient(145deg, rgba(255, 85, 85, 0.9), rgba(221, 0, 0, 0.9));
         }
         
         /* Seção de Personalização */
         .customization-section {
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.9), rgba(0, 20, 40, 0.9));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
             border-radius: 12px;
             padding: 15px;
             border: 2px solid rgba(0, 255, 170, 0.6);
             box-shadow: 
                 0 8px 25px rgba(0, 0, 0, 0.8),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
         
         .customization-title {
@@ -611,7 +620,7 @@
         .customization-select {
             width: 100%;
             padding: 8px;
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.8);
             color: white;
             border: 2px solid rgba(0, 255, 170, 0.3);
             border-radius: 6px;
@@ -658,7 +667,7 @@
         
         .effect-button {
             padding: 8px;
-            background: linear-gradient(145deg, rgba(0, 10, 20, 0.8), rgba(0, 20, 40, 0.8));
+            background: linear-gradient(145deg, rgba(0, 10, 20, 0.6), rgba(0, 20, 40, 0.6));
             border: 1px solid rgba(0, 255, 170, 0.4);
             border-radius: 6px;
             color: white;
@@ -668,13 +677,13 @@
         }
         
         .effect-button:hover {
-            background: linear-gradient(145deg, rgba(0, 20, 40, 0.9), rgba(0, 30, 60, 0.9));
+            background: linear-gradient(145deg, rgba(0, 20, 40, 0.8), rgba(0, 30, 60, 0.8));
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
         }
         
         .effect-button.active {
-            background: linear-gradient(145deg, var(--primary), #00cc88);
+            background: linear-gradient(145deg, rgba(0, 255, 170, 0.8), rgba(0, 204, 136, 0.8));
             color: #000;
             font-weight: bold;
         }
@@ -771,37 +780,6 @@
             #gameContainer {
                 height: 60vh;
             }
-        }
-        
-        /* Tab system para mobile */
-        .tab-container {
-            display: flex;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 8px;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-button.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
         }
     </style>
 </head>
@@ -970,7 +948,7 @@
                     </div>
                 </div>
                 
-                <button id="resetCustomization" style="width: 100%; padding: 10px; margin-top: 8px; background: linear-gradient(145deg, #ff4444, #cc0000); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">
+                <button id="resetCustomization" style="width: 100%; padding: 10px; margin-top: 8px; background: linear-gradient(145deg, rgba(255, 68, 68, 0.8), rgba(204, 0, 0, 0.8)); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">
                     🔄 Redefinir Tudo
                 </button>
             </div>
@@ -1395,7 +1373,7 @@
         bullet: { 
             x: 0, 
             y: 0, 
-            r: 14, 
+            r: 21, // Aumentado em 50% (de 14 para 21)
             dx: 0, 
             dy: 0, 
             active: false, 
@@ -1430,18 +1408,18 @@
             const colors = ["#00ffaa", "#00aaff", "#ffaa00", "#ff4444", "#aa00ff"];
             this.bubbles = [];
             const rows = 5 + state.level;
-            const cols = Math.max(5, Math.floor(canvas.width / 45));
-            const offset = canvas.width > 800 ? 40 : 25;
+            const cols = Math.max(5, Math.floor(canvas.width / 70));
+            const offset = canvas.width > 800 ? 60 : 40;
             
             for(let r = 0; r < rows; r++) {
                 for(let c = 0; c < cols; c++) {
-                    const x = offset + c * 40 + (r % 2 ? 20 : 0);
-                    const y = 40 + r * 35;
+                    const x = offset + c * 60 + (r % 2 ? 30 : 0);
+                    const y = 60 + r * 50;
                     
                     this.bubbles.push({
                         x: x,
                         y: y,
-                        r: 18,
+                        r: 27, // Aumentado em 50% (de 18 para 27)
                         color: colors[Math.floor(Math.random() * colors.length)],
                         active: true
                     });
@@ -1452,7 +1430,7 @@
         resetBullet() {
             this.bullet.active = false;
             this.bullet.x = canvas.width / 2;
-            this.bullet.y = canvas.height - 60;
+            this.bullet.y = canvas.height - 70;
             this.bullet.dx = 0;
             this.bullet.dy = 0;
         },
@@ -1512,7 +1490,7 @@
                         this.bullet.active = false;
                         
                         playSound('pop');
-                        createParticles(b.x, b.y, b.color, 12);
+                        createParticles(b.x, b.y, b.color, 15);
                         
                         state.combo++;
                         state.maxCombo = Math.max(state.maxCombo, state.combo);
@@ -1574,7 +1552,7 @@
                 }
             }
             
-            // Desenhar bolhas
+            // Desenhar bolhas (50% maiores)
             this.bubbles.forEach(b => {
                 if (!b.active) return;
                 
@@ -1589,16 +1567,24 @@
                 ctx.fill();
                 
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.stroke();
                 
+                // Reflexo na bolha
                 ctx.beginPath();
                 ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fill();
+                
+                // Brilho extra para bolhas maiores
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r * 1.1, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
             });
             
-            // Desenhar projétil
+            // Desenhar projétil (também aumentado)
             if (this.bullet.active || this.isCharging) {
                 const bulletGlow = ctx.createRadialGradient(
                     this.bullet.x, this.bullet.y, 0,
@@ -1616,6 +1602,12 @@
                 ctx.beginPath();
                 ctx.arc(this.bullet.x, this.bullet.y, this.bullet.r, 0, Math.PI * 2);
                 ctx.fillStyle = this.bullet.color;
+                ctx.fill();
+                
+                // Reflexo no projétil
+                ctx.beginPath();
+                ctx.arc(this.bullet.x - this.bullet.r * 0.3, this.bullet.y - this.bullet.r * 0.3, this.bullet.r * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                 ctx.fill();
                 
                 if (this.isCharging) {
@@ -1680,63 +1672,63 @@
     /* ===== SISTEMA DE PERSONALIZAÇÃO ===== */
     const themes = {
         default: {
-            bodyBg: 'linear-gradient(135deg, #0a0a0a 0%, #001a1a 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(0,0,0,0.95), rgba(20,20,20,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(0, 26, 26, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(0,0,0,0.8), rgba(20,20,20,0.8))',
             bubbleColors: ['#00ffaa', '#00aaff', '#ffaa00', '#ff4444', '#aa00ff']
         },
         space: {
-            bodyBg: 'linear-gradient(135deg, #000033 0%, #000066 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(10,10,30,0.95), rgba(0,0,40,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(0, 0, 51, 0.8) 0%, rgba(0, 0, 102, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(10,10,30,0.8), rgba(0,0,40,0.8))',
             bubbleColors: ['#00ffff', '#ff00ff', '#ffff00', '#00ff88', '#ff8800']
         },
         matrix: {
-            bodyBg: 'linear-gradient(135deg, #001a00 0%, #003300 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(0,20,0,0.95), rgba(0,40,0,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(0, 26, 0, 0.8) 0%, rgba(0, 51, 0, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(0,20,0,0.8), rgba(0,40,0,0.8))',
             bubbleColors: ['#00ff00', '#00aa00', '#00ff88', '#88ff00', '#00ffaa']
         },
         nebula: {
-            bodyBg: 'linear-gradient(135deg, #330033 0%, #660066 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(40,0,40,0.95), rgba(20,0,60,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(51, 0, 51, 0.8) 0%, rgba(102, 0, 102, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(40,0,40,0.8), rgba(20,0,60,0.8))',
             bubbleColors: ['#ff00ff', '#ff0088', '#8800ff', '#ff8800', '#00ffff']
         },
         circuits: {
-            bodyBg: 'linear-gradient(135deg, #1a001a 0%, #330033 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(20,0,20,0.95), rgba(40,0,40,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(26, 0, 26, 0.8) 0%, rgba(51, 0, 51, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(20,0,20,0.8), rgba(40,0,40,0.8))',
             bubbleColors: ['#ff5500', '#ffaa00', '#00aaff', '#aa00ff', '#00ffaa']
         },
         abstract: {
-            bodyBg: 'linear-gradient(135deg, #331a00 0%, #663300 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(30,10,0,0.95), rgba(50,20,0,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(51, 26, 0, 0.8) 0%, rgba(102, 51, 0, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(30,10,0,0.8), rgba(50,20,0,0.8))',
             bubbleColors: ['#ff0066', '#00ccff', '#ffcc00', '#66ff00', '#cc00ff']
         },
         solid_black: {
-            bodyBg: '#000000',
-            gameBg: 'linear-gradient(145deg, #000000, #0a0a0a)',
+            bodyBg: 'rgba(0, 0, 0, 0.8)',
+            gameBg: 'linear-gradient(145deg, rgba(0,0,0,0.8), rgba(10,10,10,0.8))',
             bubbleColors: ['#00ffaa', '#00aaff', '#ffaa00', '#ff4444', '#aa00ff']
         },
         solid_blue: {
-            bodyBg: '#000030',
-            gameBg: 'linear-gradient(145deg, #000030, #000060)',
+            bodyBg: 'rgba(0, 0, 48, 0.8)',
+            gameBg: 'linear-gradient(145deg, rgba(0,0,48,0.8), rgba(0,0,96,0.8))',
             bubbleColors: ['#00ffff', '#0088ff', '#00ffaa', '#ff8800', '#ff00ff']
         },
         solid_purple: {
-            bodyBg: '#0a001a',
-            gameBg: 'linear-gradient(145deg, #0a001a, #1a003a)',
+            bodyBg: 'rgba(10, 0, 26, 0.8)',
+            gameBg: 'linear-gradient(145deg, rgba(10,0,26,0.8), rgba(26,0,58,0.8))',
             bubbleColors: ['#aa00ff', '#ff00aa', '#00ffaa', '#ffaa00', '#00aaff']
         },
         gradient_blue: {
-            bodyBg: 'linear-gradient(135deg, #000066 0%, #000033 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(0,0,50,0.95), rgba(0,0,80,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(0, 0, 102, 0.8) 0%, rgba(0, 0, 51, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(0,0,50,0.8), rgba(0,0,80,0.8))',
             bubbleColors: ['#00aaff', '#0088ff', '#0066ff', '#0044ff', '#0022ff']
         },
         gradient_green: {
-            bodyBg: 'linear-gradient(135deg, #003300 0%, #001a00 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(0,30,0,0.95), rgba(0,50,0,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(0, 51, 0, 0.8) 0%, rgba(0, 26, 0, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(0,30,0,0.8), rgba(0,50,0,0.8))',
             bubbleColors: ['#00ff88', '#00dd66', '#00bb44', '#009922', '#007700']
         },
         gradient_red: {
-            bodyBg: 'linear-gradient(135deg, #660000 0%, #330000 100%)',
-            gameBg: 'linear-gradient(145deg, rgba(50,0,0,0.95), rgba(80,0,0,0.95))',
+            bodyBg: 'linear-gradient(135deg, rgba(102, 0, 0, 0.8) 0%, rgba(51, 0, 0, 0.8) 100%)',
+            gameBg: 'linear-gradient(145deg, rgba(50,0,0,0.8), rgba(80,0,0,0.8))',
             bubbleColors: ['#ff4444', '#ff2222', '#ff0000', '#dd0000', '#bb0000']
         }
     };
@@ -2125,7 +2117,10 @@
 
     /* ===== INICIALIZAÇÃO ===== */
     console.log("ARC Bubble Shooter v3.0 - Layout Triplo Inicializado!");
-    console.log("Recursos disponíveis:");
+    console.log("Ajustes aplicados:");
+    console.log("- Transparência de 80% em todos os painéis");
+    console.log("- Bolhas aumentadas em 50% (27px em vez de 18px)");
+    console.log("- Projétil aumentado proporcionalmente (21px em vez de 14px)");
     console.log("- Layout de 3 colunas (Controles/Jogo/Configurações)");
     console.log("- Jogo Web3 completo com MetaMask");
     console.log("- Calculadora integrada no painel direito");
